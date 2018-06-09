@@ -3,9 +3,9 @@ import discord
 
 from config import BOT_TOKEN
 from discord.ext import commands
-
+from discord.errors import HTTPException
 from utils import Utility
-from cogs import role, help
+from cogs import role, help, link, admin, requirement
 # from var import *
 
 
@@ -20,6 +20,9 @@ util = Utility(bot)
 # add Role cog to the bot
 bot.add_cog(role.Role(bot, util))
 bot.add_cog(help.Help(bot, util))
+bot.add_cog(link.Link(bot, util))
+bot.add_cog(admin.Admin(bot, util))
+bot.add_cog(requirement.Requirement(bot, util))
 
 # EVENTS
 
@@ -46,11 +49,21 @@ Bạn vui lòng đọc Nội quy ở {rules_channel.mention} nhé.'
 @bot.event
 async def on_message(message):
     server = message.server
-    role_request_channel = discord.utils.get(server.channels, name='yêu-cầu-role')
 
-    if message.channel == role_request_channel and message.content.startswith('.'):
-        await bot.delete_message(message)
+    if server is None:
+        try:
+            await bot.send_message(
+                destination=message.author,
+                content=f'Bạn vui lòng quay lại group **Cộng đồng MapleStory VN** và nhập lệnh `{bot.command_prefix}help` '
+                'nhé. Xin cảm ơn :D')
+        except HTTPException:
+            pass
     else:
-        await bot.process_commands(message)
+        role_request_channel = server.get_channel('453930352365273099')  # yêu-cầu-role
+
+        if message.channel == role_request_channel and message.content.startswith(bot.command_prefix):
+            await bot.delete_message(message)
+        else:
+            await bot.process_commands(message)
 
 bot.run(BOT_TOKEN)

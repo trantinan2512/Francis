@@ -22,42 +22,45 @@ class Help:
         # gms_role = discord.utils.get(server.roles, name='GMS')
         # gmsm_role = discord.utils.get(server.roles, name='GMSM')
 
-        role_request_channel = discord.utils.get(server.channels, name='yêu-cầu-role')
+        role_request_channel = server.get_channel('453930352365273099')  # yêu-cầu-role
 
         if category is None \
-                or not category == 'role' \
+                or not category.startswith('role') \
                 and not category.startswith('trade') \
                 and not category.startswith('lead') \
                 and not category.startswith('music') \
-                and not category.startswith('creat'):
+                and not category.startswith('creat') \
+                and not category.startswith('link'):
             embed = discord.Embed(
                 title=None,
                 description=None,
                 color=discord.Color.teal())
 
             embed.add_field(
-                name='Các lệnh về Role có thể tự Thêm/Xóa.',
+                name='Các lệnh về Role có thể tự Thêm/Xóa',
                 value=f'`{prefix}help role`')
             embed.add_field(
-                name='Thông tin về Role @Guild Leader.',
+                name='Các Link hữu ích',
+                value=f'`{prefix}help link`')
+
+            embed.add_field(
+                name='Thông tin về Role @Guild Leader',
                 value=f'`{prefix}help leader`')
             embed.add_field(
-                name='Thông tin về Role @Trader.',
+                name='Thông tin về Role @Trader',
                 value=f'`{prefix}help trader`')
             embed.add_field(
-                name='Thông tin về Role @Content Creator.',
+                name='Thông tin về Role @Content Creator',
                 value=f'`{prefix}help creator`')
             embed.add_field(
-                name='Các Link hữu ích.',
-                value=f'`{prefix}help link`\n*Đang thi công*')
-            embed.add_field(
-                name='Các lệnh của Music Bot.',
+                name='Các lệnh của Music Bot',
                 value=f'`{prefix}help music`')
+
             embed.set_image(url='https://i.imgur.com/xTyqmzZ.jpg')
 
             await self.util.say_as_embed(embed=embed)
 
-        elif category == 'role':
+        elif category.startswith('role'):
 
             embed = discord.Embed(
                 title='Danh sách lệnh liên quan đến Role có thể tự Thêm/Xóa',
@@ -82,7 +85,8 @@ class Help:
 
         elif category.startswith('lead'):
 
-            leader_role = discord.utils.get(server.roles, name='Guild Leader')
+            leader_gms = discord.utils.get(server.roles, name='Guild Leader GMS')
+            leader_gmsm = discord.utils.get(server.roles, name='Guild Leader GMSM')
 
             guild_recruit_gms = discord.utils.get(server.channels, name='tuyển-mem-guild-gms')
             guild_recruit_gmsm = discord.utils.get(server.channels, name='tuyển-mem-guild-gms-m')
@@ -90,10 +94,11 @@ class Help:
             embed = discord.Embed(
                 title='1. Thông tin về Role @Guild Leader',
                 description=''
-                f'» Yêu cầu Role {leader_role.mention} tại {role_request_channel.mention}.\n'
+                f'» Yêu cầu Role tại {role_request_channel.mention}.\n'
                 f'» Nhập lệnh `{prefix}req leader` để xem tiêu chí set Role.\n'
-                f'» Khi có role, bạn sẽ có thể đăng thông tin về Guild mình để chiêu mộ '
-                f'thành viên vào Guild tại {guild_recruit_gms.mention} và {guild_recruit_gmsm.mention}.\n.',
+                f'» Khi có role, bạn sẽ có thể đăng thông tin về Guild mình để chiêu mộ thành viên vào Guild tại '
+                f'{guild_recruit_gms.mention} (đối với {leader_gms.mention}) và '
+                f'{guild_recruit_gmsm.mention} (đối với {leader_gmsm.mention}).\n.',
                 color=discord.Color.blue())
 
             embed.add_field(
@@ -122,7 +127,9 @@ class Help:
             await self.util.say_as_embed(embed=embed)
         elif category.startswith('trade'):
 
-            trader_role = discord.utils.get(server.roles, name='Trader')
+            trader_gms = discord.utils.get(server.roles, name='Trader GMS')
+            trader_gmsm = discord.utils.get(server.roles, name='Trader GMSM')
+
             trade_warning_role = discord.utils.get(server.roles, name='Trade Warning')
             admin_role = discord.utils.get(server.roles, name='Admin')
             super_mod_role = discord.utils.get(server.roles, name='Super Mod')
@@ -133,10 +140,10 @@ class Help:
             embed = discord.Embed(
                 title='1. Thông tin về Role @Trader',
                 description=''
-                f'» Yêu cầu Role {trader_role.mention} tại {role_request_channel.mention}.\n'
+                f'» Yêu cầu Role tại {role_request_channel.mention}.\n'
                 f'» Nhập lệnh `{prefix}req trader` để xem tiêu chí set Role.\n'
                 f'» Khi có role, bạn sẽ có thể đăng bài mua bán, giao dịch trong các kênh '
-                f'{trade_gms.mention} và {trade_gmsm.mention}.\n.',
+                f'{trade_gms.mention} (đối với {trader_gms.mention}) và {trade_gmsm.mention} (đối với {trader_gmsm.mention}).\n.',
                 color=discord.Color.dark_green())
 
             embed.add_field(
@@ -168,7 +175,7 @@ class Help:
                 '» Có thể sửa hoặc xóa bài.\n'
                 '» **Không xin xỏ**. Chỉ đăng bài nếu bạn có nhu cầu mua bán, trao đổi, hay cho không.\n'
                 '» Liên hệ inbox người đăng bài để đàm phán giao dịch.\n'
-                f'» Kiểm tra xem người đăng bài có role {trader_role.mention} trước khi giao dịch.\n'
+                f'» Kiểm tra xem bên giao dịch có role {trader_gms.mention} hoặc {trader_gmsm.mention} trước khi giao dịch.\n'
                 f'» **Tuyệt đối không giao dịch** với người có role {trade_warning_role.mention} '
                 '- người đã có tiền sử lừa đảo bị phát hiện trong group.\n.'
             )
@@ -207,23 +214,27 @@ class Help:
 
         elif category.startswith('creat'):
 
-            creator_role = discord.utils.get(server.roles, name='Content Creator')
+            creator_gms = discord.utils.get(server.roles, name='Content Creator GMS')
+            creator_gmsm = discord.utils.get(server.roles, name='Content Creator GMSM')
+
             trade_warning_role = discord.utils.get(server.roles, name='Trade Warning')
+
             mod_gms_role = discord.utils.get(server.roles, name='Mod GMS')
             mod_gmsm_role = discord.utils.get(server.roles, name='Mod GMSM')
 
-            creator_gms = discord.utils.get(server.channels, name='creator-gms')
-            creator_gmsm = discord.utils.get(server.channels, name='creator-gms-m')
+            creator_channel_gms = discord.utils.get(server.channels, name='creator-gms')
+            creator_channel_gmsm = discord.utils.get(server.channels, name='creator-gms-m')
+
             show_off_gms = discord.utils.get(server.channels, name='show-hàng-gms')
             show_off_gmsm = discord.utils.get(server.channels, name='show-hàng-gms-m')
 
             embed = discord.Embed(
                 title='1. Thông tin về Role @Content Creator',
                 description=''
-                f'» Yêu cầu Role {creator_role.mention} tại {role_request_channel.mention}.\n'
+                f'» Yêu cầu Role tại {role_request_channel.mention}.\n'
                 f'» Nhập lệnh `{prefix}req creator` để xem tiêu chí set Role.\n'
-                f'» Khi có role, bạn sẽ có thể đăng bài trong kênh '
-                f'{creator_gms.mention} và {creator_gmsm.mention}.\n.',
+                f'» Khi có role, bạn sẽ có thể đăng bài trong kênh {creator_channel_gms.mention} (đối với {creator_gms.mention}) '
+                f'hoặc {creator_channel_gmsm.mention} (đối với {creator_gmsm.mention}).\n.',
                 color=discord.Color.magenta())
 
             embed.add_field(
@@ -243,5 +254,19 @@ class Help:
                 f'» Nội dung mang tính khoe hàng vui lòng sang kênh {show_off_gms.mention} hoặc {show_off_gmsm.mention}.'
             )
             embed.set_image(url='https://i.imgur.com/fG47Wtx.jpg')
+
+            await self.util.say_as_embed(embed=embed)
+
+        elif category.startswith('link'):
+
+            embed = discord.Embed(
+                title=None,
+                description=''
+                f'Nhập lệnh `{prefix}link tên_game` để xem các link hữu ích cho game đó.\n'
+                f'`tên_game` là `GMS` hoặc `GMSM` (hiện tại chỉ hỗ trợ 2 game này).\n\n'
+                f'Ví dụ: `{prefix}link gms`',
+                color=discord.Color.dark_blue())
+
+            embed.set_image(url='https://i.imgur.com/1TBNvkc.jpg')
 
             await self.util.say_as_embed(embed=embed)
