@@ -1,6 +1,6 @@
 from decouple import config
 
-DEBUG = config('DEBUG', cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 BOT_TOKEN = config('BOT_TOKEN')
 MY_ID = config('MY_ID', cast=str)
 SERVER_ID = config('SERVER_ID', cast=str)
