@@ -1,9 +1,18 @@
-from discord.ext import commands
-import discord
+from pprint import pprint
+
 import asyncio
 import operator
-# from pprint import pprint
-from config import MY_ID
+import json
+import os
+
+import twitter
+import discord
+from discord.ext import commands
+
+import config
+
+# francis/cogs/here -> francis/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Admin:
@@ -14,7 +23,7 @@ class Admin:
         self.util = util
 
     def is_me(ctx):
-        return ctx.message.author.id == MY_ID
+        return ctx.message.author.id == config.MY_ID
 
     @commands.command(pass_context=True, name='clear')
     @commands.check(is_me)
@@ -126,3 +135,30 @@ class Admin:
     @commands.check(is_me)
     async def change_bot_presence(self, context, presence: str):
         await self.bot.change_presence(game=discord.Game(name=presence))
+
+    @commands.command(pass_context=True, name='tw')
+    @commands.check(is_me)
+    async def twitter_test(self, context, action=None):
+
+        api = twitter.api.Api(
+            consumer_key=config.TWITTER_CONSUMER_KEY,
+            consumer_secret=config.TWITTER_CONSUMER_SECRET,
+            access_token_key=config.TWITTER_ACCESS_TOKEN,
+            access_token_secret=config.TWITTER_ACCESS_TOKEN_SECRET,
+            tweet_mode='extended')
+
+        MapleM = api.GetUser(user_id=816396540017152000)
+        # pprint(api.GetUserTimeline(user_id=816396540017152000))
+        print(MapleM.status)
+        print(MapleM.status.full_text)
+        data = {
+            "Latest Status": MapleM.status.full_text
+        }
+
+        with open(BASE_DIR + '/cache/twitter_cache.json', 'w') as outfile:
+            json.dump(data, outfile)
+
+        with open(BASE_DIR + '/cache/twitter_cache.json', 'r') as infile:
+            read = json.load(infile)
+            print(read)
+

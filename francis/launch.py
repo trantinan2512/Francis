@@ -5,12 +5,15 @@ from config import BOT_TOKEN
 from discord.ext import commands
 from discord.errors import HTTPException
 from utils import Utility
-from cogs import role, help, link, admin, requirement
-# from var import *
+from cogs import role, help, link, admin, requirement, tasks
+import config
 
+if config.DEBUG is True:
+    prefix = '.'
+else:
+    prefix = '!'
 
-bot = commands.Bot(command_prefix='!', description='Francis - Orchid\'s slave')
-
+bot = commands.Bot(command_prefix=prefix, description='Francis - Orchid\'s slave')
 # remove the 'help' command
 bot.remove_command('help')
 
@@ -65,5 +68,10 @@ async def on_message(message):
             await bot.delete_message(message)
         else:
             await bot.process_commands(message)
+
+twitter_tasks = tasks.Twitter(bot, util)
+
+bot.loop.create_task(twitter_tasks.fetch_maplem_latest_tweet())
+bot.loop.create_task(twitter_tasks.fetch_maple_latest_tweet())
 
 bot.run(BOT_TOKEN)

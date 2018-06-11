@@ -1,1 +1,1 @@
-worker: python3 launch.py
+worker: python3 francis/launch.py
