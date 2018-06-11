@@ -23,7 +23,7 @@ class Twitter:
     async def fetch_maplem_latest_tweet(self):
         await self.bot.wait_until_ready()
 
-        channel = discord.Object(id='454890599410302977')
+        channel = discord.Object(id='455635507561627648')
         api = twitter.api.Api(
             consumer_key=config.TWITTER_CONSUMER_KEY,
             consumer_secret=config.TWITTER_CONSUMER_SECRET,
@@ -77,7 +77,7 @@ class Twitter:
     async def fetch_maple_latest_tweet(self):
         await self.bot.wait_until_ready()
 
-        channel = discord.Object(id='454890599410302977')
+        channel = discord.Object(id='455634325086404608')
         api = twitter.api.Api(
             consumer_key=config.TWITTER_CONSUMER_KEY,
             consumer_secret=config.TWITTER_CONSUMER_SECRET,
