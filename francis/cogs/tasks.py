@@ -53,7 +53,7 @@ class Twitter:
             await self.send_latest_status(self.api, 34667202, channel)
 
     # send status to given channel
-    async def send_latest_status(self, api, user_id, channel, delay=10):
+    async def send_latest_status(self, api, user_id, channel, delay=60):
         """Send the latest status of given user_id, to the channel
         """
         # fetch the user_id twitter info
