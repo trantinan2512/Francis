@@ -64,7 +64,10 @@ class Utility:
         tmp_cap = list()
 
         for w in role.split(' '):
-            tmp_cap.append(w.capitalize())
+            if w.lower() in ['fp', 'il']:
+                tmp_cap.append(w.upper())
+            else:
+                tmp_cap.append(w.capitalize())
 
         capped_role = ' '.join(tmp_cap)
 
