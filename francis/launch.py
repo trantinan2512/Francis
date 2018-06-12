@@ -35,18 +35,20 @@ async def on_ready():
     print('------')
     print(f'Logged in as: {bot.user.name} (ID: {bot.user.id})')
     print('------')
+    await bot.change_presence(game=discord.Game(name=f'{bot.command_prefix}help'))
 
 
 @bot.event
 async def on_member_join(member):
     """Says when a member joined."""
 
-    welcome_channel = discord.utils.get(member.server.channels, name='welcome')
-    rules_channel = discord.utils.get(member.server.channels, name='nội-quy')
-    message = f'Chào mừng **{member.mention}** đã đến với **{member.server.name}**!\n\
-Bạn vui lòng đọc Nội quy ở {rules_channel.mention} nhé.'
+    if not config.DEBUG:
+        welcome_channel = discord.utils.get(member.server.channels, name='welcome')
+        rules_channel = discord.utils.get(member.server.channels, name='nội-quy')
+        message = f'Chào mừng **{member.mention}** đã đến với **{member.server.name}**!\n\
+    Bạn vui lòng đọc Nội quy ở {rules_channel.mention} nhé.'
 
-    await bot.send_message(welcome_channel, message)
+        await bot.send_message(welcome_channel, message)
 
 
 @bot.event
@@ -70,8 +72,12 @@ async def on_message(message):
             await bot.process_commands(message)
 
 twitter_tasks = tasks.Twitter(bot, util)
+facebook_tasks = tasks.Facebook(bot, util)
 
 bot.loop.create_task(twitter_tasks.fetch_maplem_latest_tweet())
 bot.loop.create_task(twitter_tasks.fetch_maple_latest_tweet())
+
+# if config.DEBUG:
+#     bot.loop.create_task(facebook_tasks.fb())
 
 bot.run(BOT_TOKEN)

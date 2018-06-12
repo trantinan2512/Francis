@@ -12,8 +12,9 @@ class Role:
         self.util = util
 
     @commands.command(pass_context=True)
-    async def role(self, context, role=None):
+    async def role(self, context, *, role=None):
         """Set Role theo yêu cầu"""
+
         message = context.message
         author = message.author
         prefix = self.bot.command_prefix
@@ -53,12 +54,11 @@ class Role:
                     color='error')
 
     @commands.command(pass_context=True)
-    async def rrole(self, context, role=None, role_type=None):
+    async def rrole(self, context, *, role=None):
         """Xóa Role theo yêu cầu
         - Xóa từng role: !rrole tên_role
         - Xóa nhiều role: !rrole all loại_role
         (loại_role là colors hoặc channels hoặc all)
-
         """
         message = context.message
         author = message.author
@@ -77,9 +77,10 @@ class Role:
                 'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.')
             embed.add_field(
                 name=f'Cú pháp xóa nhiều Role: `{prefix}rrole all loại_role`',
-                value=f'`loại_role` có thể là `colors`, `channels`, hoặc `all`\n'
+                value=f'`loại_role` có thể là `colors`, `channels`, `jobs`, hoặc `all`\n'
                 '» `colors` - Xóa tất cả Role màu sắc bạn đang có.\n'
                 '» `channels` - Xóa tất cả Role kênh bạn đang có.\n'
+                '» `jobs` - Xóa tất cả Role Job bạn đang có.\n'
                 '» `all` - Xóa tất cả mọi Role bạn đang có.\n'
                 f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.')
             await self.util.say_as_embed(embed=embed)
@@ -88,12 +89,15 @@ class Role:
         else:
             # process the role to match server's role names
             # returns None if no roles detected
-            role = await self.util.process_role(role)
+            r = await self.util.process_role(role)
+            if type(r) == tuple:
+                role = r[0]
+                role_type = r[1]
 
             # proc role is 'all' trying to remove multiple roles
             if role == 'all':
                 # check invalid role_type or None
-                if role_type is None or role_type not in ['colors', 'colours', 'channels', 'all']:
+                if not role_type or role_type not in ['colors', 'colours', 'channels', 'jobs', 'all']:
 
                     embed = discord.Embed(
                         title=None,
@@ -102,8 +106,9 @@ class Role:
                     embed.add_field(
                         name=f'Cú pháp xóa nhiều Role: `{prefix}rrole all loại_role`',
                         value=f'`loại_role` có thể là `colors`, `channels`, hoặc `all`\n'
-                        '» `colors` - Xóa tất cả Role màu sắc bạn đang có.\n'
-                        '» `channels` - Xóa tất cả Role kênh bạn đang có.\n'
+                        '» `colors` - Xóa tất cả Role Màu sắc bạn đang có.\n'
+                        '» `channels` - Xóa tất cả Role Kênh bạn đang có.\n'
+                        '» `jobs` - Xóa tất cả Role Job bạn đang có.\n'
                         '» `all` - Xóa tất cả mọi Role bạn đang có.\n'
                         f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.')
                     await self.util.say_as_embed(embed=embed)
@@ -126,6 +131,10 @@ class Role:
                             if r.name in AUTOASIGN_CHANNEL_ROLES:
                                 to_rmv_roles['roles'].append(r)
                                 to_rmv_roles['role_mentions'].append(r.mention)
+                        elif role_type == 'jobs':
+                            if r.name in AUTOASIGN_JOB_ROLES:
+                                to_rmv_roles['roles'].append(r)
+                                to_rmv_roles['role_mentions'].append(r.mention)
                         elif role_type == 'all':
                             if r.name in AUTOASIGN_ROLES:
                                 to_rmv_roles['roles'].append(r)
@@ -140,7 +149,8 @@ class Role:
                             color='success')
                     else:
                         await self.util.say_as_embed(
-                            message=f'{author.mention}, không có Role nào thuộc `loại_role` này.',
+                            message=f'{author.mention}, không có Role nào thuộc loại role `{role_type}`.\n'
+                            'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.',
                             color='error')
 
             elif role is not None:
@@ -177,6 +187,7 @@ class Role:
 
         ch_roles = []
         co_roles = []
+        jo_roles = []
 
         for role_name in AUTOASIGN_CHANNEL_ROLES:
             r = discord.utils.get(server.roles, name=role_name)
@@ -188,6 +199,15 @@ class Role:
             if r is not None:
                 co_roles.append(r.mention)
 
-        embed.add_field(name='Channel Roles', value='\n'.join(ch_roles))
+        for index, role_name in enumerate(AUTOASIGN_JOB_ROLES):
+            r = discord.utils.get(server.roles, name=role_name)
+            if r is not None:
+                jo_roles.append(r.mention)
+            # if index == 46:
+            #     break
+
         embed.add_field(name='Color Roles', value='\n'.join(co_roles))
+        embed.add_field(name='Job Roles', value='\n'.join(jo_roles[:23]))
+        embed.add_field(name='Job Roles', value='\n'.join(jo_roles[24:]))
+        embed.add_field(name='Channel Roles', value='\n'.join(ch_roles))
         await self.bot.say(embed=embed)

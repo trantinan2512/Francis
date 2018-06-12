@@ -30,7 +30,7 @@ class Utility:
         else:
             await self.bot.say(embed=embed)
 
-    async def send_message_as_embed(self, channel, message=None, title=None, color='info'):
+    async def send_message_as_embed(self, channel, message=None, title=None, embed=None, color='info'):
         """Send a message to a specified channel as an Embed.
         Passing an 'embed' will send it instead, and ignore things in 'message' kwarg.
         Shortcut for color kwarg: 'info' (default), 'warning', 'error', 'success'
@@ -61,13 +61,25 @@ class Utility:
         # strip the leading @ in case someone fucks up
         role = role.lstrip('@')
 
+        tmp_cap = list()
+
+        for w in role.split(' '):
+            tmp_cap.append(w.capitalize())
+
+        capped_role = ' '.join(tmp_cap)
+
         if role in AUTOASIGN_ROLES:
             return role
-        elif role.capitalize() in AUTOASIGN_ROLES:
-            return role.capitalize()
+
+        elif capped_role in AUTOASIGN_ROLES:
+            return capped_role
+
         elif role.upper() in AUTOASIGN_ROLES:
             return role.upper()
-        elif role == 'all':
-            return 'all'
+
+        elif role.startswith('all'):
+            # returns a tuple
+            return 'all', role.lstrip('all').strip()
+
         else:
             return None
