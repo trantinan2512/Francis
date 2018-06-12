@@ -35,7 +35,8 @@ async def on_ready():
     print('------')
     print(f'Logged in as: {bot.user.name} (ID: {bot.user.id})')
     print('------')
-    await bot.change_presence(game=discord.Game(name=f'{bot.command_prefix}help'))
+    if not config.DEBUG:
+        await bot.change_presence(game=discord.Game(name=f'{bot.command_prefix}help'))
 
 
 @bot.event

@@ -207,7 +207,7 @@ class Role:
             #     break
 
         embed.add_field(name='Color Roles', value='\n'.join(co_roles))
-        embed.add_field(name='Job Roles', value='\n'.join(jo_roles[:23]))
+        embed.add_field(name='Job Roles', value='\n'.join(jo_roles[:24]))
         embed.add_field(name='Job Roles', value='\n'.join(jo_roles[24:]))
         embed.add_field(name='Channel Roles', value='\n'.join(ch_roles))
         await self.bot.say(embed=embed)
