@@ -1,18 +1,15 @@
 import asyncio
 import json
-import os
-import requests
+# import os
+# import requests
 
 import facebook
 import twitter
 import discord
-from discord.ext import commands
+# from discord.ext import commands
 
 from pprint import pprint
 import config
-
-# francis/cogs/here -> francis/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Twitter:
@@ -65,7 +62,7 @@ class Twitter:
         status_id = latest_status.id_str
         status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
 
-        TWITTER_CACHE_DIR = BASE_DIR + '/cache/twitter_cache.json'
+        TWITTER_CACHE_DIR = config.BASE_DIR + '/cache/twitter_cache.json'
 
         # open json cache file to read
         with open(TWITTER_CACHE_DIR, 'r') as infile:
@@ -79,7 +76,7 @@ class Twitter:
                 cached_maple_ids = cache['ids']
                 # the status id is already in cached_ids (posted), pass
                 if status_id in cached_maple_ids:
-                    pass
+                    print('*** TWITTER FETCH: NO NEW POSTS ***')
 
                 else:
                     # open file to write, prepend the id to the right place
@@ -109,7 +106,7 @@ class Twitter:
             # bot-test channel
             channel = discord.Object(id='454890599410302977')
         else:
-            # twitter-facebook-gms channel
+            # id-given channel
             channel = discord.Object(id=id)
         return channel
 
@@ -150,7 +147,7 @@ class Facebook:
                 description=latest_post['message'],
                 color=discord.Color.teal())
 
-            FACEBOOK_CACHE_DIR = BASE_DIR + '/cache/facebook_cache.json'
+            FACEBOOK_CACHE_DIR = config.BASE_DIR + '/cache/facebook_cache.json'
 
             with open(FACEBOOK_CACHE_DIR, 'r') as infile:
 
@@ -161,7 +158,7 @@ class Facebook:
                     cached_maple_ids = maple['ids']
 
                     if latest_post['id'] in cached_maple_ids:
-                        pass
+                        print('*** FACEBOOK FETCH: NO NEW POSTS ***')
 
                     else:
                         with open(FACEBOOK_CACHE_DIR, 'w') as outfile:

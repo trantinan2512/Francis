@@ -1,4 +1,6 @@
 from decouple import config
+import os
+
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 BOT_TOKEN = config('BOT_TOKEN')
@@ -16,3 +18,6 @@ TWITTER_ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN')
 TWITTER_ACCESS_TOKEN_SECRET = config('TWITTER_ACCESS_TOKEN_SECRET')
 
 FACEBOOK_ACCESS_TOKEN = config('FACEBOOK_TEST_ACCESS_TOKEN')
+
+# francis/config.py -> francis
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -5,7 +5,7 @@ from config import BOT_TOKEN
 from discord.ext import commands
 from discord.errors import HTTPException
 from utils import Utility
-from cogs import role, help, link, admin, requirement, tasks
+from cogs import role, help, link, admin, requirement, tasks, webspiders
 import config
 
 if config.DEBUG is True:
@@ -78,7 +78,8 @@ facebook_tasks = tasks.Facebook(bot, util)
 bot.loop.create_task(twitter_tasks.fetch_maplem_latest_tweet())
 bot.loop.create_task(twitter_tasks.fetch_maple_latest_tweet())
 
-# if config.DEBUG:
-#     bot.loop.create_task(facebook_tasks.fb())
+if config.DEBUG:
+    # bot.loop.create_task(facebook_tasks.fb())
+    bot.loop.create_task(webspiders.WebSpider(bot, util).parse())
 
 bot.run(BOT_TOKEN)
