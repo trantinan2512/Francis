@@ -76,7 +76,7 @@ class Twitter:
                 cached_maple_ids = cache['ids']
                 # the status id is already in cached_ids (posted), pass
                 if status_id in cached_maple_ids:
-                    print('*** TWITTER FETCH: NO NEW POSTS ***')
+                    print(f'*** Twitter Fetch for {u_screen_name}: NO NEW POSTS ***')
 
                 else:
                     # open file to write, prepend the id to the right place

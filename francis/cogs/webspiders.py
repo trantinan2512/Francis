@@ -76,7 +76,7 @@ class WebSpider:
                     file_data = json.load(infile)
                     # pass if no new data found
                     if file_data == post_datas:
-                        print('*** NO NEW DATA COLLECTED ***')
+                        print('*** Site Fetch for GMS: NO NEW POSTS ***')
                     # rewrite the file with new data
                     else:
                         with open(news_cache_file, 'w') as outfile:
