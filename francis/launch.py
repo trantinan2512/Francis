@@ -77,6 +77,8 @@ facebook_tasks = tasks.Facebook(bot, util)
 
 bot.loop.create_task(twitter_tasks.fetch_maplem_latest_tweet())
 bot.loop.create_task(twitter_tasks.fetch_maple_latest_tweet())
+bot.loop.create_task(webspiders.WebSpider(bot, util).parse())
+
 
 if config.DEBUG:
     # bot.loop.create_task(facebook_tasks.fb())
