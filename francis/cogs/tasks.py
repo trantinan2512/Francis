@@ -2,13 +2,16 @@ import asyncio
 import json
 # import os
 # import requests
-
+from gspread.exceptions import APIError
 import facebook
 import twitter
 import discord
 # from discord.ext import commands
 
-from pprint import pprint
+from datetime import datetime
+from pytz import timezone
+
+# from pprint import pprint
 import config
 
 
@@ -25,12 +28,14 @@ class Twitter:
             access_token_secret=config.TWITTER_ACCESS_TOKEN_SECRET,
             tweet_mode='extended')
 
+        self.db = util.initialize_db()
+
     async def fetch_maplem_latest_tweet(self):
 
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = self.get_channel(id='455635507561627648')
+        channel = self.util.get_channel(id='455635507561627648')
 
         while not self.bot.is_closed:
 
@@ -42,7 +47,7 @@ class Twitter:
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = self.get_channel(id='455634325086404608')
+        channel = self.util.get_channel(id='455634325086404608')
 
         # keep executing the codes until bot is closed
         while not self.bot.is_closed:
@@ -53,6 +58,9 @@ class Twitter:
     async def send_latest_status(self, api, user_id, channel, delay=60):
         """Send the latest status of given user_id, to the channel
         """
+        if config.DEBUG:
+            delay = 10
+
         # fetch the user_id twitter info
         latest_status = api.GetUserTimeline(user_id=user_id, include_rts=False, exclude_replies=True)[0]
 
@@ -62,53 +70,35 @@ class Twitter:
         status_id = latest_status.id_str
         status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
 
-        TWITTER_CACHE_DIR = config.BASE_DIR + '/cache/twitter_cache.json'
+        try:
+            # get twitter_gmsm db
+            if u_id == '816396540017152000':
+                db = self.db.worksheet('twitter_gmsm')
+            # get twitter_gms db
+            elif u_id == '34667202':
+                db = self.db.worksheet('twitter_gms')
+        except APIError:
+            print('API ERROR')
+            quit()
 
-        # open json cache file to read
-        with open(TWITTER_CACHE_DIR, 'r') as infile:
+        posted_ids = db.col_values(1)
 
-            twitter_cache = json.load(infile)
+        if status_id in posted_ids:
+            print(f'*** Twitter Fetch for {u_screen_name}: NO NEW POSTS ***')
 
-            # get from cache based on u_id
-            cache = twitter_cache.get(u_id)
-            if cache is not None and cache.get('ids'):
+        else:
+            now = datetime.now()
+            vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+            timestamp_date = vn_tz.strftime('%d/%m/%Y')
+            timestamp_time = vn_tz.strftime('%H:%M:%S')
 
-                cached_maple_ids = cache['ids']
-                # the status id is already in cached_ids (posted), pass
-                if status_id in cached_maple_ids:
-                    print(f'*** Twitter Fetch for {u_screen_name}: NO NEW POSTS ***')
+            db.insert_row([status_id, timestamp_date, timestamp_time], index=2)
 
-                else:
-                    # open file to write, prepend the id to the right place
-                    with open(TWITTER_CACHE_DIR, 'w') as outfile:
-                        twitter_cache[u_id]['ids'].insert(0, status_id)
-                        json.dump(twitter_cache, outfile)
-                    # send the message to channel
-                    await self.bot.send_message(channel, status_url)
-
-            # no user_id found
-            else:
-                # setup the data and update the cached_data, write it to file
-                data = {u_id: {'ids': [status_id, ], 'screen_name': u_screen_name}}
-                twitter_cache.update(data)
-                with open(TWITTER_CACHE_DIR, 'w') as outfile:
-                    json.dump(twitter_cache, outfile)
-                # send the message to channel
-                await self.bot.send_message(channel, status_url)
+            # send the message to channel
+            await self.bot.send_message(channel, status_url)
+            print(f'*** Twitter Fetch for {u_screen_name}: FETCHED STATUS {status_url} ***')
 
         await asyncio.sleep(delay)
-
-    def get_channel(self, id):
-        """Return the given channel Object if in Production,
-        #bot-test channel if in Development
-        """
-        if config.DEBUG is True:
-            # bot-test channel
-            channel = discord.Object(id='454890599410302977')
-        else:
-            # id-given channel
-            channel = discord.Object(id=id)
-        return channel
 
 
 class Facebook:

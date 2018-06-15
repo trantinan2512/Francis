@@ -80,8 +80,8 @@ bot.loop.create_task(twitter_tasks.fetch_maple_latest_tweet())
 bot.loop.create_task(webspiders.WebSpider(bot, util).parse())
 
 
-if config.DEBUG:
+# if config.DEBUG:
     # bot.loop.create_task(facebook_tasks.fb())
-    bot.loop.create_task(webspiders.WebSpider(bot, util).parse())
+    # bot.loop.create_task(webspiders.WebSpider(bot, util).parse())
 
 bot.run(BOT_TOKEN)

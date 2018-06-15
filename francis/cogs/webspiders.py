@@ -1,8 +1,12 @@
 import asyncio
 import json
-
+import re
 import requests
 from bs4 import BeautifulSoup
+
+from gspread.exceptions import APIError
+from datetime import datetime
+from pytz import timezone
 
 import discord
 
@@ -13,6 +17,7 @@ class WebSpider:
     def __init__(self, bot, util):
         self.bot = bot
         self.util = util
+        self.db = util.initialize_db()
 
     async def get_news_gms_site(self):
 
@@ -28,9 +33,13 @@ class WebSpider:
     async def parse(self):
 
         await self.bot.wait_until_ready()
+        if config.DEBUG:
+            delay = 10
+        else:
+            delay = 60
 
         # cập-nhật-mới-gms channel
-        channel = self.get_channel(id='453565620915535872')
+        channel = self.util.get_channel(id='453565620915535872')
 
         while not self.bot.is_closed:
 
@@ -39,69 +48,51 @@ class WebSpider:
             if content is not None:
                 html = BeautifulSoup(content, 'html.parser')
 
-                links = html.select('.news-container .news-item .text h3 a')
-                descriptions = html.select('.news-container .news-item .text p')
-                photos = html.select('.news-container .news-item .photo')
+                link = html.select_one('.news-container .news-item .text h3 a')
+                desc = html.select_one('.news-container .news-item .text p')
+                photo = html.select_one('.news-container .news-item .photo')
 
-                post_titles = []
-                post_descs = []
-                post_hrefs = []
-                post_photo_urls = []
+                news_id_re = re.compile('(/news/)(\d+)(/)')
+                news_search = news_id_re.search(link['href'])
 
-                for link in links:
-                    post_titles.append(link.get_text())
-                    post_hrefs.append(link['href'])
+                now = datetime.now()
+                vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+                timestamp_date = vn_tz.strftime('%d/%m/%Y')
+                timestamp_time = vn_tz.strftime('%H:%M:%S')
 
-                for desc in descriptions:
+                data = {
+                    'id': news_search.group(2),
+                    'date': timestamp_date,
+                    'time': timestamp_time,
+                    'title': link.get_text(),
+                    'link': f'http://maplestory.nexon.net{link["href"]}',
+                    'description': desc.get_text(),
+                    'photo_url': photo['style'].lstrip('background-image:url(').rstrip(')')
+                }
 
-                    if not desc.has_attr('class'):
-                        post_descs.append(desc.get_text())
+                try:
+                    db = self.db.worksheet('site_gms')
 
-                for photo in photos:
-                    photo_url = photo['style'].lstrip('background-image:url(').rstrip(')')
-                    post_photo_urls.append(photo_url)
+                except APIError:
+                    print('API ERROR')
+                    quit()
 
-                post_datas = []
-                for item in zip(post_titles, post_descs, post_hrefs, post_photo_urls):
-                    d = {
-                        'title': item[0],
-                        'description': item[1],
-                        'link': f'http://maplestory.nexon.net{item[2]}',
-                        'photo_url': item[3]
-                    }
-                    post_datas.append(d)
+                posted_ids = db.col_values(1)
 
-                news_cache_file = config.BASE_DIR + '/cache/news_gms_cache.json'
-                with open(news_cache_file, 'r') as infile:
-                    file_data = json.load(infile)
-                    # pass if no new data found
-                    if file_data == post_datas:
-                        print('*** Site Fetch for GMS: NO NEW POSTS ***')
-                    # rewrite the file with new data
-                    else:
-                        with open(news_cache_file, 'w') as outfile:
-                            json.dump(post_datas, outfile)
+                if data['id'] in posted_ids:
+                    print(f'*** Site Fetch for GMS: NO NEW POSTS ***')
 
-                        latest_post = post_datas[0]
-                        embed = discord.Embed(
-                            title=latest_post['title'],
-                            url=latest_post['link'],
-                            description=latest_post['description'],
-                            color=discord.Color.teal())
-                        embed.set_image(url=latest_post['photo_url'])
+                else:
+                    db.insert_row([value for value in data.values()], index=2)
 
-                        await self.util.send_message_as_embed(channel=channel, embed=embed)
+                    embed = discord.Embed(
+                        title=data['title'],
+                        url=data['link'],
+                        description=data['description'],
+                        color=discord.Color.teal())
+                    embed.set_image(url=data['photo_url'])
+                    # send the message to channel
+                    await self.util.send_message_as_embed(channel=channel, embed=embed)
+                    print(f'*** Site Fetch for GMS: FETCHED NEWS {data["title"]} ***')
 
-            await asyncio.sleep(30)
-
-    def get_channel(self, id):
-        """Return the given channel Object if in Production,
-        #bot-test channel if in Development
-        """
-        if config.DEBUG is True:
-            # bot-test channel
-            channel = discord.Object(id='454890599410302977')
-        else:
-            # id-given channel
-            channel = discord.Object(id=id)
-        return channel
+            await asyncio.sleep(delay)

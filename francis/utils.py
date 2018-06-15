@@ -1,5 +1,9 @@
 import discord
 from var import *
+from config import DEBUG, BASE_DIR
+
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 class Utility:
@@ -86,3 +90,35 @@ class Utility:
 
         else:
             return None
+
+    def get_channel(self, id):
+        """Return the given channel Object if in Production,
+        # bot-test channel if in Development
+        """
+        if DEBUG is True:
+            # bot-test channel
+            channel = discord.Object(id='454890599410302977')
+        else:
+            # id-given channel
+            channel = discord.Object(id=id)
+        return channel
+
+    def initialize_db(self, key=None):
+        """Initialize and return the DB
+        (optional) key: the key of google spreadsheet. Defaults to Francis DB's key
+        """
+        if key is None:
+            # Francis DB
+            key = '1hpF3TVCHIMXXXdeVtHdPgQOCOq1NfqYp71uJ4suQViI'
+
+        # Google Drive API related stuff
+        scope = ['https://spreadsheets.google.com/feeds',
+                 'https://www.googleapis.com/auth/drive']
+        secret_dir = BASE_DIR + '\\secret_key.json'
+
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(secret_dir, scope)
+        client = gspread.authorize(credentials)
+
+        db = client.open_by_key(key)
+
+        return db
