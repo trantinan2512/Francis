@@ -42,7 +42,7 @@ class WebSpider:
 
         while not self.bot.is_closed:
 
-            content = self.get_content_by_url('http://maplestory.nexon.net/news/all/14')
+            content = self.get_content_by_url('http://maplestory.nexon.net/news/')
 
             if content is not None:
                 html = BeautifulSoup(content, 'html.parser')
