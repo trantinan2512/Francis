@@ -1,6 +1,7 @@
 import discord
+import json
 from var import *
-from config import DEBUG, BASE_DIR
+from config import DEBUG, GAPI_AUTH_DICT, BASE_DIR
 
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -112,11 +113,10 @@ class Utility:
             key = '1hpF3TVCHIMXXXdeVtHdPgQOCOq1NfqYp71uJ4suQViI'
 
         # Google Drive API related stuff
-        scope = ['https://spreadsheets.google.com/feeds',
-                 'https://www.googleapis.com/auth/drive']
-        secret_dir = BASE_DIR + '\\secret_key.json'
+        scopes = ['https://spreadsheets.google.com/feeds',
+                  'https://www.googleapis.com/auth/drive']
 
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(secret_dir, scope)
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(GAPI_AUTH_DICT, scopes)
         client = gspread.authorize(credentials)
 
         db = client.open_by_key(key)
