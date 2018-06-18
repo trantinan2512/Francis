@@ -140,9 +140,9 @@ async def on_message(message):
             await bot.delete_message(message)
 
         # proc event
-        elif message.channel == match_word_channel and message.content.startswith('>'):
+        # elif message.channel == match_word_channel and message.content.startswith('>'):
 
-            await match_word_event(message, match_word_channel)
+        #     await match_word_event(message, match_word_channel)
 
         else:
             await bot.process_commands(message)
