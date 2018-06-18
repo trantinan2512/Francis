@@ -116,7 +116,7 @@ class WebSpider:
                             print(f'*** Site Fetch for GMS: FETCHED NEWS {data["title"]} ***')
 
                     else:
-                        
+
                         embed = discord.Embed(
                             title=data['title'],
                             url=data['link'],
@@ -147,7 +147,6 @@ class WebSpider:
             if duration_search is not None:
                 sc_duration = float(duration_search.group(1))
 
-        
         strongs = html.select('.article-content p span strong')
         # get the string that contains UTC -7 related stuff
         utc_re = re.compile('\s*\(UTC\s*-*–*\s*7\)\s*', re.IGNORECASE)
@@ -205,6 +204,3 @@ class WebSpider:
                         sc_duration_str = str(sc_duration_int)
 
                     return f'Bảo trì ngày {day}', f'```Thời gian: {sc_duration_str} tiếng.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
-
-                    
-                    

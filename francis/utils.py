@@ -1,5 +1,7 @@
 import discord
 import json
+from dateparser import parse
+from datetime import datetime
 from var import *
 from config import DEBUG, GAPI_AUTH_DICT, BASE_DIR
 
@@ -92,16 +94,22 @@ class Utility:
         else:
             return None
 
-    def get_channel(self, id):
+    def get_channel(self, server=None, id='454890599410302977'):
         """Return the given channel Object if in Production,
         # bot-test channel if in Development
         """
-        if DEBUG is True:
-            # bot-test channel
-            channel = discord.Object(id='454890599410302977')
+        if server is not None:
+            if DEBUG is True:
+                channel = server.get_channel('454890599410302977')
+            else:
+                channel = server.get_channel(id=id)
         else:
-            # id-given channel
-            channel = discord.Object(id=id)
+            if DEBUG is True:
+                # bot-test channel
+                channel = discord.Object(id='454890599410302977')
+            else:
+                # id-given channel
+                channel = discord.Object(id=id)
         return channel
 
     def initialize_db(self, key=None):
@@ -122,3 +130,17 @@ class Utility:
         db = client.open_by_key(key)
 
         return db
+
+    def check_delay(self, timestamp, delay):
+        """Return True if 'timestamp' has passed an amount of 'delay' or higher, False otherwise.
+        And the time passed in rounded to 0.x
+        - timestamp: 'str' type that can be parsed
+        - delay: 'int' type, in seconds"""
+        try:
+            timestamp = parse(timestamp)
+            now = datetime.now()
+            time_passed = (now - timestamp).total_seconds()
+            return (time_passed > delay), round((delay - time_passed), 1)
+        # parsing timestamp returns None
+        except TypeError:
+            return None, None
