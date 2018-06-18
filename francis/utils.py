@@ -102,7 +102,7 @@ class Utility:
             if DEBUG is True:
                 channel = server.get_channel('454890599410302977')
             else:
-                channel = server.get_channel(id=id)
+                channel = server.get_channel(id)
         else:
             if DEBUG is True:
                 # bot-test channel
