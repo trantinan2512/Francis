@@ -134,7 +134,7 @@ async def on_message(message):
             pass
     else:
         role_request_channel = server.get_channel('453930352365273099')
-        match_word_channel = util.get_channel(server, '458260628876951552')
+        match_word_channel = util.get_channel(server, id='458260628876951552')
 
         if message.channel == role_request_channel and message.content.startswith(bot.command_prefix):
             await bot.delete_message(message)
