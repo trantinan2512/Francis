@@ -9,9 +9,8 @@ from config import MY_ID
 class Requirement:
     """Bộ lệnh xem các tiêu chí set role"""
 
-    def __init__(self, bot, util):
+    def __init__(self, bot):
         self.bot = bot
-        self.util = util
 
     @commands.command(pass_context=True, name='req')
     async def requirement(self, context, category=None):
@@ -49,7 +48,7 @@ class Requirement:
 
             embed.set_image(url='https://i.imgur.com/xTyqmzZ.jpg')
 
-            await self.util.say_as_embed(embed=embed)
+            await self.bot.say_as_embed(embed=embed)
 
         elif category.startswith('lead'):
 
@@ -80,7 +79,7 @@ class Requirement:
                 value=''
                 f'» Không để xảy ra tình trạng "Người người leader, nhà nhà leader".\n')
 
-            await self.util.say_as_embed(embed=embed)
+            await self.bot.say_as_embed(embed=embed)
 
         elif category.startswith('trade'):
 
@@ -112,14 +111,14 @@ class Requirement:
                 f'» Hạn chế tình trạng vào kênh để lừa đảo, spam.\n'
                 f'» Tương tác với Maplers khác sẽ dễ mua bán hơn.\n')
 
-            await self.util.say_as_embed(embed=embed)
+            await self.bot.say_as_embed(embed=embed)
 
         elif category.startswith('creat'):
 
             creator_gms = discord.utils.get(server.roles, name='Content Creator GMS')
             creator_gmsm = discord.utils.get(server.roles, name='Content Creator GMSM')
 
-            ponpon = self.bot.get_user_info(MY_ID)
+            ponpon = await self.bot.get_user_info(MY_ID)
 
             embed = discord.Embed(
                 title=None,
@@ -147,4 +146,8 @@ class Requirement:
                 f'» Những Maplers thực sự muốn góp công xây dựng cộng đồng MapleStory VN lớn mạnh hơn mới dám bỏ thời gian ra '
                 'làm hết những yêu cầu trên.\n')
 
-            await self.util.say_as_embed(embed=embed)
+            await self.bot.say_as_embed(embed=embed)
+
+
+def setup(bot):
+    bot.add_cog(Requirement(bot))

@@ -11,6 +11,7 @@ import discord
 from datetime import datetime
 from pytz import timezone
 
+from utils import db, channel as ch
 # from pprint import pprint
 import config
 
@@ -18,9 +19,8 @@ import config
 class Twitter:
     """A cog for Twitter related tasks"""
 
-    def __init__(self, bot, util):
+    def __init__(self, bot):
         self.bot = bot
-        self.util = util
         self.api = twitter.Api(
             consumer_key=config.TWITTER_CONSUMER_KEY,
             consumer_secret=config.TWITTER_CONSUMER_SECRET,
@@ -28,14 +28,14 @@ class Twitter:
             access_token_secret=config.TWITTER_ACCESS_TOKEN_SECRET,
             tweet_mode='extended')
 
-        self.db = util.initialize_db()
+        self.db = db.initialize_db()
 
     async def fetch_maplem_latest_tweet(self):
 
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = self.util.get_channel(id='455635507561627648')
+        channel = ch.get_channel(id='455635507561627648')
 
         while not self.bot.is_closed:
 
@@ -47,7 +47,7 @@ class Twitter:
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = self.util.get_channel(id='455634325086404608')
+        channel = ch.get_channel(id='455634325086404608')
 
         # keep executing the codes until bot is closed
         while not self.bot.is_closed:
@@ -104,9 +104,8 @@ class Twitter:
 class Facebook:
     """A cog for Facebook related tasks"""
 
-    def __init__(self, bot, util):
+    def __init__(self, bot):
         self.bot = bot
-        self.util = util
 
     async def fb(self):
 
@@ -161,7 +160,7 @@ class Facebook:
                         if pic_url is not None:
                             embed.set_image(url=post_pic['full_picture'])
 
-                        await self.util.send_message_as_embed(channel, embed=embed)
+                        await self.bot.send_message_as_embed(channel, embed=embed)
 
                 else:
                     data = {'Maple': {'ids': [latest_post['id'], ]}}
@@ -175,6 +174,6 @@ class Facebook:
                     if pic_url is not None:
                         embed.set_image(url=post_pic['full_picture'])
 
-                    await self.util.send_message_as_embed(channel, embed=embed)
+                    await self.bot.send_message_as_embed(channel, embed=embed)
 
             await asyncio.sleep(40)

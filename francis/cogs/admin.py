@@ -1,5 +1,5 @@
 from pprint import pprint
-
+import json
 import asyncio
 import operator
 import os
@@ -7,18 +7,15 @@ import os
 import discord
 from discord.ext import commands
 
+from utils.db import initialize_db
 import config
-
-# francis/cogs/here -> francis/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Admin:
     """A cog for Admin-only commands"""
 
-    def __init__(self, bot, util):
+    def __init__(self, bot):
         self.bot = bot
-        self.util = util
 
     def is_me(ctx):
         return ctx.message.author.id == config.MY_ID
@@ -127,9 +124,68 @@ class Admin:
                 value=f'Số tin nhắn: `{item[1]}`')
 
         await self.bot.delete_message(note)
-        await self.util.say_as_embed(embed=embed)
+        await self.bot.say_as_embed(embed=embed)
 
     @commands.command(pass_context=True, name='playing')
     @commands.check(is_me)
     async def change_bot_presence(self, context, presence: str):
         await self.bot.change_presence(game=discord.Game(name=presence))
+
+    @commands.command(pass_context=True, name='wmr')
+    @commands.check(is_me)
+    async def word_match_event_result(self, context, round: str):
+        db = initialize_db()
+        event_db = db.worksheet('match_word_event')
+        words = event_db.col_values(3).remove('Word')
+        ids = event_db.col_values(1).remove('UID')
+
+        if ids:
+            distinct_ids = list(set(ids))
+            result = {}
+            counter = 0
+            with open(config.BASE_DIR + '\\oz\\words_dictionary.json') as infile:
+                data = json.load(infile)
+                for did in distinct_ids:
+                    result[did] = 0
+                    for id, word in zip(ids, words):
+                        if did == id and word.lower() in data:
+                            result[did] += 1
+                            counter += 1
+
+            server = context.message.server
+
+            sorted_data = sorted(result.items(), key=operator.itemgetter(1), reverse=True)
+
+            embed = discord.Embed(
+                title=f'Kết quả event Word Match đợt {round}',
+                description=f'Tổng số tin nhắn hợp lệ: `{counter}/{len(words)}`',
+                color=discord.Color.teal())
+
+            for index, item in enumerate(sorted_data, start=1):
+                if index == 1:
+                    rank_indicator = ':first_place:'
+                elif index == 2:
+                    rank_indicator = ':second_place:'
+                elif index == 3:
+                    rank_indicator = ':third_place:'
+                elif index in [4, 5]:
+                    rank_indicator = ':ribbon:'
+                else:
+                    rank_indicator = ''
+
+                member = server.get_member(item[0])
+                if member.nick:
+                    name = member.nick
+                else:
+                    name = member.name
+                embed.add_field(
+                    name=f'{name} {rank_indicator}',
+                    value=f'Số tin nhắn hợp lệ: `{item[1]}`')
+
+            await self.bot.say_as_embed(embed=embed)
+        else:
+            await self.bot.say('Không có dữ liệu.')
+
+
+def setup(bot):
+    bot.add_cog(Admin(bot))

@@ -9,15 +9,14 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from dateparser import parse
 import discord
-
+from utils import db, channel as ch
 import config
 
 
 class WebSpider:
-    def __init__(self, bot, util):
+    def __init__(self, bot):
         self.bot = bot
-        self.util = util
-        self.db = util.initialize_db()
+        self.db = db.initialize_db()
 
     def get_content_by_url(self, url):
 
@@ -37,7 +36,7 @@ class WebSpider:
             delay = 60
 
         # cập-nhật-mới-gms channel
-        channel = self.util.get_channel(id='453565620915535872')
+        channel = ch.get_channel(id='453565620915535872')
         sc_data = None
 
         while not self.bot.is_closed:
@@ -110,7 +109,7 @@ class WebSpider:
                                 color=discord.Color.teal())
                             embed.set_image(url=data['img'])
                             # send the message to channel
-                            await self.util.send_message_as_embed(channel=channel, embed=embed)
+                            await self.bot.send_message_as_embed(channel=channel, embed=embed)
                             # save to drive and print the result title
                             db.insert_row([value for value in data.values()], index=2)
                             print(f'*** Site Fetch for GMS: FETCHED NEWS {data["title"]} ***')
@@ -124,7 +123,7 @@ class WebSpider:
                             color=discord.Color.teal())
                         embed.set_image(url=data['img'])
                         # send the message to channel
-                        await self.util.send_message_as_embed(channel=channel, embed=embed)
+                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
                         # save to drive and print the result title
                         db.insert_row([value for value in data.values()], index=2)
                         print(f'*** Site Fetch for GMS: FETCHED NEWS {data["title"]} ***')

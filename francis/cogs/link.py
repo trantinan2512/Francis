@@ -5,9 +5,8 @@ import discord
 class Link:
     """A cog for Link management commands"""
 
-    def __init__(self, bot, util):
+    def __init__(self, bot):
         self.bot = bot
-        self.util = util
 
     @commands.command(pass_context=True)
     async def link(self, context, game=None):
@@ -28,7 +27,7 @@ class Link:
                 f'Ví dụ: `{prefix}link gms`',
                 color=discord.Color.red())
 
-            await self.util.say_as_embed(embed=embed)
+            await self.bot.say_as_embed(embed=embed)
 
         elif game == 'gms':
 
@@ -48,12 +47,17 @@ class Link:
                 '[Hướng dẫn game](https://zblackwing.com/) -> Menu **Hướng dẫn Game**\n'
                 '[Update Notes Việt hóa](https://zblackwing.com/)\n.')
             embed.add_field(
+                name='Các trang chính thức',
+                value=f'[Trang chủ GMS](http://maplestory.nexon.net/)\n'
+                '[Forum GMS](http://forums.maplestory.nexon.net/)\n'
+                '[Discord GMS](https://discord.gg/maplestory)\n.')
+            embed.add_field(
                 name='Các link hữu ích khác',
                 value=f'[Tình trạng server](http://www.southperry.net/stat.php)\n'
                 '[Mô phỏng hệ thống Cube](https://stripedypaper.github.io/cube/)\n'
                 '[Orange Mushroom Blog - Update Notes KMS Anh hóa](https://orangemushroom.net/)')
 
-            await self.util.say_as_embed(embed=embed)
+            await self.bot.say_as_embed(embed=embed)
 
         elif game == 'gmsm':
 
@@ -69,9 +73,20 @@ class Link:
 
             embed.add_field(
                 name='Các link hướng dẫn',
-                value=f'*Đang cập nhật*\n.')
+                value='[Hướng dẫn về Forge](https://zblackwing.com/gmsm-thong-forge/)\n'
+                '[Star Force và Star Force Field](https://zblackwing.com/gmsm-star-force-va-star-force-field/)\n.')
+            embed.add_field(
+                name='Các trang chính thức',
+                value=f'[Trang chủ GMSM](http://maplestorym.nexon.com)\n'
+                '[Wiki GMSM](http://maplestory.nexon.net/)\n'
+                '[GMSM Board](https://m.nexon.com/forum/298-MapleStory-M)\n'
+                '[Discord GMSM](https://discord.gg/playmaplem)\n.')
             embed.add_field(
                 name='Các link hữu ích khác',
                 value=f'[Các câu hỏi xoay quanh Official Launch](https://www.facebook.com/zblackwing/posts/2055933801331800)\n')
 
-            await self.util.say_as_embed(embed=embed)
+            await self.bot.say_as_embed(embed=embed)
+
+
+def setup(bot):
+    bot.add_cog(Link(bot))
