@@ -1,2 +1,2 @@
-worker: python3 run.py francis
-web: python3 run.py oz
+worker: python3 run.py oz
+web: python3 run.py francis
