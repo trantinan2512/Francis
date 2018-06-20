@@ -136,8 +136,12 @@ class Admin:
     async def word_match_event_result(self, context, round: str):
         db = initialize_db()
         event_db = db.worksheet('match_word_event')
-        words = event_db.col_values(3).remove('Word')
-        ids = event_db.col_values(1).remove('UID')
+
+        words = event_db.col_values(3)
+        words.remove('Word')
+
+        ids = event_db.col_values(1)
+        ids.remove('UID')
 
         if ids:
             distinct_ids = list(set(ids))

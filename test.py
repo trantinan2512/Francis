@@ -6,8 +6,9 @@ import dateparser
 from pytz import timezone
 from datetime import timedelta, datetime
 from config import BASE_DIR
-from utils import Utility
+
 from pprint import pprint
+
 
 def get_content_by_url(url):
 
@@ -20,27 +21,26 @@ def get_content_by_url(url):
 
 
 def test_func():
-    util = Utility('abc')
-    db = util.initialize_db()
-    event_db = db.worksheet('match_word_event')
-    words = event_db.col_values(3)
-    ids = event_db.col_values(1)
-    counter = 0
-    invalids = []
-    distinct_ids = list(set(ids))
-    result = {}
-    with open(BASE_DIR + '\\words_dictionary.json') as infile:
-        data = json.load(infile)
-        for did in distinct_ids:
-            result[did] = 0
-            for id, word in zip(ids, words):
-                if did == id and word.lower() in data:
-                    result[did] += 1
-
-        pprint(result)
-        # print(f'Number of Invalid words: {counter}/{len(words)}')
-        # print(f'Invalid words: {invalids}')
-        # print(len(list(set(ids))))
+    with open(BASE_DIR + '/oz/wm_message_check.json', 'w') as outfile:
+        new_data = {}
+        now = datetime.now()
+        latest_message = {
+            'latest_message': {
+                'uid': 'message.author.id',
+                'word': '123123',
+                'ts': str(now)
+            }
+        }
+        latest_ma = {
+            'latest_messaasd': {
+                'uid': 'message.author.id',
+                'word': '123123',
+                'ts': str(now)
+            }
+        }
+        new_data.update(latest_message)
+        new_data.update(latest_ma)
+        json.dump(new_data, outfile)
 
 
 def test_web_crawl():

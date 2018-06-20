@@ -1,6 +1,7 @@
 # import discord
 # import asyncio
 import json
+import discord
 from discord.ext import commands
 from discord.errors import HTTPException
 from utils import db, channel as ch
@@ -25,9 +26,10 @@ async def on_ready():
     print('------')
     print(f'Logged in as: {oz.user.name} (ID: {oz.user.id})')
     print('------')
+    if not config.DEBUG:
+        await oz.change_presence(game=discord.Game(name=f'Quản trò #match_word'))
 
-
-valid_words = json.load(open(config.BASE_DIR + '\\oz\\words_dictionary.json'))
+valid_words = json.load(open(config.BASE_DIR + '/oz/words_dictionary.json'))
 dbe = db.initialize_db()
 event_db = dbe.worksheet('match_word_event')
 
