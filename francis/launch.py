@@ -95,8 +95,9 @@ async def on_message(message):
             await francis.process_commands(message)
 
 francis.loop.create_task(webspiders.WebSpider(francis).parse())
-francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
 francis.loop.create_task(tasks.Twitter(francis).fetch_maple_latest_tweet())
+francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
+
 
 
 # if config.DEBUG:

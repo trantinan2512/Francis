@@ -6,7 +6,8 @@ import dateparser
 from pytz import timezone
 from datetime import timedelta, datetime
 from config import BASE_DIR
-
+import config
+import tweepy
 from pprint import pprint
 
 
@@ -20,27 +21,35 @@ def get_content_by_url(url):
         return None
 
 
+def testing(arg1, *args):
+    print(arg1)
+    print(args[0])
+
+
 def test_func():
-    with open(BASE_DIR + '/oz/wm_message_check.json', 'w') as outfile:
-        new_data = {}
-        now = datetime.now()
-        latest_message = {
-            'latest_message': {
-                'uid': 'message.author.id',
-                'word': '123123',
-                'ts': str(now)
-            }
-        }
-        latest_ma = {
-            'latest_messaasd': {
-                'uid': 'message.author.id',
-                'word': '123123',
-                'ts': str(now)
-            }
-        }
-        new_data.update(latest_message)
-        new_data.update(latest_ma)
-        json.dump(new_data, outfile)
+
+    auth = tweepy.OAuthHandler(config.TWITTER_CONSUMER_KEY, config.TWITTER_CONSUMER_SECRET)
+    auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
+
+    api = tweepy.API(auth, wait_on_rate_limit=True)
+
+    maplem_id = 816396540017152000
+    maple_id = 34667202
+
+    public_tweets = api.user_timeline(maplem_id, count=40)
+    print(dir(public_tweets[0]))
+    for tweet in public_tweets:
+        # print(tweet.in_reply_to_user_id == maplem_id)
+        if not tweet.text.startswith('RT @') and not tweet.in_reply_to_user_id:
+            print(tweet.text)
+            print(tweet.in_reply_to_user_id)
+            print(tweet.user.screen_name)
+            print('------')
+        elif tweet.in_reply_to_user_id == maplem_id:
+            print(tweet.text)
+            print(tweet.in_reply_to_user_id)
+            print(tweet.user.screen_name)
+            print('------')
 
 
 def test_web_crawl():

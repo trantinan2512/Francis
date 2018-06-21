@@ -4,7 +4,7 @@ import json
 # import requests
 from gspread.exceptions import APIError
 import facebook
-import twitter
+import tweepy
 import discord
 # from discord.ext import commands
 
@@ -21,12 +21,10 @@ class Twitter:
 
     def __init__(self, bot):
         self.bot = bot
-        self.api = twitter.Api(
-            consumer_key=config.TWITTER_CONSUMER_KEY,
-            consumer_secret=config.TWITTER_CONSUMER_SECRET,
-            access_token_key=config.TWITTER_ACCESS_TOKEN,
-            access_token_secret=config.TWITTER_ACCESS_TOKEN_SECRET,
-            tweet_mode='extended')
+        auth = tweepy.OAuthHandler(config.TWITTER_CONSUMER_KEY, config.TWITTER_CONSUMER_SECRET)
+        auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
+
+        self.api = tweepy.API(auth, wait_on_rate_limit=True)
 
         self.db = db.initialize_db()
 
@@ -62,42 +60,65 @@ class Twitter:
             delay = 10
 
         # fetch the user_id twitter info
-        latest_status = api.GetUserTimeline(user_id=user_id, include_rts=False, exclude_replies=True)[0]
+        tweet_count = 5
+        latest_tweets = api.user_timeline(user_id, count=tweet_count)
+        read_db = True
+        print(f'Scanning {tweet_count} tweets from USER_ID: {user_id} ...')
+        for tweet in latest_tweets:
 
-        # build the URL and save u_id and status_id for later use
-        u_screen_name = latest_status.user.screen_name
-        u_id = latest_status.user.id_str
-        status_id = latest_status.id_str
-        status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
+            # build these things for later use
+            u_screen_name = tweet.user.screen_name
+            u_id = tweet.user.id_str
+            status_id = tweet.id_str
 
-        try:
-            # get twitter_gmsm db
-            if u_id == '816396540017152000':
-                db = self.db.worksheet('twitter_gmsm')
-            # get twitter_gms db
-            elif u_id == '34667202':
-                db = self.db.worksheet('twitter_gms')
-        except APIError:
-            print('API ERROR')
-            quit()
+            # not retweet, not reply
+            if not tweet.text.startswith('RT @') and not tweet.in_reply_to_user_id:
+                proceed = True
+            # reply to self
+            elif user_id == tweet.in_reply_to_user_id:
+                proceed = True
+            else:
+                proceed = False
 
-        posted_ids = db.col_values(1)
+            if proceed is True:
+                # build the URL and save u_id and status_id for later use
+                status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
 
-        if status_id in posted_ids:
-            print(f'*** Twitter Fetch for {u_screen_name}: NO NEW POSTS ***')
+                if read_db is True:
+                    try:
+                        # get twitter_gmsm db
+                        if u_id == '816396540017152000':
+                            db = self.db.worksheet('twitter_gmsm')
+                        # get twitter_gms db
+                        elif u_id == '34667202':
+                            db = self.db.worksheet('twitter_gms')
+                    except APIError:
+                        print('API ERROR')
+                        quit()
 
-        else:
-            now = datetime.now()
-            vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
-            timestamp_date = vn_tz.strftime('%d/%m/%Y')
-            timestamp_time = vn_tz.strftime('%H:%M:%S')
+                    posted_ids = db.col_values(1)
+                    print('Database read')
 
-            db.insert_row([status_id, timestamp_date, timestamp_time], index=2)
+                if status_id in posted_ids:
+                    read_db = False
+                    print(f'Twitter Fetch: [{u_screen_name}] [Already posted]')
 
-            # send the message to channel
-            await self.bot.send_message(channel, status_url)
-            print(f'*** Twitter Fetch for {u_screen_name}: FETCHED STATUS {status_url} ***')
+                else:
+                    read_db = True
+                    now = datetime.now()
+                    vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+                    timestamp_date = vn_tz.strftime('%d/%m/%Y')
+                    timestamp_time = vn_tz.strftime('%H:%M:%S')
 
+                    db.insert_row([status_id, timestamp_date, timestamp_time], index=2)
+
+                    # send the message to channel
+                    await self.bot.send_message(channel, status_url)
+                    print(f'Twitter Fetch: [{u_screen_name}] [Fetched: {status_url}]')
+            else:
+
+                print(f'Twitter Fetch: [{u_screen_name}] [NOT a tweet or self reply]')
+        print('Scan finished.')
         await asyncio.sleep(delay)
 
 

@@ -76,13 +76,16 @@ class WebSpider:
                 posted_ids = db.col_values(1)
 
                 if data['id'] in posted_ids:
-                    print(f'*** Site Fetch for GMS: NO NEW POSTS ***')
+                    print(f'Site Fetch: [GMS] [Already posted]')
 
                 else:
 
-                    # check if post is a maintenance post
+                    # regex to check if post is a maintenance post
                     sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
+
+                    # search to get type of the maintenance
                     sc_search = sc_title_re.search(data['title'])
+
                     if sc_search is not None:
                         sc_catg = sc_search.group(1)
                         sc_type = sc_search.group(3)
@@ -99,7 +102,7 @@ class WebSpider:
                             sc_type = 'Bảo trì'
 
                         # send message as a maintenance post
-                        sc_data = self.maintenance_post(data['link'])
+                        sc_data = self.maintenance_post(data['link'], data['title'])
 
                         if sc_data is not None:
                             embed = discord.Embed(
@@ -114,6 +117,7 @@ class WebSpider:
                             db.insert_row([value for value in data.values()], index=2)
                             print(f'*** Site Fetch for GMS: FETCHED NEWS {data["title"]} ***')
 
+                    # the post is not a server maintenance post
                     else:
 
                         embed = discord.Embed(
@@ -130,7 +134,7 @@ class WebSpider:
 
             await asyncio.sleep(delay)
 
-    def maintenance_post(self, url):
+    def maintenance_post(self, url, *args):
 
         sc_post_content = self.get_content_by_url(url)
 
@@ -147,12 +151,16 @@ class WebSpider:
                 sc_duration = float(duration_search.group(1))
 
         strongs = html.select('.article-content p span strong')
-        # get the string that contains UTC -7 related stuff
+        # regex to get the string that contains UTC -7 related stuff
         utc_re = re.compile('\s*\(UTC\s*-*–*\s*7\)\s*', re.IGNORECASE)
-        # get the string that contains either pst or pdt
+        # regex to get the string that contains either pst or pdt
         tz_re = re.compile('p(d|s)t', re.IGNORECASE)
-        # get the string that contains ':' with space(s)
+        # regex to get the TBD string in 'finish' duration
+        tbd_re = re.compile('tbd', re.IGNORECASE)
+        # regex to get the string that contains ':' with space(s)
         dt_split = re.compile('\:\s+')
+        # regex to get the server name in maintenance post title
+        server_re = re.compile('(luna|grazed|mybckn|khroa|windia|scania|bera|reboot)', re.IGNORECASE)
 
         for strong in strongs:
             # ignore in case the time display splitted by '/'
@@ -167,39 +175,103 @@ class WebSpider:
                 # split duration to get start and finish
                 start, finish = re.split('\s-|–\s*', duration)
 
+                # search the server name
+                server_search = server_re.search(args[0])
+
+                # just parse the datetime_from as it present no matter what
                 datetime_from = parse(
                     f'{date} {start}',
                     settings={
                         'TIMEZONE': 'America/Los_Angeles',
                         'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
                     })
-                datetime_to = parse(
-                    f'{date} {finish}',
-                    settings={
-                        'TIMEZONE': 'America/Los_Angeles',
-                        'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
-                    })
 
-                if sc_duration is not None:
-                    sc_duration_s = sc_duration * 60 * 60  # in seconds
-                    duration = (datetime_to - datetime_from).total_seconds()
-                    if sc_duration_s == duration:
-                        # just pass, nothing to do here
-                        print('SAME DURATION')
+                # if finish NOT present:
+                if tbd_re.search(finish):
+                    datetime_to = None
+                    
+                # finish time NOT present
+                else:
+                    datetime_to = parse(
+                        f'{date} {finish}',
+                        settings={
+                            'TIMEZONE': 'America/Los_Angeles',
+                            'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
+                        })
+                    
+
+                # server name present
+                if server_search:
+                    server_name = server_search.group(1)
+
+                # server name NOT present
+                else:
+                    server_name = None
+
+
+                # get the string readable of datetime_to as it's present
+                if datetime_to is not None:
+                    # manage duration as NX staff fucks it up
+                    # returns None if no duration specified
+                    if sc_duration is not None:
+                        sc_duration_s = sc_duration * 60 * 60  # in seconds
+                        duration = (datetime_to - datetime_from).total_seconds()
+                        if sc_duration_s == duration:
+                            # just pass, nothing to do here
+                            print('SAME DURATION')
+                        else:
+                            # trust datetime_from, and go with sc_duration_s
+                            datetime_to = datetime_from + timedelta(seconds=sc_duration_s)
+                            print('DURATION NOT THE SAME. NX STAFF FUCKED UP.')
+
+                        # eliminate the remainder of the duration if it's equal to 0
+                        sc_duration_int = int(sc_duration)
+                        if (sc_duration - sc_duration_int) != 0:
+                            sc_duration_str = str(sc_duration)
+                        else:
+                            sc_duration_str = str(sc_duration_int)
                     else:
-                        # trust datetime_from, and go with sc_duration_s
-                        datetime_to = datetime_from + timedelta(seconds=sc_duration_s)
-                        print('DURATION NOT THE SAME')
+                        sc_duration_str = None
 
-                    frm = datetime_from.strftime('%I:%M %p %d/%m/%Y')
                     to = datetime_to.strftime('%I:%M %p %d/%m/%Y')
-                    day = datetime_from.strftime('%d/%m/%Y')
 
-                    # eliminate the remainder if it's equal to 0
-                    sc_duration_int = int(sc_duration)
-                    if (sc_duration - sc_duration_int) != 0:
-                        sc_duration_str = str(sc_duration)
+                # oh of course these things exist all the time
+                frm = datetime_from.strftime('%I:%M %p %d/%m/%Y')
+                day = datetime_from.strftime('%d/%m/%Y')
+
+                # gather things up and return title and message to the main function
+                if datetime_to:
+                    if sc_duration_str:
+                        if server_name:
+                            return (
+                                f'Bảo trì World {server_name} ngày {day}',
+                                f'```Thời gian: {sc_duration_str} tiếng.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+                            )
+                        else:
+                            return (
+                                f'Bảo trì ngày {day}',
+                                f'```Thời gian: {sc_duration_str} tiếng.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+                            )
                     else:
-                        sc_duration_str = str(sc_duration_int)
+                        if server_name:
+                            return (
+                                f'Bảo trì World {server_name} ngày {day}',
+                                f'Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+                            )
+                        else:
+                            return (
+                                f'Bảo trì ngày {day}',
+                                f'Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+                            )
 
-                    return f'Bảo trì ngày {day}', f'```Thời gian: {sc_duration_str} tiếng.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+                else:
+                    if server_name:
+                        return (
+                            f'Bảo trì World {server_name} ngày {day}',
+                            f'```Thời gian hoàn tất: không xác định.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: không xác định```'
+                        )
+                    else:
+                        return (
+                            f'Bảo trì ngày {day}',
+                            f'```Thời gian hoàn tất: không xác định.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: không xác định```'
+                        )
