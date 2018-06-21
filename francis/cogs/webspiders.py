@@ -189,7 +189,7 @@ class WebSpider:
                 # if finish NOT present:
                 if tbd_re.search(finish):
                     datetime_to = None
-                    
+
                 # finish time NOT present
                 else:
                     datetime_to = parse(
@@ -198,7 +198,6 @@ class WebSpider:
                             'TIMEZONE': 'America/Los_Angeles',
                             'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
                         })
-                    
 
                 # server name present
                 if server_search:
@@ -207,7 +206,6 @@ class WebSpider:
                 # server name NOT present
                 else:
                     server_name = None
-
 
                 # get the string readable of datetime_to as it's present
                 if datetime_to is not None:
@@ -256,12 +254,12 @@ class WebSpider:
                         if server_name:
                             return (
                                 f'Bảo trì World {server_name} ngày {day}',
-                                f'Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+                                f'```Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
                             )
                         else:
                             return (
                                 f'Bảo trì ngày {day}',
-                                f'Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+                                f'```Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
                             )
 
                 else:
