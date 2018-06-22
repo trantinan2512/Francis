@@ -118,7 +118,7 @@ class Twitter:
             else:
 
                 print(f'Twitter Fetch: [{u_screen_name}] [NOT a tweet or self reply]')
-        print('Scan finished.')
+        print('Tweets scan finished.')
         await asyncio.sleep(delay)
 
 

@@ -27,29 +27,15 @@ def testing(arg1, *args):
 
 
 def test_func():
+    content = get_content_by_url('http://maplestory.nexon.net/news/')
 
-    auth = tweepy.OAuthHandler(config.TWITTER_CONSUMER_KEY, config.TWITTER_CONSUMER_SECRET)
-    auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
+    html = BeautifulSoup(content, 'html.parser')
 
-    api = tweepy.API(auth, wait_on_rate_limit=True)
+    news_items = html.select('.news-container .news-item .text')
 
-    maplem_id = 816396540017152000
-    maple_id = 34667202
+    for i in news_items:
+        print(i.p.get_text())
 
-    public_tweets = api.user_timeline(maplem_id, count=40)
-    print(dir(public_tweets[0]))
-    for tweet in public_tweets:
-        # print(tweet.in_reply_to_user_id == maplem_id)
-        if not tweet.text.startswith('RT @') and not tweet.in_reply_to_user_id:
-            print(tweet.text)
-            print(tweet.in_reply_to_user_id)
-            print(tweet.user.screen_name)
-            print('------')
-        elif tweet.in_reply_to_user_id == maplem_id:
-            print(tweet.text)
-            print(tweet.in_reply_to_user_id)
-            print(tweet.user.screen_name)
-            print('------')
 
 
 def test_web_crawl():

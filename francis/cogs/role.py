@@ -181,7 +181,8 @@ class Role:
 
         embed = discord.Embed(
             title='Danh sách Role có thể tự thêm/xóa',
-            description=None,
+            description=f'Dùng lệnh `{self.bot.command_prefix}role tên_role` để thêm role.\n'
+            f'Dùng lệnh `{self.bot.command_prefix}rrole tên_role` để xóa role.',
             colour=discord.Color.teal())
 
         ch_roles = []

@@ -46,92 +46,123 @@ class WebSpider:
             if content is not None:
                 html = BeautifulSoup(content, 'html.parser')
 
-                link = html.select_one('.news-container .news-item .text h3 a')
-                desc = html.select_one('.news-container .news-item .text p')
-                photo = html.select_one('.news-container .news-item .photo')
+                links = html.select('.news-container .news-item .text h3 a')
+                news_texts = html.select('.news-container .news-item .text')
+                descs = []
+                for text in news_texts:
+                    descs.append(text.p)
+                photos = html.select('.news-container .news-item .photo')
 
+                # regex for finding the news ID
                 news_id_re = re.compile('/news/(\d+)/')
-                news_search = news_id_re.search(link['href'])
+                # regex to check if post is a maintenance post
+                sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
+                # regex to check if the post is an updated post
+                updated_re = re.compile('\[(update|updated|complete|completed).*', re.IGNORECASE)
 
-                now = datetime.now()
-                vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+                read_db = True
 
-                data = {
-                    'id': news_search.group(1),
-                    'timestamp_date': vn_tz.strftime('%d/%m/%Y'),
-                    'timestamp_time': vn_tz.strftime('%H:%M:%S'),
-                    'title': link.get_text(),
-                    'link': f'http://maplestory.nexon.net{link["href"]}',
-                    'desc': desc.get_text(),
-                    'img': photo['style'].lstrip('background-image:url(').rstrip(')')
-                }
+                print('Scanning GMS site for news...')
+                for link, desc, photo in zip(links, descs, photos):
 
-                try:
-                    db = self.db.worksheet('site_gms')
+                    news_search = news_id_re.search(link['href'])
 
-                except APIError:
-                    print('API ERROR')
-                    quit()
+                    now = datetime.now()
+                    vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
 
-                posted_ids = db.col_values(1)
+                    data = {
+                        'id': news_search.group(1),
+                        'timestamp_date': vn_tz.strftime('%d/%m/%Y'),
+                        'timestamp_time': vn_tz.strftime('%H:%M:%S'),
+                        'title': link.get_text(),
+                        'link': f'http://maplestory.nexon.net{link["href"]}',
+                        'desc': desc.get_text(),
+                        'img': photo['style'].lstrip('background-image:url(').rstrip(')')
+                    }
 
-                if data['id'] in posted_ids:
-                    print(f'Site Fetch: [GMS] [Already posted]')
+                    if read_db is True:
+                        print('Database read...')
+                        try:
+                            db = self.db.worksheet('site_gms')
 
-                else:
+                        except APIError:
+                            print('API ERROR')
+                            quit()
 
-                    # regex to check if post is a maintenance post
-                    sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
+                        posted_ids = db.col_values(1)
+                        posted_titles = db.col_values(4)
 
-                    # search to get type of the maintenance
-                    sc_search = sc_title_re.search(data['title'])
+                    if data['id'] in posted_ids and data['title'] in posted_titles:
 
-                    if sc_search is not None:
-                        sc_catg = sc_search.group(1)
-                        sc_type = sc_search.group(3)
+                        print(f'Site Fetch: [GMS] [Already posted]')
+                        read_db = False
 
-                        if sc_catg == 'Scheduled' and sc_type == 'Maintenance':
-                            sc_type = 'Định kỳ'
-                        elif sc_catg == 'Unscheduled' and sc_type == 'Maintenance':
-                            sc_type = 'Đột xuất'
-                        elif sc_type == 'Patch':
-                            sc_type = 'Patch Game'
-                        elif sc_type == 'Update':
-                            sc_type = 'Update mới'
+                    else:
+
+                        read_db = True
+
+                        updated_search = updated_re.search(data['title'])
+
+                        if updated_search is not None:
+
+                            updated_type = updated_search.group(1).lower()
+
+                            if updated_type.startswith('complete'):
+                                updated_type = '[Hoàn tất] '
+                            else:
+                                updated_type = '[Update] '
                         else:
-                            sc_type = 'Bảo trì'
+                            updated_type = None
 
-                        # send message as a maintenance post
-                        sc_data = self.maintenance_post(data['link'], data['title'])
+                        # search to get type of the maintenance
+                        sc_search = sc_title_re.search(data['title'])
 
-                        if sc_data is not None:
+                        if sc_search is not None:
+                            sc_catg = sc_search.group(1).lower()
+                            sc_type = sc_search.group(3).lower()
+
+                            if sc_catg == 'scheduled' and sc_type == 'maintenance':
+                                sc_type = 'Định kỳ'
+                            elif sc_catg == 'unscheduled' and sc_type == 'maintenance':
+                                sc_type = 'Đột xuất'
+                            elif sc_type == 'patch':
+                                sc_type = 'Patch Game'
+                            elif sc_type == 'update':
+                                sc_type = 'Update mới'
+                            else:
+                                sc_type = 'Bảo trì'
+
+                            # send message as a maintenance post
+                            sc_data = self.maintenance_post(data['link'], data['title'])
+
+                            if sc_data is not None:
+                                embed = discord.Embed(
+                                    title=f'{updated_type}{sc_type} - {sc_data[0]}',
+                                    url=data['link'],
+                                    description=sc_data[1],
+                                    color=discord.Color.teal())
+                                embed.set_image(url=data['img'])
+                                # send the message to channel
+                                await self.bot.send_message_as_embed(channel=channel, embed=embed)
+                                # save to drive and print the result title
+                                db.insert_row([value for value in data.values()], index=2)
+                                print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
+
+                        # the post is not a server maintenance post
+                        else:
+
                             embed = discord.Embed(
-                                title=f'[{sc_type}] {sc_data[0]}',
+                                title=data['title'],
                                 url=data['link'],
-                                description=sc_data[1],
+                                description=data['desc'],
                                 color=discord.Color.teal())
                             embed.set_image(url=data['img'])
                             # send the message to channel
                             await self.bot.send_message_as_embed(channel=channel, embed=embed)
                             # save to drive and print the result title
                             db.insert_row([value for value in data.values()], index=2)
-                            print(f'*** Site Fetch for GMS: FETCHED NEWS {data["title"]} ***')
-
-                    # the post is not a server maintenance post
-                    else:
-
-                        embed = discord.Embed(
-                            title=data['title'],
-                            url=data['link'],
-                            description=data['desc'],
-                            color=discord.Color.teal())
-                        embed.set_image(url=data['img'])
-                        # send the message to channel
-                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
-                        # save to drive and print the result title
-                        db.insert_row([value for value in data.values()], index=2)
-                        print(f'*** Site Fetch for GMS: FETCHED NEWS {data["title"]} ***')
-
+                            print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
+                print('GMS site scan finished.')
             await asyncio.sleep(delay)
 
     def maintenance_post(self, url, *args):
