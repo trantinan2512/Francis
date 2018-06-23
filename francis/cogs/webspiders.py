@@ -91,8 +91,9 @@ class WebSpider:
 
                         posted_ids = db.col_values(1)
                         posted_titles = db.col_values(4)
+                        posted_ids_titles = zip(posted_ids, posted_titles)
 
-                    if data['id'] in posted_ids and data['title'] in posted_titles:
+                    if (data['id'], data['title']) in posted_ids_titles:
 
                         print(f'Site Fetch: [GMS] [Already posted]')
                         read_db = False

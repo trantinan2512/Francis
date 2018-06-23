@@ -27,15 +27,15 @@ def testing(arg1, *args):
 
 
 def test_func():
-    content = get_content_by_url('http://maplestory.nexon.net/news/')
+    l1 = ['asdf', 'xcd', 'asdffffff']
+    l2 = ['123123', '4234', '534534']
 
-    html = BeautifulSoup(content, 'html.parser')
+    i1 = 'asdf'
+    i2 = '4234'
 
-    news_items = html.select('.news-container .news-item .text')
-
-    for i in news_items:
-        print(i.p.get_text())
-
+    print((i1, i2) in zip(l1, l2))
+    for i in zip(l1, l2):
+        print(i)
 
 
 def test_web_crawl():
