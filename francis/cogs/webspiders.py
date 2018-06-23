@@ -81,7 +81,7 @@ class WebSpider:
                     }
 
                     if read_db is True:
-                        print('Database read...')
+                        print('[GMS site] Database read...')
                         try:
                             db = self.db.worksheet('site_gms')
 
@@ -89,11 +89,10 @@ class WebSpider:
                             print('API ERROR')
                             quit()
 
-                        posted_ids = db.col_values(1)
-                        posted_titles = db.col_values(4)
-                        posted_ids_titles = zip(posted_ids, posted_titles)
+                        posted_ids = db.col_values(1)[1:]
+                        posted_titles = db.col_values(4)[1:]
 
-                    if (data['id'], data['title']) in posted_ids_titles:
+                    if (data['id'], data['title']) in zip(posted_ids, posted_titles):
 
                         print(f'Site Fetch: [GMS] [Already posted]')
                         read_db = False
@@ -163,7 +162,7 @@ class WebSpider:
                             # save to drive and print the result title
                             db.insert_row([value for value in data.values()], index=2)
                             print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
-                print('GMS site scan finished.')
+                print('[GMS site] Scan finished.')
             await asyncio.sleep(delay)
 
     def maintenance_post(self, url, *args):

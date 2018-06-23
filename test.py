@@ -9,6 +9,7 @@ from config import BASE_DIR
 import config
 import tweepy
 from pprint import pprint
+from utils.db import initialize_db
 
 
 def get_content_by_url(url):
@@ -27,15 +28,52 @@ def testing(arg1, *args):
 
 
 def test_func():
-    l1 = ['asdf', 'xcd', 'asdffffff']
-    l2 = ['123123', '4234', '534534']
+    db = initialize_db()
+    gms_db = db.worksheet('site_gms')
 
-    i1 = 'asdf'
-    i2 = '4234'
+    posted_ids = gms_db.col_values(1)
+    posted_titles = gms_db.col_values(4)
+    posted_ids_titles = zip(posted_ids, posted_titles)
+    item1 = '31942'
+    item2 = '[Complete] Unscheduled Maintenance - June 21'
+    id_title = (item1, item2)
 
-    print((i1, i2) in zip(l1, l2))
-    for i in zip(l1, l2):
-        print(i)
+    print(id_title in posted_ids_titles)
+
+    zipped = (
+        ('Post ID', 'Title'),
+        ('31995', '[Complete] Unscheduled Maintenance - June 21'),
+        ('31704', '[Updated June 22] Marvel Machine Returns!'),
+        ('31999', 'Maple Memo: Equipment Bonus Stat Issue in Luna'),
+        ('31902', 'Ark Sunny Drop Weekend Events'),
+        ('32003', 'Known Issue with Marvel Machine Spins'),
+        ('31704', '[Updated June 22] Marvel Machine Returns!'),
+        ('31704', '[Updated June 22] Marvel Machine Returns!'),
+        ('31704', '[Updated June 22] Marvel Machine Returns!'),
+        ('31704', '[Updated June 22] Marvel Machine Returns!'),
+        ('31995', '[Complete] Unscheduled Maintenance - June 21'),
+        ('31704', '[Updated June 22] Marvel Machine Returns!'),
+        ('32003', 'Known Issue with Marvel Machine Spins'),
+        ('31902', 'Ark Sunny Drop Weekend Events'),
+        ('31999', 'Maple Memo: Equipment Bonus Stat Issue in Luna'),
+        ('31704', 'Marvel Machine Returns!'),
+        ('31995', '[Updated] Unscheduled Maintenance - June 21'),
+        ('31906', '[Updated] Unscheduled Luna World Maintenance and NA Updates - June 20, 2018'),
+        ('31942', '[Complete] Unscheduled Maintenance - June 21'),
+        ('31995', 'Unscheduled Maintenance - June 21'),
+        ('31942', 'Unscheduled Maintenance - June 21'),
+        ('31754', 'Daily Deals: Discounted Extra Character Slot and EXP/Drop Coupons'),
+        ('31762', 'Discovery Events'),
+        ('31906', '[Updated] Unscheduled Luna World Maintenance - June 20, 2018'),
+        ('31656', 'Level Up With the Mega Burning Project!'),
+        ('31752', 'Cash Shop Update for June 20'),
+        ('31834', 'v.196 – Ark Patch Notes'),
+        ('31860', 'Scheduled Game Update– June 20, 2018'),
+        ('31701', 'Marvel Machine is Coming Back June 22!'),
+        ('31468', 'GOT7 Concert Ticket Winners Selected!'),
+        ('31653', 'Sunny Fever Weekend Events'),
+        ('31579', 'Daily Deals: Discounted Scissors of Karma'),
+    )
 
 
 def test_web_crawl():
