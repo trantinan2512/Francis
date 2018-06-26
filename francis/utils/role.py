@@ -11,7 +11,7 @@ def process_role(role):
     tmp_cap = list()
 
     for w in role.split(' '):
-        if w.lower() in ['fp', 'il']:
+        if w.lower() in ['fp', 'il', 'gms', 'gmsm']:
             tmp_cap.append(w.upper())
         else:
             tmp_cap.append(w.capitalize())

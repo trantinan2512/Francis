@@ -203,7 +203,7 @@ class Admin:
         else:
             await self.bot.say('Không có dữ liệu.')
 
-    @commands.command(pass_context=True, name='schedule')
+    @commands.command(pass_context=True, name='sc')
     @commands.check(is_mod)
     async def event_scheduler(self, context, *, data=None):
 
@@ -220,20 +220,20 @@ class Admin:
 
         # display help text when no/wrong data provided
         if data is None \
-                or '---' not in data \
+                or '--' not in data \
                 and not data.startswith('start'):
             await self.bot.say(
                 '**Schedule Function 101**\n'
-                f'`{prefix}schedule` : show this message.\n'
-                f'`{prefix}schedule start` : start listening for Event Name and Event Datetime. '
+                f'`{prefix}sc` : show this message.\n'
+                f'`{prefix}sc start` : start listening for Event Name and Event Datetime. '
                 'Follow the steps to complete scheduling.\n'
-                f'`{prefix}schedule event_name --- event_date_time` : shortcut to schedule events more quickly.'
+                f'`{prefix}sc event_name -- event_date_time` : shortcut to schedule events more quickly.'
             )
 
-        # shorthand with `schedule [event name] --- [date time]
-        elif '---' in data:
+        # shorthand with `schedule [event name] -- [date time]
+        elif '--' in data:
             message_counter = +1
-            event_name, event_datetime = data.split('---', 1)
+            event_name, event_datetime = data.split('--', 1)
             event_name = event_name.strip()
             parsed_datetime = parse(event_datetime, settings={'DATE_ORDER': 'DMY'})
             if parsed_datetime is None:

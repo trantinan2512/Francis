@@ -80,6 +80,7 @@ class Role:
                 '» `colors` - Xóa tất cả Role màu sắc bạn đang có.\n'
                 '» `channels` - Xóa tất cả Role kênh bạn đang có.\n'
                 '» `jobs` - Xóa tất cả Role Job bạn đang có.\n'
+                '» `notify` - Xóa tất cả Role Notification bạn đang có.\n'
                 '» `all` - Xóa tất cả mọi Role bạn đang có.\n'
                 f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.')
             await self.bot.say_as_embed(embed=embed)
@@ -96,7 +97,7 @@ class Role:
             # proc role is 'all' trying to remove multiple roles
             if role == 'all':
                 # check invalid role_type or None
-                if not role_type or role_type not in ['colors', 'colours', 'channels', 'jobs', 'all']:
+                if not role_type or role_type not in ['colors', 'colours', 'channels', 'jobs', 'notify', 'all']:
 
                     embed = discord.Embed(
                         title=None,
@@ -108,6 +109,7 @@ class Role:
                         '» `colors` - Xóa tất cả Role Màu sắc bạn đang có.\n'
                         '» `channels` - Xóa tất cả Role Kênh bạn đang có.\n'
                         '» `jobs` - Xóa tất cả Role Job bạn đang có.\n'
+                        '» `notify` - Xóa tất cả Role Notification bạn đang có.\n'
                         '» `all` - Xóa tất cả mọi Role bạn đang có.\n'
                         f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.')
                     await self.bot.say_as_embed(embed=embed)
@@ -132,6 +134,10 @@ class Role:
                                 to_rmv_roles['role_mentions'].append(r.mention)
                         elif role_type == 'jobs':
                             if r.name in config.AUTOASIGN_JOB_ROLES:
+                                to_rmv_roles['roles'].append(r)
+                                to_rmv_roles['role_mentions'].append(r.mention)
+                        elif role_type == 'notify':
+                            if r.name in config.AUTOASIGN_NOTIFY_ROLES:
                                 to_rmv_roles['roles'].append(r)
                                 to_rmv_roles['role_mentions'].append(r.mention)
                         elif role_type == 'all':
@@ -187,6 +193,7 @@ class Role:
 
         ch_roles = []
         co_roles = []
+        no_roles = []
         jo_roles = []
 
         for role_name in config.AUTOASIGN_CHANNEL_ROLES:
@@ -199,6 +206,11 @@ class Role:
             if r is not None:
                 co_roles.append(r.mention)
 
+        for role_name in config.AUTOASIGN_NOTIFY_ROLES:
+            r = discord.utils.get(server.roles, name=role_name)
+            if r is not None:
+                no_roles.append(r.mention)
+
         for index, role_name in enumerate(config.AUTOASIGN_JOB_ROLES):
             r = discord.utils.get(server.roles, name=role_name)
             if r is not None:
@@ -208,6 +220,7 @@ class Role:
         embed.add_field(name='Job Roles', value='\n'.join(jo_roles[:24]))
         embed.add_field(name='Job Roles', value='\n'.join(jo_roles[24:]))
         embed.add_field(name='Channel Roles', value='\n'.join(ch_roles))
+        embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
         await self.bot.say(embed=embed)
 
 

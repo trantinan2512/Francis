@@ -27,7 +27,7 @@ class Scheduler:
 
         await self.bot.wait_until_ready()
         server = self.bot.get_server(id='453555802670759947')
-        gms_noti_role = discord.utils.get(server.roles, name='Event Notify GMS')
+        gms_noti_role = discord.utils.get(server.roles, name='Notify GMS')
 
         while not self.bot.is_closed:
             print('Schedule Check for GMS: ...')
@@ -74,7 +74,7 @@ class Scheduler:
 
         await self.bot.wait_until_ready()
         server = self.bot.get_server(id='453555802670759947')
-        gmsm_noti_role = discord.utils.get(server.roles, name='Event Notify GMSM')
+        gmsm_noti_role = discord.utils.get(server.roles, name='Notify GMSM')
 
         while not self.bot.is_closed:
             print('Schedule Check for GMSM: ...')
@@ -107,7 +107,7 @@ class Scheduler:
                             event_name = tag_re.sub('', row['event_name']).title()
                             await self.bot.edit_role(server, gmsm_noti_role, mentionable=True)
                             await self.bot.send_message(
-                                channel, f'{gms_noti_role.mention} {event_name} đã bắt đầu.')
+                                channel, f'{gmsm_noti_role.mention} {event_name} đã bắt đầu.')
                             await self.bot.edit_role(server, gmsm_noti_role, mentionable=False)
                             schedule_db.update_cell(row_index, 3, 'x')
                             print(f'Schedule Check for GMSM: Posted `{event_name}` to channel {channel.id}')
