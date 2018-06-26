@@ -141,66 +141,8 @@ class Admin:
 
     @commands.command(pass_context=True, name='playing')
     @commands.check(is_me)
-    async def change_bot_presence(self, context, presence: str):
+    async def change_bot_presence(self, context, *, presence: str):
         await self.bot.change_presence(game=discord.Game(name=presence))
-
-    @commands.command(pass_context=True, name='wmr')
-    @commands.check(is_me)
-    async def word_match_event_result(self, context, round: str):
-
-        event_db = self.db.worksheet('match_word_event')
-
-        words = event_db.col_values(3)
-        words.remove('Word')
-
-        ids = event_db.col_values(1)
-        ids.remove('UID')
-
-        if ids:
-            distinct_ids = list(set(ids))
-            result = {}
-            counter = 0
-
-            for did in distinct_ids:
-                result[did] = 0
-                for id, word in zip(ids, words):
-                    if did == id:
-                        result[did] += 1
-                        counter += 1
-
-            server = context.message.server
-
-            sorted_data = sorted(result.items(), key=operator.itemgetter(1), reverse=True)
-
-            embed = discord.Embed(
-                title=f'Kết quả event Word Match đợt {round}',
-                description=f'Tổng số tin nhắn hợp lệ: `{counter}/{len(words)}`',
-                color=discord.Color.teal())
-
-            for index, item in enumerate(sorted_data, start=1):
-                if index == 1:
-                    rank_indicator = ':first_place:'
-                elif index == 2:
-                    rank_indicator = ':second_place:'
-                elif index == 3:
-                    rank_indicator = ':third_place:'
-                elif index in [4, 5]:
-                    rank_indicator = ':ribbon:'
-                else:
-                    rank_indicator = ''
-
-                member = server.get_member(item[0])
-                if member.nick:
-                    name = member.nick
-                else:
-                    name = member.name
-                embed.add_field(
-                    name=f'{name} {rank_indicator}',
-                    value=f'Số tin nhắn hợp lệ: `{item[1]}`')
-
-            await self.bot.say_as_embed(embed=embed)
-        else:
-            await self.bot.say('Không có dữ liệu.')
 
     @commands.command(pass_context=True, name='sc')
     @commands.check(is_mod)
