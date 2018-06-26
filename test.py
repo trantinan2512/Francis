@@ -28,33 +28,8 @@ def testing(arg1, *args):
 
 
 def test_func():
-    db = initialize_db()
-    schedule_db = db.worksheet('schedules_ms')
-    data = schedule_db.get_all_records()
-    for index, row in enumerate(data, start=2):
-        if row['posted']:
-            pass
-        else:
-            # parse and convert into UTC
-            dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC'})
-            utcnow = datetime.utcnow()
-            utcnow = utcnow.replace(tzinfo=timezone('UTC'))
-            time_diff = (dt - utcnow).total_seconds()
-            # print(dt)
-            # print(utcnow)
-            # print(dt.tzinfo._StaticTzInfo__name)
-            print(time_diff)
-            if time_diff > 0:
-                pass
-            else:
-                # send the notification here!
-                # schedule_db.update_cell(index, 3, 'x')
-
-                tag_re = re.compile('\[gms\]\s*', re.IGNORECASE)
-                event_name = tag_re.sub('', row['event_name']).title()
-                print(event_name)
-
-                print(f'{event_name} has started.')
+    dt = dateparser.parse('12:00:00 AM 11/07/2018 (UTC)', settings={'DATE_ORDER': 'DMY'})
+    print(dt.month)
 
 
 def test_web_crawl():

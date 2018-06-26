@@ -235,7 +235,7 @@ class Admin:
             message_counter = +1
             event_name, event_datetime = data.split('---', 1)
             event_name = event_name.strip()
-            parsed_datetime = parse(event_datetime)
+            parsed_datetime = parse(event_datetime, settings={'DATE_ORDER': 'DMY'})
             if parsed_datetime is None:
                 await self.bot.say('Cannot recognize the Date Time provided. Please try again.')
                 message_counter += 1
@@ -302,7 +302,7 @@ class Admin:
                 pass
             message_counter += 1
 
-            parsed_datetime = parse(event_datetime.content)
+            parsed_datetime = parse(event_datetime.content, settings={'DATE_ORDER': 'DMY'})
             while parsed_datetime is None:
 
                 await self.bot.say('Please provide a correct Date and Time (default timezone: UTC). Or type `quit` to exit.')
@@ -320,7 +320,7 @@ class Admin:
                     message_counter += 1
                     return
                 else:
-                    parsed_datetime = parse(event_datetime.content)
+                    parsed_datetime = parse(event_datetime.content, settings={'DATE_ORDER': 'DMY'})
 
             if parsed_datetime is not None:
 

@@ -42,8 +42,8 @@ class Scheduler:
                     elif '[gmsm]' in row['event_name'].lower():
                         pass
                     elif '[gms]' in row['event_name'].lower():
-                        # parse and convert to UTC
-                        dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC'})
+                        # parse and convert to UTC, order set to DMY
+                        dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC', 'DATE_ORDER': 'DMY'})
                         # get UTC now and convert to timezone-aware
                         now = datetime.utcnow().replace(tzinfo=timezone('UTC'))
 
@@ -89,8 +89,8 @@ class Scheduler:
                     elif '[gms]' in row['event_name'].lower():
                         pass
                     elif '[gmsm]' in row['event_name'].lower():
-                        # parse and convert to UTC
-                        dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC'})
+                        # parse and convert to UTC, order set to DMY
+                        dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC', 'DATE_ORDER': 'DMY'})
                         # get UTC now and convert to timezone-aware
                         now = datetime.utcnow().replace(tzinfo=timezone('UTC'))
 
