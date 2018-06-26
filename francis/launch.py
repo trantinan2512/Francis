@@ -8,7 +8,7 @@ from discord.errors import HTTPException
 
 from francis import bot
 
-from francis.cogs import tasks, webspiders
+from francis.cogs import tasks, webspiders, scheduler
 import config
 
 if config.DEBUG is True:
@@ -94,14 +94,15 @@ async def on_message(message):
         else:
             await francis.process_commands(message)
 
-francis.loop.create_task(webspiders.WebSpider(francis).parse())
-francis.loop.create_task(tasks.Twitter(francis).fetch_maple_latest_tweet())
-francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
+if not config.DEBUG:
+    francis.loop.create_task(webspiders.WebSpider(francis).parse())
+    francis.loop.create_task(tasks.Twitter(francis).fetch_maple_latest_tweet())
+    francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
+    francis.loop.create_task(scheduler.Scheduler(francis).check_gms_schedule())
+    francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
 
-
-
-# if config.DEBUG:
-# francis.loop.create_task(facebook_tasks.fb())
-# francis.loop.create_task(webspiders.WebSpider(francis, util).parse())
+if config.DEBUG:
+    francis.loop.create_task(scheduler.Scheduler(francis).check_gms_schedule())
+    francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
 
 francis.run(config.FRANCIS_TOKEN)
