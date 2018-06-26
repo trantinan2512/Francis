@@ -160,14 +160,13 @@ class Admin:
             distinct_ids = list(set(ids))
             result = {}
             counter = 0
-            with open(config.BASE_DIR + '\\oz\\words_dictionary.json') as infile:
-                data = json.load(infile)
-                for did in distinct_ids:
-                    result[did] = 0
-                    for id, word in zip(ids, words):
-                        if did == id and word.lower() in data:
-                            result[did] += 1
-                            counter += 1
+
+            for did in distinct_ids:
+                result[did] = 0
+                for id, word in zip(ids, words):
+                    if did == id:
+                        result[did] += 1
+                        counter += 1
 
             server = context.message.server
 
