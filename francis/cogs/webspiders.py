@@ -112,7 +112,7 @@ class WebSpider:
                             else:
                                 updated_type = '[Update] '
                         else:
-                            updated_type = None
+                            updated_type = ''
 
                         # search to get type of the maintenance
                         sc_search = sc_title_re.search(data['title'])
