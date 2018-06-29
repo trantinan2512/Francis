@@ -28,8 +28,9 @@ def testing(arg1, *args):
 
 
 def test_func():
-    dt = dateparser.parse('12:00:00 AM 11/07/2018 (UTC)', settings={'DATE_ORDER': 'DMY'})
-    print(dt.month)
+    tl = ['a' , 'b']
+    text = 'a sdlfkj wenrwb'
+    print(any(i in text for i in tl))
 
 
 def test_web_crawl():

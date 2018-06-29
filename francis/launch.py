@@ -102,7 +102,6 @@ if not config.DEBUG:
     francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
 
 if config.DEBUG:
-    francis.loop.create_task(scheduler.Scheduler(francis).check_gms_schedule())
-    francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
+    francis.loop.create_task(webspiders.WebSpider(francis).parse())
 
 francis.run(config.FRANCIS_TOKEN)

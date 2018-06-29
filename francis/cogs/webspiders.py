@@ -195,7 +195,8 @@ class WebSpider:
 
         for strong in strongs:
             # ignore in case the time display splitted by '/'
-            if tz_re.search(strong.get_text()) is not None and '/' not in strong.get_text():
+            if tz_re.search(strong.get_text()) is not None and all(c not in strong.get_text() for c in ['/', '[']):
+                print(strong.get_text())
 
                 # re split between date and time (duration)
                 date, duration = dt_split.split(strong.get_text())
