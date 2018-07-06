@@ -106,6 +106,7 @@ if not config.DEBUG:
     francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
     francis.loop.create_task(scheduler.Scheduler(francis).check_gms_schedule())
     francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
+    francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
 
 if config.DEBUG:
     francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
