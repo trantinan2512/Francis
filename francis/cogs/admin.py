@@ -25,13 +25,19 @@ class Admin:
 
     def is_mod(ctx):
         author = ctx.message.author
-        mod_gms_role = discord.utils.get(author.roles, name='Mod GMS')
-        mod_gmsm_role = discord.utils.get(author.roles, name='Mod GMSM')
-        super_mod_role = discord.utils.get(author.roles, name='Super Mod')
-        if mod_gms_role or mod_gmsm_role or super_mod_role:
-            return True
+        server = ctx.message.server
+        # MSVN Community server
+        if server.id == '453555802670759947':
+            mod_gms_role = discord.utils.get(author.roles, name='Mod GMS')
+            mod_gmsm_role = discord.utils.get(author.roles, name='Mod GMSM')
+            super_mod_role = discord.utils.get(author.roles, name='Super Mod')
+            if mod_gms_role or mod_gmsm_role or super_mod_role:
+                return True
+            else:
+                return False
         else:
-            return False
+            # Vice commander id or myself
+            return author.id == config.MY_ID or author.top_role.id == '373667156468170755'
 
     @commands.command(pass_context=True, name='clear')
     @commands.check(is_me)

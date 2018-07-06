@@ -49,6 +49,12 @@ async def on_ready():
     if not config.DEBUG:
         await francis.change_presence(game=discord.Game(name=f'{francis.command_prefix}help'))
 
+    # sv = francis.get_server(id='364323564737789953')
+    # for role in sv.roles:
+    #     print(role.id)
+    #     print(role.name)
+    #     print('---')
+
 
 @francis.event
 async def on_member_join(member):
@@ -102,6 +108,6 @@ if not config.DEBUG:
     francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
 
 if config.DEBUG:
-    francis.loop.create_task(webspiders.WebSpider(francis).parse())
+    francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
 
 francis.run(config.FRANCIS_TOKEN)

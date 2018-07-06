@@ -116,6 +116,45 @@ class Scheduler:
             print('Schedule Check for GMSM: Done.')
             await asyncio.sleep(delay)
 
+    async def check_dawn_schedule(self, delay=30):
+
+        await self.bot.wait_until_ready()
+
+        while not self.bot.is_closed:
+            print('Schedule Check for Dawn - SAOMD: ...')
+            try:
+                schedule_db = self.db.worksheet('schedules_saomd')
+                data = schedule_db.get_all_records()
+                for row_index, row in enumerate(data, start=2):
+                        # pass if posted
+                    if row['posted']:
+                        pass
+                    # pass events of GMSM
+                    else:
+                        # parse and convert to UTC, order set to DMY
+                        dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC', 'DATE_ORDER': 'DMY'})
+                        # get UTC now and convert to timezone-aware
+                        now = datetime.utcnow().replace(tzinfo=timezone('UTC'))
+
+                        time_diff = (dt - now).total_seconds()
+                        # event incoming, just pass
+                        if time_diff > 0:
+                            pass
+                        # event has started
+                        else:
+                            # send the notification here!
+                            channel = get_channel(id='373663985368563717')
+
+                            event_name = row['event_name'].title()
+                            await self.bot.send_message(
+                                channel, f'**{event_name}** has started.')
+                            schedule_db.update_cell(row_index, 3, 'x')
+                            print(f'Schedule Check for Dawn - SAOMD: Posted `{event_name}` to channel {channel.id}')
+            except APIError:
+                pass
+            print('Schedule Check for Dawn - SAOMD: Done.')
+            await asyncio.sleep(delay)
+
 
 def setup(bot):
     bot.add_cog(Scheduler(bot))
