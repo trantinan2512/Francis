@@ -211,7 +211,6 @@ class WebSpider:
 
                 # split duration to get start and finish
                 start, finish = re.split('\s-|–\s*', duration)
-                
 
                 # search the server name
                 server_search = server_re.search(args[0])

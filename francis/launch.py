@@ -73,7 +73,9 @@ async def on_member_join(member):
             f'Dưới đây là hướng dẫn tương tác với group nhé!\n' +
             f'» Đọc {rules_channel.mention} ở đây.\n' +
             f'» {intro_channel.mention} giới thiệu bản thân.\n' +
-            f'» Qua {francis_channel.mention} để thêm Role cho mình, mở thêm các kênh chat và kênh tin tức cho game!\n\n' +
+            f'» Qua {francis_channel.mention} để thêm Role cho mình, mở thêm các kênh chat và kênh tin tức cho game!\n' +
+            f'Dùng lệnh `{francis.command_prefix}role gms` để mở các kênh dành cho **Global MapleStory**.\n' +
+            f'Dùng lệnh `{francis.command_prefix}role gmsm` để mở các kênh dành cho **MapleStory Mobile**.\n\n' +
             f'Nhập lệnh `{francis.command_prefix}help` để được hỗ trợ thêm nhé.')
 
         await francis.send_message(welcome_channel, message)
