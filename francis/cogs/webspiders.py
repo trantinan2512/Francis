@@ -204,8 +204,16 @@ class WebSpider:
                 # re remove UTC -7 stuff if exists
                 date = utc_re.sub('', date)
 
+                if len(date) <= 5:
+                    for strong in strongs:
+                        if parse(strong.get_text()) is not None:
+                            date = f'{strong.get_text()} {date}'
+                            print(date)
+                            break
+
                 # split duration to get start and finish
                 start, finish = re.split('\s-|–\s*', duration)
+                
 
                 # search the server name
                 server_search = server_re.search(args[0])

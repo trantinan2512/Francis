@@ -47,7 +47,7 @@ async def on_ready():
     print(f'Logged in as: {francis.user.name} (ID: {francis.user.id})')
     print('------')
     if not config.DEBUG:
-        await francis.change_presence(game=discord.Game(name=f'{francis.command_prefix}help'))
+        await francis.change_presence(game=discord.Game(name=f'{francis.command_prefix}help << hàng thật'))
 
     # sv = francis.get_server(id='364323564737789953')
     # for role in sv.roles:
@@ -109,6 +109,6 @@ if not config.DEBUG:
     francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
 
 if config.DEBUG:
-    francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
+    francis.loop.create_task(webspiders.WebSpider(francis).parse())
 
 francis.run(config.FRANCIS_TOKEN)
