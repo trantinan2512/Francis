@@ -105,7 +105,7 @@ class Scheduler:
                             # send the notification here!
                             channel = get_channel(id='461067191735943168')
 
-                            tag_re = re.compile('\[gmsm\]\s*', re.IGNORECASE)
+                            tag_re = re.compile('(\[|\.)*gmsm(\]|\.)*\s*', re.IGNORECASE)
                             event_name = tag_re.sub('', row['event_name']).title()
                             await self.bot.edit_role(server, gmsm_noti_role, mentionable=True)
                             await self.bot.send_message(
