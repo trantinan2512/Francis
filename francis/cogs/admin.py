@@ -213,19 +213,19 @@ class Admin:
                         break
                     message_counter += 1
 
-                    if confirm.content.lower().startswith('yes'):
+                    if confirm.content.lower().startswith('y'):
 
                         schedule_db.insert_row([event_name, str_datetime], index=2)
 
                         await self.bot.say('Done! Thanks.')
                         message_counter += 1
                         done = True
-                    elif confirm.content.lower().startswith('no'):
+                    elif confirm.content.lower().startswith('n'):
                         await self.bot.say(f'No schedule created. Please try again.')
                         message_counter += 1
                         done = True
                     else:
-                        await self.bot.say(f'Please type either `yes` or `no`.')
+                        await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
                         message_counter += 1
 
         # start listening to the user with `schedule start`
@@ -296,19 +296,19 @@ class Admin:
                         pass
                     message_counter += 1
 
-                    if confirm.content.lower().startswith('yes'):
+                    if confirm.content.lower().startswith('y'):
 
                         schedule_db.insert_row([event_name.content, str_datetime], index=2)
 
                         await self.bot.say('Done! Thanks.')
                         message_counter += 1
                         done = True
-                    elif confirm.content.lower().startswith('no'):
+                    elif confirm.content.lower().startswith('n'):
                         await self.bot.say(f'No schedule created. Please start over by typing `{prefix}schedule start`.')
                         message_counter += 1
                         done = True
                     else:
-                        await self.bot.say(f'Please type either `yes` or `no`.')
+                        await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
                         message_counter += 1
         elif data.startswith('list'):
             # from the list of db show it here

@@ -35,13 +35,14 @@ class Scheduler:
                 schedule_db = self.db.worksheet('schedules_ms')
                 data = schedule_db.get_all_records()
                 for row_index, row in enumerate(data, start=2):
-                        # pass if posted
+                    en = row['event_name'].lower()
+                    # pass if posted
                     if row['posted']:
                         pass
                     # pass events of GMSM
-                    elif '[gmsm]' in row['event_name'].lower():
+                    elif en.startswith('[gmsm]') or en.startswith('.gmsm.'):
                         pass
-                    elif '[gms]' in row['event_name'].lower():
+                    elif en.startswith('[gms]') or en.startswith('.gms.'):
                         # parse and convert to UTC, order set to DMY
                         dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC', 'DATE_ORDER': 'DMY'})
                         # get UTC now and convert to timezone-aware
@@ -56,12 +57,12 @@ class Scheduler:
                             # send the notification here!
                             channel = get_channel(id='461067276980977674')
 
-                            tag_re = re.compile('\[gms\]\s*', re.IGNORECASE)
-                            event_name = tag_re.sub('', row['event_name']).title()
+                            tag_re = re.compile('(\[|\.)*gms(\]|\.)*\s*', re.IGNORECASE)
+                            event_name = tag_re.sub('', row['event_name'], 1).title()
 
                             await self.bot.edit_role(server, gms_noti_role, mentionable=True)
                             await self.bot.send_message(
-                                channel, f'{gms_noti_role.mention} {event_name} đã bắt đầu.')
+                                channel, f'{gms_noti_role.mention} {event_name}.')
                             await self.bot.edit_role(server, gms_noti_role, mentionable=False)
                             schedule_db.update_cell(row_index, 3, 'x')
                             print(f'Schedule Check for GMS: Posted `{event_name}` to channel {channel.id}')
@@ -82,13 +83,14 @@ class Scheduler:
                 schedule_db = self.db.worksheet('schedules_ms')
                 data = schedule_db.get_all_records()
                 for row_index, row in enumerate(data, start=2):
-                        # pass if posted
+                    en = row['event_name'].lower()
+                    # pass if posted
                     if row['posted']:
                         pass
                     # pass events of GMSM
-                    elif '[gms]' in row['event_name'].lower():
+                    elif en.startswith('[gms]') or en.startswith('.gms.'):
                         pass
-                    elif '[gmsm]' in row['event_name'].lower():
+                    elif en.startswith('[gmsm]') or en.startswith('.gmsm.'):
                         # parse and convert to UTC, order set to DMY
                         dt = dateparser.parse(row['date_time'], settings={'TIMEZONE': 'UTC', 'DATE_ORDER': 'DMY'})
                         # get UTC now and convert to timezone-aware

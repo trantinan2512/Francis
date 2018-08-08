@@ -28,9 +28,8 @@ def testing(arg1, *args):
 
 
 def test_func():
-    tl = ['a' , 'b']
-    text = 'a sdlfkj wenrwb'
-    print(any(i in text for i in tl))
+    title = '[GMSM] hallohaha'
+    print(title.lower().startswith('[gmsm]'))
 
 
 def test_web_crawl():
