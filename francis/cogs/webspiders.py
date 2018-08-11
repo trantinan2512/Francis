@@ -192,11 +192,12 @@ class WebSpider:
         dt_split = re.compile('\:\s+')
         # regex to get the server name in maintenance post title
         server_re = re.compile('(luna|grazed|mybckn|khroa|windia|scania|bera|reboot)', re.IGNORECASE)
+        # regex to get the words inside brackets "()"
+        bracket_re = re.compile('\s*\(.+\)\s*', re.IGNORECASE)
 
         for strong in strongs:
             # ignore in case the time display splitted by '/'
             if tz_re.search(strong.get_text()) is not None and all(c not in strong.get_text() for c in ['/', '[']):
-
                 # re split between date and time (duration)
                 date, duration = dt_split.split(strong.get_text())
 
@@ -209,8 +210,11 @@ class WebSpider:
                             date = f'{strong.get_text()} {date}'
                             break
 
+                
                 # split duration to get start and finish
-                start, finish = re.split('\s-|–\s*', duration)
+                start, finish = re.split('\s*-|–\s*', duration)
+                start = bracket_re.sub('', start)
+                finish = bracket_re.sub('', finish)
 
                 # search the server name
                 server_search = server_re.search(args[0])
