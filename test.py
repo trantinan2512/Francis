@@ -28,88 +28,80 @@ def testing(arg1, *args):
 
 
 def test_func():
-    title = '[GMSM] hallohaha'
-    print(title.lower().startswith('[gmsm]'))
+    test_web_crawl()
 
 
 def test_web_crawl():
-
-    content = get_content_by_url('http://maplestory.nexon.net/news/all/6')
+    posted = False
+    url = 'https://m.nexon.com/notice/1?client_id=MTY3MDg3NDAy'
+    content = get_content_by_url(url)
+    # print(content)
     if content is not None:
         html = BeautifulSoup(content, 'html.parser')
 
-        links = html.select('.news-container .news-item .text h3 a')
+        news_labels = html.select('.list-group-item div .bolt-label')
+        news_titles = html.select('.list-group-item .bolt-ellipsis')
+        news_ids = html.select('.list-group-item .bolt-no-ellipsis')
 
-        for link in links:
-            sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
-            sc_search = sc_title_re.search(link.get_text())
+        # print(html)
+        print(news_labels.get_text())
+        # for l in news_labels:
 
-            if sc_search is not None:
-                print(sc_search.group(3))
-                # print(link['href'])
-                sc_post_url = f'http://maplestory.nexon.net{link["href"]}'
 
-                sc_post_content = get_content_by_url(sc_post_url)
+        # for l, t in zip(news_labels, news_titles):
+        #     print(l.get_text(), t.get_text())
 
-                html = BeautifulSoup(sc_post_content, 'html.parser')
+        # db = initialize_db()
+        # site_gmsm = db.worksheet('site_gmsm')
+        # site_gmsm_db = site_gmsm.get_all_records()
 
-                # all these below is to get the server check duration
-                spans = html.select('.article-content p span')
-                duration_re = re.compile('approx\w*\s*(\d+\.?\d*).*hour', re.IGNORECASE)
-                sc_duration = None
-                for span in spans:
-                    duration_search = duration_re.search(span.get_text())
-                    if duration_search is not None:
-                        sc_duration = float(duration_search.group(1))
+        # posted_ids = []
+        # posted_titles = []
+        # for record in site_gmsm_db:
+        #     posted_ids.append(record['id'])
+        #     posted_titles.append(record['title'])
 
-                # get the string that contains UTC -7
-                strongs = html.select('.article-content p span strong')
-                utc_re = re.compile('\s*\(UTC\s*-*–*\s*7\)\s*', re.IGNORECASE)
-                dt_split = re.compile('\:\s+')
-                tz_re = re.compile('p(d|s)t', re.IGNORECASE)
-                for strong in strongs:
+        # id = 110
+        # title = '08.07 Server Maintenance & Patch Note (COMPLETED)'
 
-                    if tz_re.search(strong.get_text()) is not None and '/' not in strong.get_text():
-                        date, duration = dt_split.split(strong.get_text())
+        # print((id, title) in zip(posted_ids, posted_titles))
+        # for item in zip(posted_ids, posted_titles):
+        #     print(item)
 
-                        date = utc_re.sub('', date)
+        # now = datetime.now()
+        # vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
 
-                        tfrom, tto = re.split('\s-|–\s*', duration)
+        # for label, title, id in zip(news_labels, news_titles, news_ids):
+        #     data = {
+        #         'id': id['data-id'],
+        #         'date': vn_tz.strftime('%d/%m/%Y'),
+        #         'time': vn_tz.strftime('%H:%M:%S'),
+        #         'label': label.get_text().strip(),
+        #         'title': title.get_text().strip()
+        #     }
 
-                        datetime_from = dateparser.parse(
-                            f'{date} {tfrom}',
-                            settings={
-                                'TIMEZONE': 'America/Los_Angeles',
-                                'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
-                            })
-                        datetime_to = dateparser.parse(
-                            f'{date} {tto}',
-                            settings={
-                                'TIMEZONE': 'America/Los_Angeles',
-                                'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
-                            })
 
-                        if sc_duration is not None:
-                            sc_duration_s = sc_duration * 60 * 60  # in seconds
-                            duration = (datetime_to - datetime_from).total_seconds()
-                            if sc_duration_s == duration:
-                                # just pass, nothing to do here
-                                print('SAME DURATION')
-                            else:
-                                # trust datetime_from, and go with sc_duration_s
-                                datetime_to = datetime_from + timedelta(seconds=sc_duration_s)
-                                print('DURATION NOT THE SAME')
+        #     news_url = f'https://m.nexon.com/notice/get/{data["id"]}?client_id=MTY3MDg3NDAy'
+        #     news_content = get_content_by_url(news_url)
+        #     # news_content_json = json.loads(news_content)
+        #     news_html = BeautifulSoup(news_content, 'html.parser')
 
-                            frm = datetime_from.strftime('%I:%M %p %d/%m/%Y')
-                            to = datetime_to.strftime('%I:%M %p %d/%m/%Y')
-                            sc_duration_int = int(sc_duration)
-                            if (sc_duration - sc_duration_int) != 0:
-                                sc_duration_str = str(sc_duration)
-                            else:
-                                sc_duration_str = str(sc_duration_int)
-                            print(f'Bảo trì {sc_duration_str} tiếng.\nTừ:  {frm}\nĐến: {to}')
-                        else:
-                            quit()
+        #     img_link = 'N/A'
+        #     images = news_html.select('img')
+        #     for image in images:
+        #         if 'cloudfront.net' in image['src']:
+        #             img_link = image['src']
+        #             break
+
+        #     data_contents = {
+        #         'link': news_url,
+        #         'contents': news_html.select_one('.cnts').get_text().strip().replace('\n','---'),
+        #         'image': img_link
+        #     }
+        #     data.update(data_contents)
+        #     # if data['id'] == '140':
+        #     # site_gmsm.insert_row(list(data.values()), index=2)
+        #     print('**************')
 
 
 if __name__ == "__main__":

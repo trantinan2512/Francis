@@ -27,6 +27,8 @@ class WebSpider:
         else:
             return None
 
+
+class GMSSiteSpider(WebSpider):
     async def parse(self):
 
         await self.bot.wait_until_ready()
@@ -210,7 +212,6 @@ class WebSpider:
                             date = f'{strong.get_text()} {date}'
                             break
 
-                
                 # split duration to get start and finish
                 start, finish = re.split('\s*-|–\s*', duration)
                 start = bracket_re.sub('', start)
@@ -314,3 +315,134 @@ class WebSpider:
                             f'Bảo trì ngày {day}',
                             f'```Thời gian hoàn tất: không xác định.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: không xác định```'
                         )
+
+
+class GMSMSiteSpider(WebSpider):
+
+    async def parse(self):
+
+        await self.bot.wait_until_ready()
+        if config.DEBUG:
+            delay = 10
+        else:
+            delay = 60
+
+        # cập-nhật-mới-gms-m channel
+        channel = ch.get_channel(id='453565659637481472')
+        sc_data = None
+
+        while not self.bot.is_closed:
+
+            site_fetches = 10
+
+            url = 'https://m.nexon.com/notice/1?client_id=MTY3MDg3NDAy'
+            content = self.get_content_by_url(url)
+
+            if content is not None:
+                html = BeautifulSoup(content, 'html.parser')
+
+                bolt_labels = html.select('.list-group-item.pointer .bolt-label')
+                news_labels = []
+                for label in bolt_labels:
+                    if label.get_text() != 'N':
+                        news_labels.append(label)
+                news_titles = html.select('.list-group-item.pointer .bolt-ellipsis')
+                news_ids = html.select('.list-group-item.pointer .bolt-no-ellipsis')
+
+                # # regex for finding the news ID
+                # news_id_re = re.compile('/news/(\d+)/')
+                # # regex to check if post is a maintenance post
+                # sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
+                # # regex to check if the post is an updated post
+                # updated_re = re.compile('\[(update|updated|complete|completed).*', re.IGNORECASE)
+
+                read_db = True
+
+                now = datetime.now()
+                vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+
+                print('Scanning GMSM site for news...')
+                for label, title, id in zip(news_labels, news_titles, news_ids):
+
+                    data = {
+                        'id': id['data-id'],
+                        'date': vn_tz.strftime('%d/%m/%Y'),
+                        'time': vn_tz.strftime('%H:%M:%S'),
+                        'label': label.get_text().strip(),
+                        'title': title.get_text().strip()
+                    }                    
+
+                    if read_db is True:
+                        print('[GMSM site] Database read...')
+                        try:
+                            site_gmsm = self.db.worksheet('site_gmsm')
+
+                        except APIError:
+                            print('API ERROR')
+                            quit()
+
+                        site_gmsm_db = site_gmsm.get_all_records()
+
+                    posted_ids = []
+                    posted_titles = []
+                    for record in site_gmsm_db:
+                        posted_ids.append(record['id'])
+                        posted_titles.append(record['title'])
+
+                    if (int(data['id']), data['title']) in zip(posted_ids, posted_titles):
+
+                        print(f'Site Fetch: [GMSM] [Already posted]')
+                        read_db = False
+
+                    else:
+                        news_url = f'https://m.nexon.com/notice/get/{data["id"]}?client_id=MTY3MDg3NDAy'
+                        news_content = self.get_content_by_url(news_url)
+                        news_html = BeautifulSoup(news_content, 'html.parser')
+
+                        img_link = 'N/A'
+                        images = news_html.select('img')
+                        for image in images:
+                            if 'cloudfront.net' in image['src']:
+                                img_link = image['src']
+                                break
+
+                        data_contents = {
+                            'link': news_url,
+                            'contents': news_html.select_one('.cnts').get_text().strip().replace('\n','---'),
+                            'image': img_link
+                        }
+                        data.update(data_contents)
+                        if data['label'].lower().startswith('e'):
+                            label = 'Sự kiện'
+                        else:
+                            label = 'Thông báo'
+
+
+                        read_db = True
+                        embed = discord.Embed(
+                            title=f"{label} - {data['title']}",
+                            url=data['link'],
+                            description=f"Cập nhật vào: {data['time']} {data['date']}",
+                            color=discord.Color.teal())
+
+                        # set image based on the availability of image in data
+                        if data['image'] != 'N/A':
+                            embed.set_image(url=data['image'])
+
+                        elif data['label'].lower().startswith('e'):
+                            embed.set_image(url='https://i.imgur.com/x4RoIPr.jpg')
+                        
+                        else:
+                            embed.set_image(url='https://i.imgur.com/DH5rVQd.jpg')
+
+                        # send the message to channel
+                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
+                        # save to drive and print the result title
+                        site_gmsm.insert_row(list(data.values()), index=2)
+                        print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
+
+                    site_fetches -= 1
+                    if site_fetches <= 0:
+                        break
+                print('[GMS site] Scan finished.')
+            await asyncio.sleep(delay)

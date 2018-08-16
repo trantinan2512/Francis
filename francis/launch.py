@@ -180,14 +180,15 @@ async def on_reaction_remove(reaction, user):
 
 
 if not config.DEBUG:
-    francis.loop.create_task(webspiders.WebSpider(francis).parse())
+    francis.loop.create_task(webspiders.GMSSiteSpider(francis).parse())
+    francis.loop.create_task(webspiders.GMSMSiteSpider(francis).parse())
     francis.loop.create_task(tasks.Twitter(francis).fetch_maple_latest_tweet())
     francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
     francis.loop.create_task(scheduler.Scheduler(francis).check_gms_schedule())
     francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
     francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
 
-# if config.DEBUG:
-#     francis.loop.create_task(webspiders.WebSpider(francis).parse())
+if config.DEBUG:
+    francis.loop.create_task(webspiders.GMSMSiteSpider(francis).parse())
 
 francis.run(config.FRANCIS_TOKEN)
