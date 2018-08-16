@@ -70,7 +70,7 @@ class GMSSiteSpider(WebSpider):
                     news_search = news_id_re.search(link['href'])
 
                     now = datetime.now()
-                    vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+                    vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
 
                     data = {
                         'id': news_search.group(1),
@@ -329,7 +329,6 @@ class GMSMSiteSpider(WebSpider):
 
         # cập-nhật-mới-gms-m channel
         channel = ch.get_channel(id='453565659637481472')
-        sc_data = None
 
         while not self.bot.is_closed:
 
@@ -359,7 +358,7 @@ class GMSMSiteSpider(WebSpider):
                 read_db = True
 
                 now = datetime.now()
-                vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+                vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
 
                 print('Scanning GMSM site for news...')
                 for label, title, id in zip(news_labels, news_titles, news_ids):
@@ -370,7 +369,7 @@ class GMSMSiteSpider(WebSpider):
                         'time': vn_tz.strftime('%H:%M:%S'),
                         'label': label.get_text().strip(),
                         'title': title.get_text().strip()
-                    }                    
+                    }
 
                     if read_db is True:
                         print('[GMSM site] Database read...')
@@ -408,7 +407,7 @@ class GMSMSiteSpider(WebSpider):
 
                         data_contents = {
                             'link': news_url,
-                            'contents': news_html.select_one('.cnts').get_text().strip().replace('\n','---'),
+                            'contents': news_html.select_one('.cnts').get_text().strip().replace('\n', '---'),
                             'image': img_link
                         }
                         data.update(data_contents)
@@ -416,7 +415,6 @@ class GMSMSiteSpider(WebSpider):
                             label = 'Sự kiện'
                         else:
                             label = 'Thông báo'
-
 
                         read_db = True
                         embed = discord.Embed(
@@ -431,7 +429,7 @@ class GMSMSiteSpider(WebSpider):
 
                         elif data['label'].lower().startswith('e'):
                             embed.set_image(url='https://i.imgur.com/x4RoIPr.jpg')
-                        
+
                         else:
                             embed.set_image(url='https://i.imgur.com/DH5rVQd.jpg')
 

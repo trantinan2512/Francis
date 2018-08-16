@@ -28,8 +28,12 @@ def testing(arg1, *args):
 
 
 def test_func():
-    test_web_crawl()
+    now = datetime.now()
+    print(now)
+    ustz = timezone('UTC')
+    ustz_now = now.astimezone(ustz)
 
+    print(ustz_now)
 
 def test_web_crawl():
     posted = False
@@ -46,7 +50,6 @@ def test_web_crawl():
         # print(html)
         print(news_labels.get_text())
         # for l in news_labels:
-
 
         # for l, t in zip(news_labels, news_titles):
         #     print(l.get_text(), t.get_text())
@@ -79,7 +82,6 @@ def test_web_crawl():
         #         'label': label.get_text().strip(),
         #         'title': title.get_text().strip()
         #     }
-
 
         #     news_url = f'https://m.nexon.com/notice/get/{data["id"]}?client_id=MTY3MDg3NDAy'
         #     news_content = get_content_by_url(news_url)
