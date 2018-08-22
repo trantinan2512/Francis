@@ -196,7 +196,7 @@ class Gacha:
                 text_item_rank_count += f'Unique: `{item_rank_count[2]}` | Legendary: `{item_rank_count[3]}`'
 
                 embed = discord.Embed(
-                    title='Kết quả mở Treasure Box 11 lần',
+                    title=f'Kết quả mở Treasure Box 11 lần của [{author.display_name}]',
                     description=f'Job: {job_processed}\n {text_item_rank_count}',
                     colour=discord.Color.teal())
 
