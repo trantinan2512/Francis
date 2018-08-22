@@ -79,12 +79,6 @@ class Admin:
             deleted = await self.bot.purge_from(channel, limit=limit, check=is_me)
             await self.bot.say(f'Deleted {len(deleted)} message(s)')
 
-    @clear_messages.error
-    async def clear_messages_error(self, error, context):
-
-        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to clear messages.')
-        pass  # fail silently
-
     @commands.command(pass_context=True, name='countmsg')
     @commands.check(is_me)
     async def count_users_messages(self, context, prefix=None, limit=5000):
@@ -348,6 +342,30 @@ class Admin:
             await self.bot.edit_message(note, 'Done :white_check_mark:')
             await asyncio.sleep(5)
             await self.bot.delete_message(note)
+
+    @clear_messages.error
+    async def clear_messages_error(self, error, context):
+
+        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to clear messages.')
+        return  # fail silently
+
+    @count_users_messages.error
+    async def count_users_messages_error(self, error, context):
+
+        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to count messages.')
+        return  # fail silently
+
+    @change_bot_presence.error
+    async def change_bot_presence_error(self, error, context):
+
+        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to change bot\'s presence.')
+        return  # fail silently
+
+    @event_scheduler.error
+    async def event_scheduler_error(self, error, context):
+
+        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to schedule.')
+        return  # fail silently
 
 
 def setup(bot):

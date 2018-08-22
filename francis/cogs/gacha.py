@@ -20,7 +20,11 @@ class Gacha:
     def __init__(self, bot):
         self.bot = bot
 
+    def is_treasure_box_channel(context):
+        return context.message.channel.id == '481712884196573194'
+
     @commands.command(pass_context=True, name='g')
+    @commands.check(is_treasure_box_channel)
     async def gacha(self, context, job=None, rolls=None):
         """MapleStory Mobile Treasure Box Gacha"""
 
@@ -54,7 +58,7 @@ class Gacha:
 
         else:
             # inform the user that they don't have enough crystals for gacha to work
-            if discord_user.gacha_info.crystal_owned <= 1000:
+            if discord_user.gacha_info.crystal_owned < 1000:
                 embed = discord.Embed(
                     title=f'Không thể quay rương, số Pha lê không đủ',
                     description=f'{author.mention}, bạn đang có `{discord_user.gacha_info.crystal_owned} Pha lê`.'
@@ -211,6 +215,7 @@ class Gacha:
                 await self.bot.say_as_embed(embed=embed)
 
     @commands.command(pass_context=True, name='glist')
+    @commands.check(is_treasure_box_channel)
     async def gachalist(self, context):
         job_abbrs = [
             ('Dark Knight', 'dk'),
@@ -236,6 +241,7 @@ class Gacha:
         await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True, name='gdaily')
+    @commands.check(is_treasure_box_channel)
     async def gachadaily(self, context):
 
         message = context.message
@@ -267,6 +273,7 @@ class Gacha:
         await self.bot.say(embed=embed)
 
     @commands.command(pass_context=True, name='ginfo')
+    @commands.check(is_treasure_box_channel)
     async def gachainfo(self, context):
 
         message = context.message
@@ -312,6 +319,14 @@ class Gacha:
         discord_user, created = DiscordUser.objects.get_or_create(discord_id=user_id, defaults={'discord_name': user_name})
         gacha_info, created = GachaInfo.objects.get_or_create(discord_user=discord_user)
         return discord_user
+
+    @gacha.error
+    @gachalist.error
+    @gachadaily.error
+    @gachainfo.error
+    async def gacha_error(self, error, context):
+        print('Command not allowed.')
+        return
 
 
 def setup(bot):
