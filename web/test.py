@@ -1,25 +1,23 @@
+import json
 import os
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_config')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
-import json
+
 import requests
 from bs4 import BeautifulSoup
 import re
 import dateparser
 from pytz import timezone
-from datetime import timedelta, datetime, date
-from config import BASE_DIR
-import config
+from datetime import timedelta, datetime
+# from config import BASE_DIR
+# import config
 import tweepy
 from pprint import pprint
-from utils.db import initialize_db
+# from utils.db import initialize_db
 from pprint import pprint
 import csv
-from web.apps.items.models import Item, ItemStatRange
-from web.apps.gachas.models import TreasureBoxGacha
-from web.apps.users.models import DiscordUser
-from random import choices, uniform
+from apps.items.models import Item
 
 
 def get_content_by_url(url):
@@ -57,96 +55,8 @@ ITEM_SUB_TYPES = [
 
 
 def test_func():
-    now = datetime.utcnow()
-    tmr = date.today() + timedelta(days=1)
-    pon = DiscordUser.objects.get(id=1)
-    print(tmr)
-    print(pon.joined_date.date())
-    print(tmr > pon.joined_date.date())
-
-
-def gacha_roll():
-    roll = 11
-    gacha_items = TreasureBoxGacha.objects.filter(job__job='Dark Knight')
-    rate = []
-    unique_count = 0
-    legend_count = 0
-    for item in gacha_items:
-        rate.append(item.rate)
-
-    # print(sum(rate))
-
-    if roll >= 11:
-        result = choices(gacha_items, rate, k=roll - 1)
-
-        guaranteed = gacha_items.filter(rank__rank='Unique')
-
-        uresult = choices(guaranteed)[0]
-
-        result.append(uresult)
-
-        emblem = ['(Emblem)', None]
-        weights = [0.9, 0.1]
-        emblem_stat_increase = 0.3
-        display_result = []
-        for gacha in result:
-            display_data = {
-                'rank': gacha.rank.rank,
-                'name': gacha.item.name,
-                'stat': {}
-            }
-            sub_type = gacha.item.sub_type
-            job = gacha.item.job
-            rank = gacha.rank
-            stats = gacha.item.stats.all()
-            for stat in stats:
-                try:
-                    stat_range = ItemStatRange.objects.get(sub_type=sub_type, rank=rank, stat=stat, job=job)
-                except ItemStatRange.DoesNotExist:
-                    print(f'Not recognized stat: {stat}. Please check ItemStatRange data.')
-                    continue
-                stat_amount = uniform(stat_range.min, stat_range.max)
-                display_data['stat'].update({stat.stat: round(stat_amount)})
-
-            if gacha.rank.rank == 'Unique':
-                unique_count += 1
-                em = choices(emblem, weights)[0]
-                if em:
-                    display_data['name'] += f' {em}'
-                    for key, value in display_data['stat'].items():
-                        display_data['stat'][key] = value * (1 + emblem_stat_increase)
-
-            elif gacha.rank.rank == 'Legendary':
-                legend_count += 1
-                em = choices(emblem, weights)[0]
-                if em:
-                    display_data['name'] += f' {em}'
-                    for key, value in display_data['stat'].items():
-                        display_data['stat'][key] = value * (1 + emblem_stat_increase)
-            display_result.append(display_data)
-
-        pprint(display_result)
-        print(f'Unique: {unique_count} | Legendary: {legend_count}')
-
-
-def random_stat():
-    gacha_item = TreasureBoxGacha.objects.get(id=1977)
-    sub_type = gacha_item.item.sub_type
-    job = gacha_item.job
-    rank = gacha_item.rank
-    stats = gacha_item.item.stats.all()
-    print(gacha_item.item.name, sub_type, job, rank)
-    # print(dir(stats))
-    print(stats)
-    for stat in stats:
-        try:
-            stat_range = ItemStatRange.objects.get(sub_type=sub_type, rank=rank, stat=stat, job=job)
-        except ItemStatRange.DoesNotExist:
-            print(stat)
-            continue
-        print(stat_range.min, stat_range.max)
-        stat_amount = uniform(stat_range.min, stat_range.max)
-        print(f'{stat}: {stat_amount}')
+    items = Item.objects.all()
+    print(items)
 
 
 def gacha_rate():
