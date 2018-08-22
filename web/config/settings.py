@@ -15,8 +15,8 @@ from decouple import config, Csv
 import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-# msvn_discordbot/web/config/settings.py -> msvn_discordbot/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# web/config/settings.py -> web/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -56,6 +56,7 @@ WSGI_APPLICATION = 'web.config.wsgi.application'
 
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -142,3 +143,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
