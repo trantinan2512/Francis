@@ -11,4 +11,4 @@ class Job(models.Model):
     branch = models.ForeignKey(JobBranch, on_delete=models.CASCADE, related_name='jobs', blank=True, null=True)
 
     def __str__(self):
-        return str(self.job)
+        return self.job

@@ -83,32 +83,37 @@ def dbscript():
     for c in JOBS:
         obj = Job.objects.filter(job=c)
         if not obj:
-            Job.objects.create(job=c)
+            job = Job.objects.create(job=c)
+            print('Job created:', job)
 
     # create ItemType objects if not exist
     for t in ITEM_TYPES:
         obj = ItemType.objects.filter(type=t)
         if not obj:
-            ItemType.objects.create(type=t)
+            item_type = ItemType.objects.create(type=t)
+            print('ItemType created:', item_type)
 
     # create ItemSubType objects if not exist
     for st, t in ITEM_SUB_TYPES:
         type = ItemType.objects.get(type=t)
         sub_type = ItemSubType.objects.filter(sub_type=st, type=type)
         if not sub_type:
-            ItemSubType.objects.create(sub_type=st, type=type)
+            its = ItemSubType.objects.create(sub_type=st, type=type)
+            print('ItemSubType created:', its)
 
     # create ItemRank objects if not exist
     for rank, max_star_level, emblem_rate in ITEM_RANKS:
         obj = ItemRank.objects.filter(rank=rank)
         if not obj:
-            ItemRank.objects.create(rank=rank, max_star=max_star_level, max_level=max_star_level, emblem_rate=emblem_rate)
+            ir = ItemRank.objects.create(rank=rank, max_star=max_star_level, max_level=max_star_level, emblem_rate=emblem_rate)
+            print('ItemRank created:', ir)
 
     # create ItemStat objects if not exist
     for o in ITEM_STATS:
         obj = ItemStat.objects.filter(stat=o)
         if not obj:
-            ItemStat.objects.create(stat=o)
+            item_stat = ItemStat.objects.create(stat=o)
+            print('ItemStat created:', item_stat)
 
 
 def get_content_by_url(url):
