@@ -35,6 +35,12 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 INSTALLED_APPS = [
 
+    'web.apps.francis',
+    'web.apps.gachas',
+    'web.apps.jobs',
+    'web.apps.users',
+    'web.apps.inventories',
+    'web.apps.items',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,32 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
-if DEBUG is True:
-    MY_APPS = [
-        'apps.francis',
-        'apps.gachas',
-        'apps.jobs',
-        'apps.users',
-        'apps.inventories',
-        'apps.items',
 
-    ]
-    ROOT_URLCONF = 'config.urls'
-    WSGI_APPLICATION = 'config.wsgi.application'
-else:
-    MY_APPS = [
-        'web.apps.francis',
-        'web.apps.gachas',
-        'web.apps.jobs',
-        'web.apps.users',
-        'web.apps.inventories',
-        'web.apps.items',
+ROOT_URLCONF = 'web.config.urls'
+WSGI_APPLICATION = 'web.config.wsgi.application'
 
-    ]
-    ROOT_URLCONF = 'web.config.urls'
-    WSGI_APPLICATION = 'web.config.wsgi.application'
-
-INSTALLED_APPS += MY_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -1,10 +1,6 @@
 from django.db import models
-try:
-    from apps.items.models import ItemRank, Item
-    from apps.jobs.models import Job
-except ModuleNotFoundError:
-    from web.apps.items.models import ItemRank, Item
-    from web.apps.jobs.models import Job
+from web.apps.items.models import ItemRank, Item
+from web.apps.jobs.models import Job
 
 # Create your models here.
 

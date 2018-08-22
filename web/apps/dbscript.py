@@ -3,16 +3,12 @@ from bs4 import BeautifulSoup
 import csv
 import os
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_config')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
 django.setup()
-try:
-    from apps.items.models import *
-    from apps.jobs.models import *
-    from apps.gachas.models import *
-except ModuleNotFoundError:
-    from web.apps.items.models import *
-    from web.apps.jobs.models import *
-    from web.apps.gachas.models import *
+
+from web.apps.items.models import *
+from web.apps.jobs.models import *
+from web.apps.gachas.models import *
 
 
 JOBS = [

@@ -1,10 +1,6 @@
 from django.db import models
-try:
-    from apps.users.models import DiscordUser
-    from apps.items.models import ItemType, Item
-except ModuleNotFoundError:
-    from web.apps.users.models import DiscordUser
-    from web.apps.items.models import ItemType, Item
+from web.apps.users.models import DiscordUser
+from web.apps.items.models import ItemType, Item
 # Create your models here.
 
 

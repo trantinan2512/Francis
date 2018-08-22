@@ -1,8 +1,5 @@
 from django.db import models
-try:
-    from apps.jobs.models import Job
-except ModuleNotFoundError:
-    from web.apps.jobs.models import Job
+from web.apps.jobs.models import Job
 # Create your models here.
 
 
