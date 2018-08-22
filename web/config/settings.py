@@ -54,6 +54,8 @@ if DEBUG is True:
         'apps.items',
 
     ]
+    ROOT_URLCONF = 'config.urls'
+    WSGI_APPLICATION = 'config.wsgi.application'
 else:
     MY_APPS = [
         'web.apps.francis',
@@ -64,6 +66,8 @@ else:
         'web.apps.items',
 
     ]
+    ROOT_URLCONF = 'web.config.urls'
+    WSGI_APPLICATION = 'web.config.wsgi.application'
 
 INSTALLED_APPS += MY_APPS
 
@@ -77,7 +81,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -94,8 +97,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
