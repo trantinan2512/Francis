@@ -224,7 +224,7 @@ JOB_BRANCHES = ['Warrior', 'Bowman', 'Thief', 'Mage', 'Pirate', 'All']
 
 def stat_range():
     sub_types = WEAPONS + ARMORS + ACCESSORIES
-    with open('apps/msm_equipdata.csv', newline='') as csvfile:
+    with open('web/apps/msm_equipdata.csv', newline='') as csvfile:
         csv_reader = csv.DictReader(csvfile)
         datas = []
         for row in csv_reader:
