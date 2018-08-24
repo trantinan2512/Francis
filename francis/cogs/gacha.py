@@ -1,6 +1,7 @@
 import os
 import django
 from django.db.models import F
+from django.utils import timezone
 import discord
 from discord.ext import commands
 import config
@@ -21,7 +22,10 @@ class Gacha:
         self.bot = bot
 
     def is_treasure_box_channel(context):
-        return context.message.channel.id == '481712884196573194'
+        if config.DEBUG:
+            return context.message.channel.id == '454890599410302977'
+        else:
+            return context.message.channel.id == '481712884196573194'
 
     @commands.command(pass_context=True, name='g')
     @commands.check(is_treasure_box_channel)
@@ -41,7 +45,7 @@ class Gacha:
                 description=f'`{prefix}g` : hiện hướng dẫn này.\n'
                 f'**`{prefix}g job 11`** : `job` là tên viết tắt của Job muốn quay rương.\n'
                 f'**`{prefix}glist`** : xem tên viết tắt của các Job có thể quay rương.\n'
-                f'**`{prefix}gdaily`** : nhận 10,000 Pha lê để quay rương hằng ngày (reset vào 7:00 sáng).\n'
+                f'**`{prefix}gdaily`** : nhận 10,000 Pha lê để quay rương hằng ngày (reset vào 00:00 sáng).\n'
                 f'**`{prefix}ginfo`** : xem thông tin rương đồ của mình.',
                 color=discord.Color.teal())
             embed.add_field(
@@ -252,13 +256,13 @@ class Gacha:
         if discord_user.gacha_info.daily_checked():
             embed = discord.Embed(
                 title=None,
-                description='Bạn đã nhận Pha lê hôm nay rồi nhé. Vui lòng thử lại **sau 7:00 sáng ngày mai**.',
+                description='Bạn đã nhận Pha lê hôm nay rồi nhé. Vui lòng thử lại **sau 00:00 sáng ngày mai**.',
                 colour=discord.Color.teal())
             await self.bot.say(embed=embed)
             return
 
         # gives the user crystals
-        discord_user.gacha_info.daily_check = datetime.utcnow()
+        discord_user.gacha_info.daily_check = timezone.now()
         discord_user.gacha_info.crystal_owned = F('crystal_owned') + 10000
         discord_user.gacha_info.save()
 

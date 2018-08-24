@@ -25,6 +25,9 @@ class GachaInfo(models.Model):
     crystal_used = models.IntegerField(default=0)
     daily_check = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return f'{self.discord_user.discord_name}\'s'
+
     def crystal_total(self):
         return self.crystal_owned + self.crystal_used
 
@@ -36,3 +39,4 @@ class GachaInfo(models.Model):
             return True
         else:
             return False
+    daily_checked.boolean = True
