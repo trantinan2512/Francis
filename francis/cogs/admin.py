@@ -2,7 +2,6 @@ from pprint import pprint
 import json
 import asyncio
 import operator
-import os
 
 import discord
 from discord.ext import commands
@@ -11,6 +10,14 @@ from utils.db import initialize_db
 import config
 
 from dateparser import parse
+
+import os
+import django
+from django.db.models import F
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
+django.setup()
+
+from web.apps.users.models import DiscordUser
 
 
 class Admin:
@@ -147,8 +154,7 @@ class Admin:
     @commands.command(pass_context=True, name='sc')
     @commands.check(is_mod)
     async def event_scheduler(self, context, *, data=None):
-
-        message_counter = 0
+        to_delete_messages = []
         prefix = self.bot.command_prefix
         timeout = 30
         timeout_msg = f'Session timed out. Please start over by typing `{prefix}schedule start`.'
@@ -175,13 +181,13 @@ class Admin:
 
         # shorthand with `schedule [event name] -- [date time]
         elif '--' in data:
-            message_counter = +1
+            to_delete_messages.append(context.message)
             event_name, event_datetime = data.split('--', 1)
             event_name = event_name.strip()
             parsed_datetime = parse(event_datetime, settings={'DATE_ORDER': 'DMY'})
             if parsed_datetime is None:
-                await self.bot.say('Cannot recognize the Date Time provided. Please try again.')
-                message_counter += 1
+                msg = await self.bot.say('Cannot recognize the Date Time provided. Please try again.')
+                to_delete_messages.append(msg)
                 pass
             else:
                 if parsed_datetime.tzinfo is not None:
@@ -189,78 +195,78 @@ class Admin:
                 else:
                     str_datetime = parsed_datetime.strftime('%I:%M:%S %p %d/%m/%Y (UTC)')
 
-                await self.bot.say(
+                msg = await self.bot.say(
                     'Here is the data you provided (date time format: `HH:MM:SS PP dd/mm/yyyy (Timezone)`):'
                     f'```Event Name: {event_name}\n'
                     f'Event Date: {str_datetime}```'
                     'Is this correct? (yes/no)'
                 )
-                message_counter += 1
+                to_delete_messages.append(msg)
 
                 done = False
 
                 while done is not True:
                     confirm = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
                     if confirm is None:
-                        await self.bot.say(f'Session timed out. Please start over.')
-                        message_counter += 1
+                        msg = await self.bot.say(f'Session timed out. Please start over.')
+                        to_delete_messages.append(msg)
                         break
-                    message_counter += 1
+                    to_delete_messages.append(confirm)
 
                     if confirm.content.lower().startswith('y'):
 
                         schedule_db.insert_row([event_name, str_datetime], index=2)
 
-                        await self.bot.say('Done! Thanks.')
-                        message_counter += 1
+                        msg = await self.bot.say('Done! Thanks.')
+                        to_delete_messages.append(msg)
                         done = True
                     elif confirm.content.lower().startswith('n'):
-                        await self.bot.say(f'No schedule created. Please try again.')
-                        message_counter += 1
+                        msg = await self.bot.say(f'No schedule created. Please try again.')
+                        to_delete_messages.append(msg)
                         done = True
                     else:
-                        await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
-                        message_counter += 1
+                        msg = await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
+                        to_delete_messages.append(msg)
 
         # start listening to the user with `schedule start`
         elif data.startswith('start'):
-            message_counter = +1
-            await self.bot.say('Please provide the Event Name')
-            message_counter += 1
+            to_delete_messages.append(context.message)
+            msg = await self.bot.say('Please provide the Event Name')
+            to_delete_messages.append(msg)
 
             event_name = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
             if event_name is None:
-                await self.bot.say(timeout_msg)
-                message_counter += 1
+                msg = await self.bot.say(timeout_msg)
+                to_delete_messages.append(msg)
                 pass
-            message_counter += 1
+            to_delete_messages.append(event_name)
 
-            await self.bot.say('Please provide the Date and Time for the event. Provide the timezone also, default is UTC.')
-            message_counter += 1
+            msg = await self.bot.say('Please provide the Date and Time for the event. Provide the timezone also, default is UTC.')
+            to_delete_messages.append(msg)
 
             event_datetime = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
             if event_datetime is None:
-                await self.bot.say(timeout_msg)
-                message_counter += 1
+                msg = await self.bot.say(timeout_msg)
+                to_delete_messages.append(msg)
                 pass
-            message_counter += 1
+            to_delete_messages.append(event_datetime)
 
             parsed_datetime = parse(event_datetime.content, settings={'DATE_ORDER': 'DMY'})
             while parsed_datetime is None:
 
-                await self.bot.say('Please provide a correct Date and Time (default timezone: UTC). Or type `quit` to exit.')
-                message_counter += 1
+                msg = await self.bot.say('Please provide a correct Date and Time (default timezone: UTC). Or type `quit` to exit.')
+                to_delete_messages.append(msg)
 
                 event_datetime = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
                 if event_datetime is None:
-                    await self.bot.say(timeout_msg)
-                    message_counter += 1
+                    msg = await self.bot.say(timeout_msg)
+                    to_delete_messages.append(msg)
                     break
-                message_counter += 1
+                to_delete_messages.append(event_datetime)
 
                 if event_datetime.content == 'quit':
-                    await self.bot.say('Successfully terminated.')
-                    message_counter += 1
+                    msg = await self.bot.say('Successfully terminated.')
+                    to_delete_messages.append(msg)
                     return
                 else:
                     parsed_datetime = parse(event_datetime.content, settings={'DATE_ORDER': 'DMY'})
@@ -272,38 +278,38 @@ class Admin:
                 else:
                     str_datetime = parsed_datetime.strftime('%I:%M:%S %p %d/%m/%Y (UTC)')
 
-                await self.bot.say(
+                msg = await self.bot.say(
                     'Here is the data you provided (date time format: `HH:MM:SS PP dd/mm/yyyy (Timezone)`):'
                     f'```Event Name: {event_name.content}\n'
                     f'Event Date: {str_datetime}```'
                     'Is this correct? (yes/no)'
                 )
-                message_counter += 1
+                to_delete_messages.append(msg)
 
                 done = False
 
                 while done is not True:
                     confirm = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
                     if confirm is None:
-                        await self.bot.say(timeout_msg)
-                        message_counter += 1
+                        msg = await self.bot.say(timeout_msg)
+                        to_delete_messages.append(msg)
                         pass
-                    message_counter += 1
+                    to_delete_messages.append(confirm)
 
                     if confirm.content.lower().startswith('y'):
 
                         schedule_db.insert_row([event_name.content, str_datetime], index=2)
 
-                        await self.bot.say('Done! Thanks.')
-                        message_counter += 1
+                        msg = await self.bot.say('Done! Thanks.')
+                        to_delete_messages.append(msg)
                         done = True
                     elif confirm.content.lower().startswith('n'):
-                        await self.bot.say(f'No schedule created. Please start over by typing `{prefix}schedule start`.')
-                        message_counter += 1
+                        msg = await self.bot.say(f'No schedule created. Please start over by typing `{prefix}schedule start`.')
+                        to_delete_messages.append(msg)
                         done = True
                     else:
-                        await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
-                        message_counter += 1
+                        msg = await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
+                        to_delete_messages.append(msg)
         elif data.startswith('list'):
             # from the list of db show it here
             records = schedule_db.get_all_records()
@@ -332,39 +338,40 @@ class Admin:
                 await self.bot.say('Empty schedules.')
 
         # delete messages generated by scheduling
-        if message_counter != 0:
-            to_delete = []
-            async for message in self.bot.logs_from(context.message.channel, limit=message_counter):
-                to_delete.append(message)
-            note = await self.bot.say(f'The above messages ({len(to_delete)}) will be deleted in 10 seconds :hourglass_flowing_sand:')
+        if len(to_delete_messages) != 0:
+            note = await self.bot.say(f'The above messages ({len(to_delete_messages)}) will be deleted in 10 seconds'
+                                      ':hourglass_flowing_sand:')
             await asyncio.sleep(10)
-            await self.bot.delete_messages(to_delete)
+            await self.bot.delete_messages(to_delete_messages)
             await self.bot.edit_message(note, 'Done :white_check_mark:')
             await asyncio.sleep(5)
             await self.bot.delete_message(note)
 
+    @commands.command(pass_context=True, name='give')
+    @commands.check(is_me)
+    async def give_credit(self, context, item, to, amount):
+        await self.bot.delete_message(context.message)
+        if item.lower() in ['cr', 'pl', 'crystal']:
+            try:
+                user = DiscordUser.objects.get(discord_id=to)
+            except DiscordUser.DoesNotExist:
+                note = await self.bot.say(f'The user with ID: {to} does not exist.')
+                await asyncio.sleep(5)
+                await self.bot.delete_message(note)
+
+            user.gacha_info.crystal_owned = F('crystal_owned') + int(amount)
+            user.gacha_info.save()
+
+            discord_user = await self.bot.get_user_info(to)
+            amount = '{:,}'.format(int(amount))
+            await self.bot.say(f'{discord_user.mention} has been credited **{amount} Crystals**.')
+
     @clear_messages.error
-    async def clear_messages_error(self, error, context):
-
-        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to clear messages.')
-        return  # fail silently
-
     @count_users_messages.error
-    async def count_users_messages_error(self, error, context):
-
-        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to count messages.')
-        return  # fail silently
-
     @change_bot_presence.error
-    async def change_bot_presence_error(self, error, context):
-
-        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to change bot\'s presence.')
-        return  # fail silently
-
     @event_scheduler.error
-    async def event_scheduler_error(self, error, context):
-
-        print(f'@{context.message.author.name} (ID: {context.message.author.id}) tried to schedule.')
+    async def clear_messages_error(self, error, context):
+        print(error)
         return  # fail silently
 
 
