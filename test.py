@@ -1,5 +1,6 @@
 import os
 import django
+from django.utils import timezone
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
 django.setup()
 import json
@@ -7,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import dateparser
-from pytz import timezone
+from pytz import timezone as tz
 from datetime import timedelta, datetime, date
 from config import BASE_DIR
 import config
@@ -57,12 +58,15 @@ ITEM_SUB_TYPES = [
 
 
 def test_func():
-    now = datetime.utcnow()
-    tmr = date.today() + timedelta(days=1)
+    today = timezone.now()
+    vn_tz = tz('Asia/Ho_Chi_Minh')
+    print(dir(today))
     pon = DiscordUser.objects.get(id=1)
-    print(tmr)
-    print(pon.joined_date.date())
-    print(tmr > pon.joined_date.date())
+    print(today.astimezone(vn_tz))
+    print(today)
+    checked = pon.gacha_info.daily_check
+    print(checked.astimezone(vn_tz))
+    print(checked)
 
 
 def gacha_roll():

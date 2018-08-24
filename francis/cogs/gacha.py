@@ -1,14 +1,14 @@
 import os
 import django
 from django.db.models import F
-from django.utils import timezone
 import discord
 from discord.ext import commands
 import config
-from datetime import date, datetime
+from datetime import datetime
+from pytz import timezone
 from random import choices, uniform
 from collections import Counter
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_config')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
 django.setup()
 from web.apps.items.models import Item, ItemStatRange
 from web.apps.gachas.models import TreasureBoxGacha
@@ -262,7 +262,8 @@ class Gacha:
             return
 
         # gives the user crystals
-        discord_user.gacha_info.daily_check = timezone.now()
+        vn_tz = timezone('Asia/Ho_Chi_Minh')
+        discord_user.gacha_info.daily_check = datetime.now().astimezone(vn_tz)
         discord_user.gacha_info.crystal_owned = F('crystal_owned') + 10000
         discord_user.gacha_info.save()
 
@@ -329,7 +330,7 @@ class Gacha:
     @gachadaily.error
     @gachainfo.error
     async def gacha_error(self, error, context):
-        print('Command not allowed.')
+        print(error)
         return
 
 

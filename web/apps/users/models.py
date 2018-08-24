@@ -1,5 +1,6 @@
 from django.db import models
-from django.utils import timezone
+from pytz import timezone
+from datetime import datetime
 # Create your models here.
 
 
@@ -32,10 +33,11 @@ class GachaInfo(models.Model):
         return self.crystal_owned + self.crystal_used
 
     def daily_checked(self):
-        today = timezone.now().date()
-        checked_time = self.daily_check
+        vn_tz = timezone('Asia/Ho_Chi_Minh')
+        today = datetime.now().astimezone(vn_tz)
+        checked_time = self.daily_check.astimezone(vn_tz)
 
-        if checked_time and checked_time.date() >= today:
+        if checked_time and checked_time.date() >= today.date():
             return True
         else:
             return False
