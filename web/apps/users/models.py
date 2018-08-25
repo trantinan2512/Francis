@@ -35,10 +35,12 @@ class GachaInfo(models.Model):
     def daily_checked(self):
         vn_tz = timezone('Asia/Ho_Chi_Minh')
         today = datetime.now().astimezone(vn_tz)
-        checked_time = self.daily_check.astimezone(vn_tz)
 
-        if checked_time and checked_time.date() >= today.date():
-            return True
+        if self.daily_check:
+            checked_time = self.daily_check.astimezone(vn_tz)
+
+            if checked_time.date() >= today.date():
+                return True
         else:
             return False
     daily_checked.boolean = True
