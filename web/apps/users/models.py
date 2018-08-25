@@ -41,6 +41,8 @@ class GachaInfo(models.Model):
 
             if checked_time.date() >= today.date():
                 return True
+            else:
+                return False
         else:
             return False
     daily_checked.boolean = True
