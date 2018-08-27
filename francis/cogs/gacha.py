@@ -27,7 +27,7 @@ class Gacha:
         else:
             return context.message.channel.id == '481712884196573194'
 
-    @commands.command(pass_context=True, name='g')
+    @commands.command(pass_context=True, aliases=['g', 'gs'])
     @commands.check(is_treasure_box_channel)
     async def gacha(self, context, job=None, rolls=None):
         """MapleStory Mobile Treasure Box Gacha"""
@@ -35,79 +35,94 @@ class Gacha:
         message = context.message
         author = message.author
         prefix = self.bot.command_prefix
+        command_name = context.invoked_with
 
         discord_user = self.check_user_in_db(author.id, author.name)
 
-        if job is None or rolls is None:
+        if job is None:
 
             embed = discord.Embed(
                 title=f'Cách quay rương và các lệnh liên quan',
-                description=f'`{prefix}g` : hiện hướng dẫn này.\n'
-                f'**`{prefix}g job 11`** : `job` là tên viết tắt của Job muốn quay rương.\n'
-                f'**`{prefix}glist`** : xem tên viết tắt của các Job có thể quay rương.\n'
-                f'**`{prefix}gdaily`** : nhận 10,000 Pha lê để quay rương hằng ngày (reset vào 00:00 sáng).\n'
-                f'**`{prefix}ginfo`** : xem thông tin rương đồ của mình.',
+                description=f'• **`{prefix}g`**   **`{prefix}gs`** : hiện hướng dẫn này.\n'
+                f'• **`{prefix}g job`** : Quay rương 10+1 lần.\n'
+                f'• **`{prefix}gs job`** : Quay rương 1 lần.\n'
+                '`job` là tên viết tắt của Job muốn quay rương.\n'
+                f'• **`{prefix}glist`** : xem tên viết tắt của các Job có thể quay rương.\n'
+                f'• **`{prefix}gdaily`** : nhận 10,000 Pha lê để quay rương hằng ngày (reset vào 00:00 sáng).\n'
+                f'• **`{prefix}ginfo`** : xem thông tin rương đồ của mình.',
                 color=discord.Color.teal())
             embed.add_field(
                 name='Thông tin cần biết',
-                value='+ Mỗi lần xoay rương (x11) sẽ cần **1,000 Pha lê**\n'
-                '+ Chỉ số của item sẽ **ngẫu nhiên** trong khoảng Min - Max của item đó.\n'
+                value='• Quay rương 10+1 lần sẽ cần **1,000 Pha lê**; Quay rương 1 lần sẽ cần **100 Pha lê**.\n'
+                '• Tỷ lệ ra đồ dựa trên bảng tỷ lệ của Nexon, [xem tại đây](https://m.nexon.com/terms/353)\n'
+                '• Chỉ số của item sẽ **ngẫu nhiên** trong khoảng Min - Max của item đó.\n'
                 '[**Credits to Lukishi**](https://docs.google.com/spreadsheets/d/1zEix7SJoHMyqKJxxheUtluKLOEmwtfgTJwXENZHsEoY/htmlview)\n'
-                '+ Các món đồ có nền (Emblem) không đủ dữ kiện, nên sẽ tạm tính chỉ số Min - Max **bằng 130%** so với item không có nền')
+                '• Các món đồ có nền (Emblem) không đủ dữ kiện, nên sẽ tạm tính chỉ số Min - Max **bằng 130%** so với item không có nền\n'
+                '• Tỷ lệ ra nền chưa xác định, nên sẽ tạm cho là **10%**.')
             embed.add_field(
                 name='Ví dụ',
-                value=f'Quay rương (x11) cho Dark Knight: **`{prefix}g dk 11`**\n'
-                f'Có thể dùng tên job viết liền (không dấu cách) để quay rương:\n**`{prefix}g darkknight 11`**',)
+                value=f'• Quay rương 10+1 cho Dark Knight: **`{prefix}g dk`**\n'
+                f'• Quay rương 1 cho Bishop: **`{prefix}gs bs`**\n'
+                f'Có thể dùng tên job viết liền (không dấu cách) để quay rương:\n**`{prefix}g darkknight`**',)
             await self.bot.say_as_embed(embed=embed)
 
         else:
+            if command_name == 'g':
+                rolls = 11
+                min_cr = 1000
+            elif command_name == 'gs':
+                rolls = 1
+                min_cr = 100
+
             # inform the user that they don't have enough crystals for gacha to work
-            if discord_user.gacha_info.crystal_owned < 1000:
-                embed = discord.Embed(
-                    title=f'Không thể quay rương, số Pha lê không đủ',
-                    description=f'{author.mention}, bạn đang có `{discord_user.gacha_info.crystal_owned} Pha lê`.'
-                    ' Cần tối thiểu 1,000 Pha lê để quay rương.\n'
-                    f'Nhập lệnh `{prefix}gdaily` để nhận Pha lê hằng ngày nhé!',
-                    color=discord.Color.teal())
-                await self.bot.say_as_embed(embed=embed)
-                return
-            # take 1,000 crystals from the user's balance
-            else:
-                discord_user.gacha_info.crystal_owned = F('crystal_owned') - 1000
-                discord_user.gacha_info.crystal_used = F('crystal_used') + 1000
+            if rolls:
+                if discord_user.gacha_info.crystal_owned < min_cr:
+                    embed = discord.Embed(
+                        title=f'Không thể quay rương, số Pha lê không đủ',
+                        description=f'{author.mention}, bạn đang có `{discord_user.gacha_info.crystal_owned} Pha lê`.'
+                        f' Cần tối thiểu {"{:,}".format(min_cr)} Pha lê để quay rương.\n'
+                        f'Nhập lệnh `{prefix}gdaily` để nhận Pha lê hằng ngày nhé!',
+                        color=discord.Color.teal())
+                    await self.bot.say_as_embed(embed=embed)
+                    return
+                # take 1,000 crystals from the user's balance
+                else:
+                    discord_user.gacha_info.crystal_owned = F('crystal_owned') - min_cr
+                    discord_user.gacha_info.crystal_used = F('crystal_used') + min_cr
 
-            # process job given by the user
-            if job.lower() in ['dk', 'darkknight']:
-                job_processed = 'Dark Knight'
-            elif job.lower() in ['bm', 'bowmaster']:
-                job_processed = 'Bowmaster'
-            elif job.lower() in ['bs', 'bis', 'bish', 'bishop']:
-                job_processed = 'Bishop'
-            elif job.lower() in ['nl', 'nightlord']:
-                job_processed = 'Night Lord'
-            elif job.lower() in ['cs', 'cor', 'sair', 'corsair']:
-                job_processed = 'Corsair'
-            else:
-                embed = discord.Embed(
-                    title=f'Không tìm được Job với cụm: {job}',
-                    description=f'Vui lòng thử lại với *tên viết tắt của Job* hoặc *tên đầy đủ không dấu cách*.',
-                    colour=discord.Color.teal())
-                await self.bot.say_as_embed(embed=embed)
-                return
+                # process job given by the user
+                if job.lower() in ['dk', 'darkknight']:
+                    job_processed = 'Dark Knight'
+                elif job.lower() in ['bm', 'bowmaster']:
+                    job_processed = 'Bowmaster'
+                elif job.lower() in ['bs', 'bis', 'bish', 'bishop']:
+                    job_processed = 'Bishop'
+                elif job.lower() in ['nl', 'nightlord']:
+                    job_processed = 'Night Lord'
+                elif job.lower() in ['cs', 'cor', 'sair', 'corsair']:
+                    job_processed = 'Corsair'
+                else:
+                    embed = discord.Embed(
+                        title=f'Không tìm được Job với cụm: {job}',
+                        description=f'Vui lòng thử lại với *tên viết tắt của Job* hoặc *tên đầy đủ không dấu cách*.',
+                        colour=discord.Color.teal())
+                    await self.bot.say_as_embed(embed=embed)
+                    return
 
-            gacha_items = TreasureBoxGacha.objects.filter(job__job=job_processed)
-            rate = []
-            for item in gacha_items:
-                rate.append(item.rate)
+                gacha_items = TreasureBoxGacha.objects.filter(job__job=job_processed)
+                rate = []
+                for item in gacha_items:
+                    rate.append(item.rate)
 
-            rolls = int(rolls)
-            if rolls == 11:
-                result = choices(gacha_items, rate, k=rolls - 1)
+                if rolls == 1:
+                    result = choices(gacha_items, rate, k=rolls)
+                else:
+                    result = choices(gacha_items, rate, k=rolls - 1)
 
-                # for guaranteed unique item with multi rolls
-                guaranteed = gacha_items.filter(rank__rank='Unique')
-                uresult = choices(guaranteed)[0]
-                result.append(uresult)
+                    # for guaranteed unique item with multi rolls
+                    guaranteed = gacha_items.filter(rank__rank='Unique')
+                    uresult = choices(guaranteed)[0]
+                    result.append(uresult)
 
                 # randomly give Emblem to Unique/Legendary items with the rate of 10%
                 # items with Emblem have an increase of stats of 30%
@@ -199,9 +214,14 @@ class Gacha:
                 text_item_rank_count = f'Rare: `{item_rank_count[0]}` | Epic: `{item_rank_count[1]}` | '
                 text_item_rank_count += f'Unique: `{item_rank_count[2]}` | Legendary: `{item_rank_count[3]}`'
 
+                if rolls == 1:
+                    desr = f'Job: {job_processed}'
+                else:
+                    desr = f'Job: {job_processed}\n {text_item_rank_count}'
+
                 embed = discord.Embed(
-                    title=f'Kết quả mở Treasure Box 11 lần của [{author.display_name}]',
-                    description=f'Job: {job_processed}\n {text_item_rank_count}',
+                    title=f'Kết quả mở Treasure Box {rolls} lần của [{author.display_name}]',
+                    description=desr,
                     colour=discord.Color.teal())
 
                 for item_result in display_result:
@@ -221,6 +241,7 @@ class Gacha:
     @commands.command(pass_context=True, name='glist')
     @commands.check(is_treasure_box_channel)
     async def gachalist(self, context):
+        prefix = self.bot.command_prefix
         job_abbrs = [
             ('Dark Knight', 'dk'),
             ('Bowmaster', 'bm'),
@@ -239,8 +260,10 @@ class Gacha:
         embed = discord.Embed(
             title='Danh sách Job và các tên viết tắt dùng để quay rương',
             description=f'```{text_job_abbrs}```\n'
-            f'Lệnh quay rương: `{self.bot.command_prefix}g viết_tắt số_lượng` (`số_lượng` = `11`)\n'
-            f'Ví dụ quay rương cho Dark Knight: `{self.bot.command_prefix}g dk 11`\n',
+            f'**Lệnh quay rương**\n'
+            f'• `{prefix}gs viết_tắt` (1 lần)\n'
+            f'• `{prefix}g viết_tắt` (10+1 lần)\n'
+            f'Ví dụ quay rương 10+1 lần cho Dark Knight: `{prefix}g dk`\n',
             colour=discord.Color.teal())
         await self.bot.say(embed=embed)
 
@@ -256,7 +279,7 @@ class Gacha:
         if discord_user.gacha_info.daily_checked():
             embed = discord.Embed(
                 title=None,
-                description='Bạn đã nhận Pha lê hôm nay rồi nhé. Vui lòng thử lại **sau 00:00 sáng ngày mai**.',
+                description='Bạn đã nhận Pha lê hôm nay rồi nhé. Vui lòng thử lại **sau 00:00 sáng mai**.',
                 colour=discord.Color.teal())
             await self.bot.say(embed=embed)
             return
@@ -273,7 +296,7 @@ class Gacha:
         embed = discord.Embed(
             title=None,
             description=f'{author.mention} đã nhận 10,000 Pha lê vào tài khoản quay rương!\n'
-            f'Hiện tại bạn đang có **{crystals}** Pha lê.',
+            f'Hiện tại bạn đang có **{crystals} Pha lê**.',
             colour=discord.Color.teal())
         await self.bot.say(embed=embed)
 
@@ -298,19 +321,19 @@ class Gacha:
             colour=discord.Color.teal())
         embed.add_field(
             name='Pha lê:',
-            value=f'Đang có: {owned}\nĐã dùng: {used}',
+            value=f'• Đang có: {owned}\n• Đã dùng: {used}',
             inline=False)
         embed.add_field(
             name='Rương đồ:',
-            value=f'+ Rare: **{gacha_info.rare_item_count}**\n'
-            f'+ Epic: **{gacha_info.epic_item_count}**\n'
-            f'+ Unique: **{gacha_info.unique_item_count}** (**{gacha_info.unique_emblem_item_count}** món có nền (Emblem))\n'
-            f'+ Legendary: **{gacha_info.legendary_item_count}** (**{gacha_info.legendary_emblem_item_count}** món có nền (Emblem))\n',
+            value=f'• Rare: **{gacha_info.rare_item_count}**\n'
+            f'• Epic: **{gacha_info.epic_item_count}**\n'
+            f'• Unique: **{gacha_info.unique_item_count}** (**{gacha_info.unique_emblem_item_count}** món có nền (Emblem))\n'
+            f'• Legendary: **{gacha_info.legendary_item_count}** (**{gacha_info.legendary_emblem_item_count}** món có nền (Emblem))\n',
             inline=False)
 
         # check for daily Crystal redemption
         if discord_user.gacha_info.daily_checked() is True:
-            text_daily_checked = 'Đã nhận hôm nay'
+            text_daily_checked = 'Đã nhận hôm nay.'
         else:
             text_daily_checked = f'Chưa nhận, dùng lệnh `{self.bot.command_prefix}gdaily` để nhận Pha lê.'
         embed.add_field(

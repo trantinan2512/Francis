@@ -58,15 +58,11 @@ ITEM_SUB_TYPES = [
 
 
 def test_func():
-    today = timezone.now()
-    vn_tz = tz('Asia/Ho_Chi_Minh')
-    print(dir(today))
-    pon = DiscordUser.objects.get(id=1)
-    print(today.astimezone(vn_tz))
-    print(today)
-    checked = pon.gacha_info.daily_check
-    print(checked.astimezone(vn_tz))
-    print(checked)
+    a = True
+    b = False
+    c = None
+    print(a == c)
+    print(b == c)
 
 
 def gacha_roll():
