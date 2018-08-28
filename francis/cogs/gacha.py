@@ -7,7 +7,6 @@ import config
 from datetime import datetime
 from pytz import timezone
 from random import choices, uniform
-from collections import Counter
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
 django.setup()
 from web.apps.items.models import Item, ItemStatRange

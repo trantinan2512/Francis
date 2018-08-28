@@ -31,7 +31,8 @@ initial_extensions = (
     'francis.cogs.link',
     'francis.cogs.requirement',
     'francis.cogs.role',
-    'francis.cogs.gacha'
+    'francis.cogs.gacha',
+    'francis.cogs.stat_check'
 )
 for extension in initial_extensions:
     try:
