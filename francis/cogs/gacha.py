@@ -47,12 +47,12 @@ class Gacha:
                 f'• **`{prefix}gs job`** : Quay rương 1 lần.\n'
                 '`job` là tên viết tắt của Job muốn quay rương.\n'
                 f'• **`{prefix}glist`** : xem tên viết tắt của các Job có thể quay rương.\n'
-                f'• **`{prefix}gdaily`** : nhận 10,000 Pha lê để quay rương hằng ngày (reset vào 00:00 sáng).\n'
+                f'• **`{prefix}gdaily`** : nhận 10,000 :gem: (Pha lê) để quay rương hằng ngày (reset vào 00:00 sáng).\n'
                 f'• **`{prefix}ginfo`** : xem thông tin rương đồ của mình.',
                 color=discord.Color.teal())
             embed.add_field(
                 name='Thông tin cần biết',
-                value='• Quay rương 10+1 lần sẽ cần **1,000 Pha lê**; Quay rương 1 lần sẽ cần **100 Pha lê**.\n'
+                value='• Quay rương 10+1 lần sẽ cần **1,000 :gem:**; Quay rương 1 lần sẽ cần **100 :gem:**.\n'
                 '• Tỷ lệ ra đồ dựa trên bảng tỷ lệ của Nexon, [xem tại đây](https://m.nexon.com/terms/353)\n'
                 '• Chỉ số của item sẽ **ngẫu nhiên** trong khoảng Min - Max của item đó.\n'
                 '[**Credits to Lukishi**](https://docs.google.com/spreadsheets/d/1zEix7SJoHMyqKJxxheUtluKLOEmwtfgTJwXENZHsEoY/htmlview)\n'
@@ -77,10 +77,10 @@ class Gacha:
             if rolls:
                 if discord_user.gacha_info.crystal_owned < min_cr:
                     embed = discord.Embed(
-                        title=f'Không thể quay rương, số Pha lê không đủ',
-                        description=f'{author.mention}, bạn đang có `{discord_user.gacha_info.crystal_owned} Pha lê`.'
-                        f' Cần tối thiểu {"{:,}".format(min_cr)} Pha lê để quay rương.\n'
-                        f'Nhập lệnh `{prefix}gdaily` để nhận Pha lê hằng ngày nhé!',
+                        title=f'Không thể quay rương, số :gem: không đủ',
+                        description=f'{author.mention}, bạn đang có {discord_user.gacha_info.crystal_owned} :gem:.'
+                        f' Cần tối thiểu {"{:,}".format(min_cr)} :gem: để quay rương.\n'
+                        f'Nhập lệnh `{prefix}gdaily` để nhận :gem: hằng ngày nhé!',
                         color=discord.Color.teal())
                     await self.bot.say_as_embed(embed=embed)
                     return
@@ -234,7 +234,9 @@ class Gacha:
                 discord_user.gacha_info.save()
                 discord_user.gacha_info.refresh_from_db()
                 crystals = '{:,}'.format(discord_user.gacha_info.crystal_owned)
-                embed.set_footer(text=f'Bạn còn [{crystals} Pha lê] trong tài khoản.')
+                embed.set_footer(
+                    text=f'Bạn còn [💎 x{crystals}] trong tài khoản.',
+                    icon_url='https://i.imgur.com/Sh9kXA8.png')
                 await self.bot.say_as_embed(embed=embed)
 
     @commands.command(pass_context=True, name='glist')
@@ -278,7 +280,7 @@ class Gacha:
         if discord_user.gacha_info.daily_checked():
             embed = discord.Embed(
                 title=None,
-                description='Bạn đã nhận Pha lê hôm nay rồi nhé. Vui lòng thử lại **sau 00:00 sáng mai**.',
+                description='Bạn đã nhận :gem: hôm nay rồi nhé. Vui lòng thử lại **sau 00:00 sáng mai**.',
                 colour=discord.Color.teal())
             await self.bot.say(embed=embed)
             return
@@ -294,8 +296,8 @@ class Gacha:
 
         embed = discord.Embed(
             title=None,
-            description=f'{author.mention} đã nhận 10,000 Pha lê vào tài khoản quay rương!\n'
-            f'Hiện tại bạn đang có **{crystals} Pha lê**.',
+            description=f'{author.mention} đã nhận :gem: x10,000  vào tài khoản quay rương!\n'
+            f'Hiện tại bạn đang có **:gem: x{crystals}**.',
             colour=discord.Color.teal())
         await self.bot.say(embed=embed)
 
@@ -319,11 +321,11 @@ class Gacha:
             description=None,
             colour=discord.Color.teal())
         embed.add_field(
-            name='Pha lê:',
-            value=f'• Đang có: {owned}\n• Đã dùng: {used}',
+            name='Pha lê',
+            value=f'• Đang có: :gem: x**{owned}**\n• Đã dùng: :gem: x**{used}**',
             inline=False)
         embed.add_field(
-            name='Rương đồ:',
+            name='Rương đồ',
             value=f'• Rare: **{gacha_info.rare_item_count}**\n'
             f'• Epic: **{gacha_info.epic_item_count}**\n'
             f'• Unique: **{gacha_info.unique_item_count}** (**{gacha_info.unique_emblem_item_count}** món có nền (Emblem))\n'
@@ -334,9 +336,9 @@ class Gacha:
         if discord_user.gacha_info.daily_checked() is True:
             text_daily_checked = 'Đã nhận hôm nay.'
         else:
-            text_daily_checked = f'Chưa nhận, dùng lệnh `{self.bot.command_prefix}gdaily` để nhận Pha lê.'
+            text_daily_checked = f'Chưa nhận, dùng lệnh `{self.bot.command_prefix}gdaily` để nhận :gem:.'
         embed.add_field(
-            name='Nhận Pha lê hằng ngày:',
+            name='Nhận 💎 hằng ngày',
             value=text_daily_checked)
         # set the thumbnail image for better visualizations
         embed.set_thumbnail(url='https://i.imgur.com/Sj2rPTN.png')
