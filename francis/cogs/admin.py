@@ -366,6 +366,26 @@ class Admin:
             amount = '{:,}'.format(int(amount))
             await self.bot.say(f'{discord_user.mention} has been credited **{amount} Crystals**.')
 
+    @commands.command(pass_context=True, name='grcc')
+    @commands.check(is_me)
+    async def get_roles_color_code(self, context):
+
+        await self.bot.delete_message(context.message)
+        ms_server = self.bot.get_server('453555802670759947')
+        dawn_server = self.bot.get_server('364323564737789953')
+
+        for ms_role in ms_server.roles:
+            if ms_role.name in config.AUTOASIGN_COLOR_ROLES:
+                role_names = []
+                for dn_role in dawn_server.roles:
+                    role_names.append(dn_role.name)
+                if ms_role.name in role_names:
+                    pass
+                else:
+                    new_role = await self.bot.create_role(
+                        server=dawn_server, name=ms_role.name, color=ms_role.color, hoist=False, mentionable=False)
+                    print(f'Created role: {new_role.name} in server: {dawn_server.name}')
+
     @clear_messages.error
     @count_users_messages.error
     @change_bot_presence.error

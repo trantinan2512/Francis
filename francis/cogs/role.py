@@ -10,23 +10,52 @@ class Role:
     def __init__(self, bot):
         self.bot = bot
 
+    def is_dawn_member(ctx):
+        author = ctx.message.author
+        server = ctx.message.server
+
+        # Dawn member check
+        if server.id == config.DAWN_SERVER_ID:
+            dawn_role = discord.utils.get(author.roles, id='364967220193001472')
+            if dawn_role:
+                return True
+            else:
+                return False
+        else:
+            return True
+
     @commands.command(pass_context=True)
+    @commands.check(is_dawn_member)
     async def role(self, context, *, role=None):
         """Set Role theo yêu cầu"""
 
         message = context.message
         author = message.author
+        server = message.server
         prefix = self.bot.command_prefix
+
+        if server.id == config.MSVN_SERVER_ID:
+            field_1_name = f'Cú pháp: `{prefix}role tên_role`'
+            field_1_value = f'Dùng lệnh này để yêu cầu bot thêm Role cho bạn. Nhập lệnh `{prefix}list` để xem danh sách Role.'
+            role_exists_msg = f'{author.mention} có role này rồi nhé.'
+            wrong_role_name_provided_msg = f'{author.mention}, role này không tồn tại hoặc không tự xử được nha. '
+            wrong_role_name_provided_msg += f'Gõ `{prefix}list` để xem các Role.'
+        elif server.id == config.DAWN_SERVER_ID:
+            dawn_role = discord.utils.get(server.roles, id='364967220193001472')
+
+            field_1_name = f'Format: `{prefix}role role_name`'
+            field_1_value = f'Use this command to auto-asign a Role. Type `{prefix}list` to see a full list of available roles.\n'
+            field_1_value += f'**This command is available for {dawn_role.mention} only**.'
+            role_exists_msg = f'{author.mention}, you already have this role.'
+            wrong_role_name_provided_msg = f'{author.mention}, this role does not exist, or not auto-asignable. '
+            wrong_role_name_provided_msg += f'Type `{prefix}list` to see a full list of available roles.'
 
         if role is None:
 
             embed = discord.Embed(
-                title=None,
-                description=None,
+                title=field_1_name,
+                description=field_1_value,
                 color=discord.Color.teal())
-            embed.add_field(
-                name=f'Cú pháp: `{prefix}role tên_role`',
-                value=f'Dùng lệnh này để yêu cầu bot thêm Role cho bạn. Nhập lệnh `{prefix}list` để xem danh sách Role.')
             await self.bot.say_as_embed(embed=embed)
 
         else:
@@ -38,21 +67,26 @@ class Role:
             if type(role) != tuple and role is not None:
 
                 r = discord.utils.get(message.server.roles, name=role)
+                if server.id == config.MSVN_SERVER_ID:
+                    role_set_msg = f'{author.mention} đã được set role {r.mention}.'
+                elif server.id == config.DAWN_SERVER_ID:
+                    role_set_msg = f'{author.mention}, you now has the role: {r.mention}.'
 
                 if r in author.roles:
-                    await self.bot.say_as_embed(message=f'{author.mention} có role này rồi nhé.')
+                    await self.bot.say_as_embed(message=role_exists_msg)
 
                 else:
                     await self.bot.add_roles(author, r)
                     await self.bot.say_as_embed(
-                        message=f'{author.mention} đã được set role {r.mention}.',
+                        message=role_set_msg,
                         color=r.color)
             else:
                 await self.bot.say_as_embed(
-                    message=f'{author.mention}, role này không tồn tại hoặc không tự xử được nha. Gõ `{prefix}list` để xem các Role.',
+                    message=wrong_role_name_provided_msg,
                     color='error')
 
     @commands.command(pass_context=True)
+    @commands.check(is_dawn_member)
     async def rrole(self, context, *, role=None):
         """Xóa Role theo yêu cầu
         - Xóa từng role: !rrole tên_role
@@ -61,7 +95,43 @@ class Role:
         """
         message = context.message
         author = message.author
+        server = message.server
         prefix = self.bot.command_prefix
+
+        if server.id == config.MSVN_SERVER_ID:
+            field_1_name = f'Cú pháp xóa 1 Role: `{prefix}rrole tên_role`'
+            field_1_value = f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.\n'
+            field_1_value += 'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.'
+
+            field_2_name = f'Cú pháp xóa nhiều Role: `{prefix}rrole all loại_role`'
+            field_2_value = f'`loại_role` có thể là `colors`, `channels`, `jobs`, hoặc `all`\n'
+            field_2_value += '» `colors` - Xóa tất cả Role màu sắc bạn đang có.\n'
+            field_2_value += '» `channels` - Xóa tất cả Role kênh bạn đang có.\n'
+            field_2_value += '» `jobs` - Xóa tất cả Role Job bạn đang có.\n'
+            field_2_value += '» `notify` - Xóa tất cả Role Notification bạn đang có.\n'
+            field_2_value += '» `all` - Xóa tất cả mọi Role bạn đang có.\n'
+            field_2_value += f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.'
+
+            no_role_found_msg = f'{author.mention} không có role này.\n'
+            no_role_found_msg += 'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.'
+
+            wrong_role_name_provided_msg = f'{author.mention}, role này không tồn tại hoặc không tự xử được nha. '
+            wrong_role_name_provided_msg += f'Gõ `{prefix}list` để xem các Role.'
+
+        elif server.id == config.DAWN_SERVER_ID:
+            dawn_role = discord.utils.get(server.roles, id='364967220193001472')
+
+            field_1_name = f'Format: `{prefix}rrole role_name`'
+            field_1_value = f'Use this command to remove an auto-asigned Role.\n'
+            field_1_value += f'**This command is available for {dawn_role.mention} only**.'
+
+            field_2_name = f'Remove multiple Roles: `{prefix}rrole all role_type`'
+            field_2_value = f'`role_type` can be `colors`\n'
+            field_2_value += '» `colors` - Remove all **Color Roles** you have.\n'
+            field_2_value += f'Type `{prefix}list` to see a full list of available roles.'
+
+            wrong_role_name_provided_msg = f'{author.mention}, this role does not exist, or not auto-asignable. '
+            wrong_role_name_provided_msg += f'Type `{prefix}list` to see a full list of available roles.'
 
         # empty requested role, show help
         if role is None:
@@ -71,18 +141,11 @@ class Role:
                 description=None,
                 color=discord.Color.teal())
             embed.add_field(
-                name=f'Cú pháp xóa 1 Role: `{prefix}rrole tên_role`',
-                value=f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.\n'
-                'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.')
+                name=field_1_name,
+                value=field_1_value)
             embed.add_field(
-                name=f'Cú pháp xóa nhiều Role: `{prefix}rrole all loại_role`',
-                value=f'`loại_role` có thể là `colors`, `channels`, `jobs`, hoặc `all`\n'
-                '» `colors` - Xóa tất cả Role màu sắc bạn đang có.\n'
-                '» `channels` - Xóa tất cả Role kênh bạn đang có.\n'
-                '» `jobs` - Xóa tất cả Role Job bạn đang có.\n'
-                '» `notify` - Xóa tất cả Role Notification bạn đang có.\n'
-                '» `all` - Xóa tất cả mọi Role bạn đang có.\n'
-                f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.')
+                name=field_2_name,
+                value=field_2_value)
             await self.bot.say_as_embed(embed=embed)
 
         # requested role input detected
@@ -104,14 +167,8 @@ class Role:
                         description=None,
                         color=discord.Color.teal())
                     embed.add_field(
-                        name=f'Cú pháp xóa nhiều Role: `{prefix}rrole all loại_role`',
-                        value=f'`loại_role` có thể là `colors`, `channels`, hoặc `all`\n'
-                        '» `colors` - Xóa tất cả Role Màu sắc bạn đang có.\n'
-                        '» `channels` - Xóa tất cả Role Kênh bạn đang có.\n'
-                        '» `jobs` - Xóa tất cả Role Job bạn đang có.\n'
-                        '» `notify` - Xóa tất cả Role Notification bạn đang có.\n'
-                        '» `all` - Xóa tất cả mọi Role bạn đang có.\n'
-                        f'Nhập lệnh `{prefix}list` để xem danh sách Role có thể xóa.')
+                        name=field_2_name,
+                        value=field_2_value)
                     await self.bot.say_as_embed(embed=embed)
 
                 # remove roles by valid provided role_type
@@ -149,34 +206,53 @@ class Role:
                     if to_rmv_roles['roles']:
                         await self.bot.remove_roles(author, *to_rmv_roles['roles'])
                         mention_roles = ", ".join(to_rmv_roles['role_mentions'])
+
+                        if server.id == config.MSVN_SERVER_ID:
+                            remove_roles_done_msg = f'{author.mention}, role {mention_roles} đã được xóa thành công.'
+                            no_role_type_found_msg = f'{author.mention}, không có Role nào thuộc loại role `{role_type}`.\n'
+                            no_role_type_found_msg += 'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.'
+                        elif server.id == config.DAWN_SERVER_ID:
+                            remove_roles_done_msg = f'{author.mention}, {mention_roles} has been removed from your roles.'
+                            no_role_type_found_msg = f'{author.mention}, role type: `{role_type}` not found. Try using `colors` instead.'
+
                         await self.bot.say_as_embed(
-                            message=f'{author.mention}, role {mention_roles} đã được xóa thành công.',
+                            message=remove_roles_done_msg,
                             color='success')
                     else:
+
+                        if server.id == config.MSVN_SERVER_ID:
+                            no_role_type_found_msg = f'{author.mention}, không có Role nào thuộc loại role `{role_type}`.\n'
+                            no_role_type_found_msg += 'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.'
+                        elif server.id == config.DAWN_SERVER_ID:
+                            no_role_type_found_msg = f'{author.mention}, role type: `{role_type}` not found. Try using `colors` instead.'
+
                         await self.bot.say_as_embed(
-                            message=f'{author.mention}, không có Role nào thuộc loại role `{role_type}`.\n'
-                            'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.',
+                            message=no_role_type_found_msg,
                             color='error')
 
             elif role is not None:
 
                 r = discord.utils.get(message.server.roles, name=r)
 
+                if server.id == config.MSVN_SERVER_ID:
+                    remove_role_done_msg = f'{author.mention}, role {r.mention} đã được xóa thành công.'
+                elif server.id == config.DAWN_SERVER_ID:
+                    remove_role_done_msg = f'{author.mention}, {r.mention} has been removed.'
+
                 if r not in author.roles:
                     await self.bot.say_as_embed(
-                        message=f'{author.mention} không có role này.\n'
-                        'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.',
+                        message=no_role_found_msg,
                         color='error')
 
                 else:
                     await self.bot.remove_roles(author, r)
                     await self.bot.say_as_embed(
-                        message=f'{author.mention}, role {r.mention} đã được xóa thành công.',
+                        message=remove_role_done_msg,
                         color='success')
 
             else:
                 await self.bot.say_as_embed(
-                    message=f'{author.mention}, role này không tồn tại hoặc không tự xử được nha. Gõ `{prefix}list` để xem các Role.',
+                    message=wrong_role_name_provided_msg,
                     color='error')
 
     @commands.command(pass_context=True)
@@ -184,44 +260,75 @@ class Role:
         """Xem danh sách Role có thể tự thêm/xóa"""
         message = context.message
         server = message.server
+        prefix = self.bot.command_prefix
 
-        embed = discord.Embed(
-            title='Danh sách Role có thể tự thêm/xóa',
-            description=f'Dùng lệnh `{self.bot.command_prefix}role tên_role` để thêm role.\n'
-            f'Dùng lệnh `{self.bot.command_prefix}rrole tên_role` để xóa role.',
-            colour=discord.Color.teal())
+        if server.id == config.MSVN_SERVER_ID:
 
-        ch_roles = []
-        co_roles = []
-        no_roles = []
-        jo_roles = []
+            embed = discord.Embed(
+                title='Danh sách Role có thể tự thêm/xóa',
+                description=f'Dùng lệnh `{prefix}role tên_role` để thêm role.\n'
+                f'Dùng lệnh `{prefix}rrole tên_role` để xóa role.',
+                colour=discord.Color.teal())
 
-        for role_name in config.AUTOASIGN_CHANNEL_ROLES:
-            r = discord.utils.get(server.roles, name=role_name)
-            if r is not None:
-                ch_roles.append(r.mention)
+            ch_roles = []
+            co_roles = []
+            no_roles = []
+            jo_roles = []
 
-        for role_name in config.AUTOASIGN_COLOR_ROLES:
-            r = discord.utils.get(server.roles, name=role_name)
-            if r is not None:
-                co_roles.append(r.mention)
+            for role_name in config.AUTOASIGN_CHANNEL_ROLES:
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    ch_roles.append(r.mention)
 
-        for role_name in config.AUTOASIGN_NOTIFY_ROLES:
-            r = discord.utils.get(server.roles, name=role_name)
-            if r is not None:
-                no_roles.append(r.mention)
+            for role_name in config.AUTOASIGN_COLOR_ROLES:
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    co_roles.append(r.mention)
 
-        for index, role_name in enumerate(config.AUTOASIGN_JOB_ROLES):
-            r = discord.utils.get(server.roles, name=role_name)
-            if r is not None:
-                jo_roles.append(r.mention)
+            for role_name in config.AUTOASIGN_NOTIFY_ROLES:
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    no_roles.append(r.mention)
 
-        embed.add_field(name='Color Roles', value='\n'.join(co_roles))
-        embed.add_field(name='Job Roles', value='\n'.join(jo_roles[:24]))
-        embed.add_field(name='Job Roles', value='\n'.join(jo_roles[24:]))
-        embed.add_field(name='Channel Roles', value='\n'.join(ch_roles))
-        embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
+            for index, role_name in enumerate(config.AUTOASIGN_JOB_ROLES):
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    jo_roles.append(r.mention)
+
+            embed.add_field(name='Color Roles', value='\n'.join(co_roles))
+            embed.add_field(name='Job Roles', value='\n'.join(jo_roles[:24]))
+            embed.add_field(name='Job Roles', value='\n'.join(jo_roles[24:]))
+            embed.add_field(name='Channel Roles', value='\n'.join(ch_roles))
+            embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
+
+        elif server.id == config.DAWN_SERVER_ID:
+
+            dawn_role = discord.utils.get(server.roles, id='364967220193001472')
+
+            embed = discord.Embed(
+                title='Auto-asign color roles',
+                description=f'Use `{prefix}role role_name` to add yourself a **Color Role**.\n'
+                f'Use `{prefix}rrole role_name` to remove a color role you have.\n'
+                f'**These commands are available for {dawn_role.mention} only**.',
+                colour=discord.Color.teal())
+
+            co_roles = []
+            for role_name in config.AUTOASIGN_COLOR_ROLES:
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    co_roles.append(r.mention)
+
+            embed.add_field(name='List of available Color Roles', value='\n'.join(co_roles))
+
         await self.bot.say(embed=embed)
+
+    @role.error
+    @rrole.error
+    async def clear_messages_error(self, error, context):
+        dawn_role = discord.utils.get(context.message.server.roles, id='364967220193001472')
+        if context.invoked_with in ['role', 'rrole']:
+            await self.bot.say_as_embed(message=f'Sorry, only {dawn_role.mention} can use this command. Join us for these awesome colors!')
+        return  # fail silently
 
 
 def setup(bot):
