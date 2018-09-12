@@ -53,7 +53,7 @@ ITEM_SUB_TYPES = [
 
 
 def test_func():
-    item_range()
+    Item.objects.all().delete()
 
 
 def gacha_roll():

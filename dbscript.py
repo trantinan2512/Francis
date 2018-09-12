@@ -409,13 +409,13 @@ def gacha_rate():
 
 
 def clear_db():
-    Job.objects.delete()
-    ItemType.objects.delete()
-    ItemRank.objects.delete()
-    ItemStat.objects.delete()
-    Item.objects.delete()
-    ItemStatRange.objects.delete()
-    TreasureBoxGacha.objects.delete()
+    Job.objects.all().delete()
+    ItemType.objects.all().delete()
+    ItemRank.objects.all().delete()
+    ItemStat.objects.all().delete()
+    Item.objects.all().delete()
+    ItemStatRange.objects.all().delete()
+    TreasureBoxGacha.objects.all().delete()
 
 
 if __name__ == '__main__':
