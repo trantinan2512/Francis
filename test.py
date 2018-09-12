@@ -33,11 +33,6 @@ def get_content_by_url(url):
         return None
 
 
-def testing(arg1, *args):
-    print(arg1)
-    print(args[0])
-
-
 ITEM_SUB_TYPES = [
 
     ('Spear', 'Weapon'),
@@ -58,11 +53,7 @@ ITEM_SUB_TYPES = [
 
 
 def test_func():
-    a = True
-    b = False
-    c = None
-    print(a == c)
-    print(b == c)
+    item_range()
 
 
 def gacha_roll():
@@ -182,10 +173,11 @@ def gacha_rate():
             print(job, rank, item_name, rate)
 
 
-WEAPONS = ['Spear', 'Bow', 'Wand', 'Claw', 'Gun']
+WEAPONS = ['Spear', 'Bow', 'Wand', 'Claw', 'Gun', '2hSword', 'Staff', 'Knuckler']
 ARMORS = ['Hat', 'Outfit', 'Gloves', 'Shoes']
 ACCESSORIES = ['Belt', 'Cape', 'Shoulder']
-JOBS = ['Dark Knight', 'Bowmaster', 'Bishop', 'Night Lord', 'Corsair', ]
+JOBS = ['Dark Knight', 'Bowmaster', 'Bishop', 'Night Lord', 'Corsair',
+        'Dawn Warrior', 'Wind Archer', 'Blaze Wizard', 'Night Walker', 'Thunder Breaker']
 JOB_BRANCHES = ['Warrior', 'Bowman', 'Thief', 'Mage', 'Pirate', 'All']
 
 
@@ -215,6 +207,12 @@ def item_range():
                         row_data.update({'job': 'Bishop', 'job_spec': True})
                     elif job == 'Bowman':
                         row_data.update({'job': 'Bowmaster', 'job_spec': True})
+                    elif job == 'SoulMaster':
+                        row_data.update({'job': 'Dawn Warrior', 'job_spec': True})
+                    elif job == 'FlameWizard':
+                        row_data.update({'job': 'Blaze Wizard', 'job_spec': True})
+                    elif job == 'Striker':
+                        row_data.update({'job': 'Thunder Breaker', 'job_spec': True})
                     else:
                         print('New class:', job)
                         continue

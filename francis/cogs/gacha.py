@@ -100,6 +100,16 @@ class Gacha:
                     job_processed = 'Night Lord'
                 elif job.lower() in ['cs', 'cor', 'sair', 'corsair']:
                     job_processed = 'Corsair'
+                elif job.lower() in ['dw', 'dawnwarior']:
+                    job_processed = 'Dawn Warrior'
+                elif job.lower() in ['wa', 'windarcher']:
+                    job_processed = 'Wind Archer'
+                elif job.lower() in ['bw', 'blazewizard']:
+                    job_processed = 'Blaze Wizard'
+                elif job.lower() in ['nw', 'nightwalker']:
+                    job_processed = 'Night Walker'
+                elif job.lower() in ['tb', 'thunderbreaker']:
+                    job_processed = 'Thunder Breaker'
                 else:
                     embed = discord.Embed(
                         title=f'Không tìm được Job với cụm: {job}',
@@ -249,6 +259,13 @@ class Gacha:
             ('Bishop', 'bs'),
             ('Night Lord', 'nl'),
             ('Corsair', 'cs'),
+
+            ('Dawn Warrior', 'dw'),
+            ('Wind Archer', 'wa'),
+            ('Blaze Wizard', 'bw'),
+            ('Night Walker', 'nw'),
+            ('Thunder Breaker', 'tb'),
+
         ]
         message = context.message
         author = message.author

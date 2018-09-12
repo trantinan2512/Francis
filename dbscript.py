@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import os
+import sys
 import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
 django.setup()
@@ -11,14 +12,10 @@ from web.apps.jobs.models import *
 from web.apps.gachas.models import *
 
 
-JOBS = [
-    'Dark Knight',
-    'Bowmaster',
-    'Bishop',
-    'Night Lord',
-    'Corsair',
-    'All',
-    'None'
+JOBS_BASE = [
+    'Dark Knight', 'Bowmaster', 'Bishop', 'Night Lord', 'Corsair',
+    'Dawn Warrior', 'Wind Archer', 'Blaze Wizard', 'Night Walker', 'Thunder Breaker',
+    'All', 'None'
 ]
 
 ITEM_TYPES = [
@@ -36,6 +33,9 @@ ITEM_SUB_TYPES = [
     ('Wand', 'Weapon'),
     ('Claw', 'Weapon'),
     ('Gun', 'Weapon'),
+    ('2hSword', 'Weapon'),
+    ('Staff', 'Weapon'),
+    ('Knuckler', 'Weapon'),
 
     ('Hat', 'Armor'),
     ('Outfit', 'Armor'),
@@ -75,41 +75,40 @@ ITEM_STATS = [
 
 def dbscript():
 
-    # create Class objects if not exist
-    for c in JOBS:
-        obj = Job.objects.filter(job=c)
-        if not obj:
-            job = Job.objects.create(job=c)
-            print('Job created:', job)
+    # create Job objects if not exist
+    for c in JOBS_BASE:
+        obj, created = Job.objects.get_or_create(job=c)
+        if created:
+            print('Job created:', obj.job)
 
     # create ItemType objects if not exist
     for t in ITEM_TYPES:
-        obj = ItemType.objects.filter(type=t)
-        if not obj:
-            item_type = ItemType.objects.create(type=t)
-            print('ItemType created:', item_type)
+        obj, created = ItemType.objects.get_or_create(type=t)
+        if created:
+            print('ItemType created:', obj.type)
 
     # create ItemSubType objects if not exist
     for st, t in ITEM_SUB_TYPES:
-        type = ItemType.objects.get(type=t)
-        sub_type = ItemSubType.objects.filter(sub_type=st, type=type)
-        if not sub_type:
-            its = ItemSubType.objects.create(sub_type=st, type=type)
-            print('ItemSubType created:', its)
+        type, created = ItemType.objects.get_or_create(type=t)
+        sub_type, created = ItemSubType.objects.get_or_create(sub_type=st, type=type)
+        if created:
+            print('ItemSubType created:', sub_type.sub_type)
 
     # create ItemRank objects if not exist
     for rank, max_star_level, emblem_rate in ITEM_RANKS:
-        obj = ItemRank.objects.filter(rank=rank)
-        if not obj:
-            ir = ItemRank.objects.create(rank=rank, max_star=max_star_level, max_level=max_star_level, emblem_rate=emblem_rate)
-            print('ItemRank created:', ir)
+        obj, created = ItemRank.objects.get_or_create(rank=rank, defaults={
+            'max_star': max_star_level,
+            'max_level': max_star_level,
+            'emblem_rate': emblem_rate
+        })
+        if created:
+            print('ItemRank created:', obj.rank)
 
     # create ItemStat objects if not exist
     for o in ITEM_STATS:
-        obj = ItemStat.objects.filter(stat=o)
-        if not obj:
-            item_stat = ItemStat.objects.create(stat=o)
-            print('ItemStat created:', item_stat)
+        obj, created = ItemStat.objects.get_or_create(stat=o)
+        if created:
+            print('ItemStat created:', obj.stat)
 
 
 def get_content_by_url(url):
@@ -177,6 +176,16 @@ def item_db():
                         data.update({'sub_type': 'Wand', 'main_stat': ['MAG ATK', ]})
                     elif data['job'] == 'Corsair':
                         data.update({'sub_type': 'Gun', 'main_stat': ['MAG ATK', ]})
+                    elif data['job'] == 'Dawn Warrior':
+                        data.update({'sub_type': '2hSword', 'main_stat': ['PHY ATK', ]})
+                    elif data['job'] == 'Wind Archer':
+                        data.update({'sub_type': 'Bow', 'main_stat': ['MAG ATK', ]})
+                    elif data['job'] == 'Blaze Wizard':
+                        data.update({'sub_type': 'Staff', 'main_stat': ['MAG ATK', ]})
+                    elif data['job'] == 'Night Walker':
+                        data.update({'sub_type': 'Claw', 'main_stat': ['PHY ATK', ]})
+                    elif data['job'] == 'Thunder Breaker':
+                        data.update({'sub_type': 'Knuckler', 'main_stat': ['PHY ATK', ]})
             elif index <= 8 + step_job:
                 data.update({'sub_type': 'Outfit', 'main_stat': ['PHY DEF', 'MAG DEF', 'Max HP']})
             elif index <= 12 + step_job:
@@ -200,34 +209,36 @@ def item_db():
         # pprint(datas)
 
         for data in datas:
-            print(data)
             job = Job.objects.get(job=data['job'])
             type = ItemType.objects.get(type=data['type'])
             sub_type = ItemSubType.objects.get(sub_type=data['sub_type'])
-            item = Item.objects.filter(name=data['name'], job=job, type=type, sub_type=sub_type)
-            if not item:
-                item_obj = Item.objects.create(name=data['name'], job=job, type=type, sub_type=sub_type)
+            item_obj, created = Item.objects.get_or_create(name=data['name'], job=job, type=type, sub_type=sub_type)
+            if created:
                 for stat in data['main_stat']:
                     try:
                         stat_obj = ItemStat.objects.get(stat=stat)
                         item_obj.stats.add(stat_obj)
                     except ItemStat.DoesNotExist:
                         print(stat)
+                print('Item created:', item_obj.name)
 
 
-WEAPONS = ['Spear', 'Bow', 'Wand', 'Claw', 'Gun']
+WEAPONS = ['Spear', 'Bow', 'Wand', 'Claw', 'Gun', '2hSword', 'Staff', 'Knuckler']
 ARMORS = ['Hat', 'Outfit', 'Gloves', 'Shoes']
 ACCESSORIES = ['Belt', 'Cape', 'Shoulder']
-JOBS = ['Dark Knight', 'Bowmaster', 'Bishop', 'Night Lord', 'Corsair', ]
+JOBS = ['Dark Knight', 'Bowmaster', 'Bishop', 'Night Lord', 'Corsair',
+        'Dawn Warrior', 'Wind Archer', 'Blaze Wizard', 'Night Walker', 'Thunder Breaker']
 JOB_BRANCHES = ['Warrior', 'Bowman', 'Thief', 'Mage', 'Pirate', 'All']
 
 
 def stat_range():
     sub_types = WEAPONS + ARMORS + ACCESSORIES
-    with open('web/apps/msm_equipdata.csv', newline='') as csvfile:
+    with open('msm_equipdata.csv', newline='') as csvfile:
         csv_reader = csv.DictReader(csvfile)
         datas = []
         for row in csv_reader:
+            if row['sub_type'] == 'THSword':
+                row['sub_type'] = '2hSword'
 
             if row['sub_type'] in sub_types:
 
@@ -239,32 +250,38 @@ def stat_range():
                 if row['type'] == 'Weapon':
                     job = row['job']
                     if job == 'DarkKnight':
-                        row_data.update({'job': 'Dark Knight', 'job_spec': True})
+                        row_data.update({'job': ['Dark Knight'], 'job_spec': True})
                     elif job == 'Thief':
-                        row_data.update({'job': 'Night Lord', 'job_spec': True})
+                        row_data.update({'job': ['Night Lord', 'Night Walker'], 'job_spec': True})
                     elif job == 'Captain':
-                        row_data.update({'job': 'Corsair', 'job_spec': True})
+                        row_data.update({'job': ['Corsair'], 'job_spec': True})
                     elif job == 'Bishop':
-                        row_data.update({'job': 'Bishop', 'job_spec': True})
+                        row_data.update({'job': ['Bishop'], 'job_spec': True})
                     elif job == 'Bowman':
-                        row_data.update({'job': 'Bowmaster', 'job_spec': True})
+                        row_data.update({'job': ['Bowmaster', 'Wind Archer'], 'job_spec': True})
+                    elif job == 'SoulMaster':
+                        row_data.update({'job': ['Dawn Warrior'], 'job_spec': True})
+                    elif job == 'FlameWizard':
+                        row_data.update({'job': ['Blaze Wizard'], 'job_spec': True})
+                    elif job == 'Striker':
+                        row_data.update({'job': ['Thunder Breaker'], 'job_spec': True})
                     else:
                         print('New class:', job)
                         continue
                 elif row['sub_type'] in ARMORS:
                     if row['cls'] == 'Warrior':
-                        row_data.update({'job': 'Dark Knight', 'job_spec': False})
+                        row_data.update({'job': ['Dark Knight', 'Dawn Warrior'], 'job_spec': False})
                     elif row['cls'] == 'Bowman':
-                        row_data.update({'job': 'Bowmaster', 'job_spec': False})
+                        row_data.update({'job': ['Bowmaster', 'Wind Archer'], 'job_spec': False})
                     elif row['cls'] == 'Thief':
-                        row_data.update({'job': 'Night Lord', 'job_spec': False})
+                        row_data.update({'job': ['Night Lord', 'Night Walker'], 'job_spec': False})
                     elif row['cls'] == 'Mage':
-                        row_data.update({'job': 'Bishop', 'job_spec': False})
+                        row_data.update({'job': ['Bishop', 'Blaze Wizard'], 'job_spec': False})
                     elif row['cls'] == 'Pirate':
-                        row_data.update({'job': 'Corsair', 'job_spec': False})
+                        row_data.update({'job': ['Corsair', 'Thunder Breaker'], 'job_spec': False})
 
                 elif row['sub_type'] in ACCESSORIES:
-                    row_data.update({'job': 'All', 'job_spec': False})
+                    row_data.update({'job': ['All'], 'job_spec': False})
 
                 if row['base_atk'] != '0':
                     extras = {
@@ -296,58 +313,61 @@ def stat_range():
 
         rank = ItemRank.objects.get(rank=data['rank'])
         sub_type = ItemSubType.objects.get(sub_type=data['sub_type'])
-        job = Job.objects.get(job=data['job'])
+        jobs = Job.objects.filter(job__in=data['job'])
         if data['rank'] in ['Unique', 'Legendary', 'Mythic']:
             emblem = True
         else:
             emblem = False
 
-        obj = ItemStatRange.objects.filter(
-            rank=rank,
-            sub_type=sub_type,
-            job=job,
-            job_specific=data['job_spec']
-        )
-        if not obj:
-            if data['stat'] == 'PHY DEF':
-                stat_1 = ItemStat.objects.get(stat='PHY DEF')
-                ItemStatRange.objects.create(
-                    rank=rank,
-                    sub_type=sub_type,
-                    job=job,
-                    emblem=emblem,
-                    stat=stat_1,
-                    base=data['base'],
-                    min=data['min'],
-                    max=data['max'],
-                    job_specific=data['job_spec']
-                )
-                stat_2 = ItemStat.objects.get(stat='MAG DEF')
-                ItemStatRange.objects.create(
-                    rank=rank,
-                    sub_type=sub_type,
-                    job=job,
-                    emblem=emblem,
-                    stat=stat_2,
-                    base=data['base'],
-                    min=data['min'],
-                    max=data['max'],
-                    job_specific=data['job_spec']
-                )
+        for job in jobs:
+            obj = ItemStatRange.objects.filter(
+                rank=rank,
+                sub_type=sub_type,
+                job=job,
+                job_specific=data['job_spec']
+            )
+            if not obj:
+                if data['stat'] == 'PHY DEF':
+                    stat_1 = ItemStat.objects.get(stat='PHY DEF')
+                    ItemStatRange.objects.create(
+                        rank=rank,
+                        sub_type=sub_type,
+                        job=job,
+                        emblem=emblem,
+                        stat=stat_1,
+                        base=data['base'],
+                        min=data['min'],
+                        max=data['max'],
+                        job_specific=data['job_spec']
+                    )
+                    stat_2 = ItemStat.objects.get(stat='MAG DEF')
+                    ItemStatRange.objects.create(
+                        rank=rank,
+                        sub_type=sub_type,
+                        job=job,
+                        emblem=emblem,
+                        stat=stat_2,
+                        base=data['base'],
+                        min=data['min'],
+                        max=data['max'],
+                        job_specific=data['job_spec']
+                    )
+                    print('ItemStatRange created with stat "PHY DEF" and "MAG DEF"')
 
-            else:
-                stat = ItemStat.objects.get(stat=data['stat'])
-                ItemStatRange.objects.create(
-                    rank=rank,
-                    sub_type=sub_type,
-                    job=job,
-                    emblem=emblem,
-                    stat=stat,
-                    base=data['base'],
-                    min=data['min'],
-                    max=data['max'],
-                    job_specific=data['job_spec']
-                )
+                else:
+                    stat = ItemStat.objects.get(stat=data['stat'])
+                    ItemStatRange.objects.create(
+                        rank=rank,
+                        sub_type=sub_type,
+                        job=job,
+                        emblem=emblem,
+                        stat=stat,
+                        base=data['base'],
+                        min=data['min'],
+                        max=data['max'],
+                        job_specific=data['job_spec']
+                    )
+                    print(f'ItemStatRange created with stat "{stat.stat}"')
 
 
 def gacha_rate():
@@ -382,7 +402,29 @@ def gacha_rate():
                 job = 'Bowmaster'
             j = Job.objects.get(job=job)
             r = ItemRank.objects.get(rank=rank)
-            i = Item.objects.get(name=item_name)
-            obj = TreasureBoxGacha.objects.filter(job=j, rank=r, item=i, rate=rate)
-            if not obj:
-                TreasureBoxGacha.objects.create(job=j, rank=r, item=i, rate=rate)
+            i = Item.objects.filter(name=item_name)[0]
+            obj, created = TreasureBoxGacha.objects.get_or_create(job=j, rank=r, item=i, rate=rate)
+            if created:
+                print(f'TreasureBoxGacha: {obj} created.')
+
+
+if __name__ == '__main__':
+    try:
+        arg = sys.argv[1]
+        if arg == 'dbscript':
+            dbscript()
+        elif arg == 'item_db':
+            item_db()
+        elif arg == 'stat_range':
+            stat_range()
+        elif arg == 'gacha_rate':
+            gacha_rate()
+        elif arg == 'all':
+            dbscript()
+            item_db()
+            stat_range()
+            gacha_rate()
+        else:
+            print('Specify whether "dbscript", "stat_range", "gacha_rate", or "item_db", or "all" to do it all')
+    except IndexError:
+        print('Specify whether "dbscript", "stat_range", "gacha_rate", or "item_db", or "all" to do it all')

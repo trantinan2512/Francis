@@ -34,6 +34,14 @@ class StatCheck:
         else:
 
             item_list = ItemStatRange.objects.filter(sub_type__sub_type__iexact=sub_type)
+            item_list = item_list.distinct('rank')
+
+            distincted = item_list.distinct('job').values_list('job__job')
+            job_list_text = []
+            for job_item in distincted:
+                job_list_text.append(job_item[0])
+
+            jobs_text = ', '.join(job_list_text)
 
             if item_list.count() == 0:
                 embed = discord.Embed(
@@ -45,7 +53,7 @@ class StatCheck:
             else:
                 table_text = 'Rank           Min    Max            \n'
                 emblem_inc = 1.3
-                if item_list.first().job_specific is False:
+                if item_list[0].job_specific is False and sub_type.lower() not in ['shoulder', 'cape', 'belt']:
                     if job is None:
                         embed = discord.Embed(
                             title=f':x: Trang bị bạn đang tìm {sub_type} cần phải cung cấp thêm tên `job`',
@@ -66,10 +74,21 @@ class StatCheck:
                             job_processed = 'Night Lord'
                         elif job.lower() in ['cs', 'cor', 'sair', 'corsair']:
                             job_processed = 'Corsair'
+                        elif job.lower() in ['dw', 'dawnwarior']:
+                            job_processed = 'Dawn Warrior'
+                        elif job.lower() in ['wa', 'windarcher']:
+                            job_processed = 'Wind Archer'
+                        elif job.lower() in ['bw', 'blazewizard']:
+                            job_processed = 'Blaze Wizard'
+                        elif job.lower() in ['nw', 'nightwalker']:
+                            job_processed = 'Night Walker'
+                        elif job.lower() in ['tb', 'thunderbreaker']:
+                            job_processed = 'Thunder Breaker'
                         else:
                             job_processed = job
 
                         item_list = item_list.filter(job__job__iexact=job_processed, stat__stat__iexact='PHY DEF')
+                        jobs_text = item_list[0].job.job
                         if item_list.count() == 0:
                             embed = discord.Embed(
                                 title=f':x: Không tìm thấy chỉ số cho **{sub_type}** thuộc nghề **{job}**',
@@ -92,8 +111,8 @@ class StatCheck:
 
                 embed = discord.Embed(
                     title='Kiểm tra chỉ số trang bị',
-                    description=f'Trang bị: **{item_list.first().sub_type.sub_type}**\n'
-                    f'Nghề: **{item_list.first().job.job}**',
+                    description=f'Trang bị: **{item_list[0].sub_type.sub_type}**\n'
+                    f'Nghề: **{jobs_text}**',
                     color=discord.Color.blue())
 
                 embed.add_field(
@@ -111,10 +130,17 @@ class StatCheck:
             ('Bishop', 'bs'),
             ('Night Lord', 'nl'),
             ('Corsair', 'cs'),
+
+            ('Dawn Warrior', 'dw'),
+            ('Wind Archer', 'wa'),
+            ('Blaze Wizard', 'bw'),
+            ('Night Walker', 'nw'),
+            ('Thunder Breaker', 'tb'),
+
         ]
 
         item_abbrs = [
-            'spear', 'bow', 'wand', 'claw', 'gun',
+            'spear', 'bow', 'wand', 'claw', 'gun', '2hsword', 'staff', 'knuckler',
             'hat', 'outfit', 'gloves', 'shoes',
             'shoulder', 'belt', 'cape',
         ]
