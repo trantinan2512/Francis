@@ -408,6 +408,16 @@ def gacha_rate():
                 print(f'TreasureBoxGacha: {obj} created.')
 
 
+def clear_db():
+    Job.objects.delete()
+    ItemType.objects.delete()
+    ItemRank.objects.delete()
+    ItemStat.objects.delete()
+    Item.objects.delete()
+    ItemStatRange.objects.delete()
+    TreasureBoxGacha.objects.delete()
+
+
 if __name__ == '__main__':
     try:
         arg = sys.argv[1]
@@ -419,12 +429,14 @@ if __name__ == '__main__':
             stat_range()
         elif arg == 'gacha_rate':
             gacha_rate()
+        elif arg == 'clear':
+            clear_db()
         elif arg == 'all':
             dbscript()
             item_db()
             stat_range()
             gacha_rate()
         else:
-            print('Specify whether "dbscript", "stat_range", "gacha_rate", or "item_db", or "all" to do it all')
+            print('Specify whether "dbscript", "stat_range", "gacha_rate", or "item_db", or "all" to do it all. Use "clear" to clear item database.')  # noqa E501
     except IndexError:
-        print('Specify whether "dbscript", "stat_range", "gacha_rate", or "item_db", or "all" to do it all')
+        print('Specify whether "dbscript", "stat_range", "gacha_rate", or "item_db", or "all" to do it all. Use "clear" to clear item database.')  # noqa E501
