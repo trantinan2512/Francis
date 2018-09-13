@@ -17,6 +17,16 @@ class ItemStatRangeAdmin(admin.ModelAdmin):
         'max'
     )
 
+    list_editable = (
+        'base',
+        'min',
+        'max',
+    )
+
+    search_fields = (
+        'sub_type__sub_type',
+    )
+
 
 admin.site.register(ItemRank)
 admin.site.register(ItemType)
