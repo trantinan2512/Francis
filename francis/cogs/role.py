@@ -318,7 +318,14 @@ class Role:
                 if r is not None:
                     co_roles.append(r.mention)
 
+            no_roles = []
+            for role_name in config.AUTOASIGN_DAWN_NOTIFY_ROLES:
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    no_roles.append(r.mention)
+
             embed.add_field(name='List of available Color Roles', value='\n'.join(co_roles))
+            embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
 
         await self.bot.say(embed=embed)
 

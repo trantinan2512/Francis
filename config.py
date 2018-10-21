@@ -78,6 +78,10 @@ AUTOASIGN_NOTIFY_ROLES = [
     'Notify GMSM'
 ]
 
+AUTOASIGN_DAWN_NOTIFY_ROLES = [
+    'Event Notify',
+]
+
 AUTOASIGN_JOB_ROLES = [
     'Hero', 'Dark Knight', 'Paladin',
     'Bowmaster', 'Marksman',
