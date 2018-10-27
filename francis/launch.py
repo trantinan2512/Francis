@@ -208,12 +208,13 @@ if not config.DEBUG:
     francis.loop.create_task(webspiders.GMS2SiteSpider(francis).parse())
     francis.loop.create_task(webspiders.GMSMSiteSpider(francis).parse())
     francis.loop.create_task(tasks.Twitter(francis).fetch_maple_latest_tweet())
+    francis.loop.create_task(tasks.Twitter(francis).fetch_maple2_latest_tweet())
     francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
     francis.loop.create_task(scheduler.Scheduler(francis).check_gms_schedule())
     francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
     francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
 
-if config.DEBUG:
-    francis.loop.create_task(webspiders.GMSSiteSpider(francis).parse())
+# if config.DEBUG:
+#     francis.loop.create_task(tasks.Twitter(francis).fetch_maple2_latest_tweet())
 
 francis.run(config.FRANCIS_TOKEN)

@@ -52,6 +52,18 @@ class Twitter:
 
             await self.send_latest_status(self.api, 34667202, channel)
 
+    async def fetch_maple2_latest_tweet(self):
+
+        await self.bot.wait_until_ready()
+
+        # use this for development and production
+        channel = ch.get_channel(id='505584446074781697')
+
+        # keep executing the codes until bot is closed
+        while not self.bot.is_closed:
+
+            await self.send_latest_status(self.api, 851835989702000640, channel)
+
     # send status to given channel
     async def send_latest_status(self, api, user_id, channel, delay=60):
         """Send the latest status of given user_id, to the channel

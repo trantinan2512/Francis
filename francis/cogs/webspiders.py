@@ -529,7 +529,6 @@ class GMS2SiteSpider(WebSpider):
                         embed.set_image(url=data['image'])
 
                         # send the message to channel
-                        print(channel)
                         await self.bot.send_message_as_embed(channel=channel, embed=embed)
 
                         # save to drive and print the result title
