@@ -149,21 +149,20 @@ class GMSSiteSpider(WebSpider):
                                 # save to drive and print the result title
                                 db.insert_row([value for value in data.values()], index=2)
                                 print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
+                                return
 
                         # the post is not a server maintenance post
-                        else:
-
-                            embed = discord.Embed(
-                                title=data['title'],
-                                url=data['link'],
-                                description=data['desc'],
-                                color=discord.Color.teal())
-                            embed.set_image(url=data['img'])
-                            # send the message to channel
-                            await self.bot.send_message_as_embed(channel=channel, embed=embed)
-                            # save to drive and print the result title
-                            db.insert_row([value for value in data.values()], index=2)
-                            print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
+                        embed = discord.Embed(
+                            title=data['title'],
+                            url=data['link'],
+                            description=data['desc'],
+                            color=discord.Color.teal())
+                        embed.set_image(url=data['img'])
+                        # send the message to channel
+                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
+                        # save to drive and print the result title
+                        db.insert_row([value for value in data.values()], index=2)
+                        print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
                 print('[GMS site] Scan finished.')
             await asyncio.sleep(delay)
 
@@ -200,11 +199,13 @@ class GMSSiteSpider(WebSpider):
         for strong in strongs:
             # ignore in case the time display splitted by '/'
             if tz_re.search(strong.get_text()) is not None and all(c not in strong.get_text() for c in ['/', '[']):
+
                 # re split between date and time (duration)
                 date, duration = dt_split.split(strong.get_text())
 
                 # re remove UTC -7 stuff if exists
                 date = utc_re.sub('', date)
+
 
                 if len(date) <= 5:
                     for strong in strongs:
@@ -276,8 +277,11 @@ class GMSSiteSpider(WebSpider):
                     to = datetime_to.strftime('%I:%M %p %d/%m/%Y')
 
                 # oh of course these things exist all the time
-                frm = datetime_from.strftime('%I:%M %p %d/%m/%Y')
-                day = datetime_from.strftime('%d/%m/%Y')
+                if datetime_from:
+                    frm = datetime_from.strftime('%I:%M %p %d/%m/%Y')
+                    day = datetime_from.strftime('%d/%m/%Y')
+                else:
+                    return None
 
                 # gather things up and return title and message to the main function
                 if datetime_to:
@@ -510,7 +514,7 @@ class GMS2SiteSpider(WebSpider):
 
                     if (data['id'], data['title']) in zip(posted_ids, posted_titles):
 
-                        print(f'Site Fetch: [GMS] [Already posted]')
+                        print(f'Site Fetch: [GMS2] [Already posted]')
                         read_db = False
 
                     else:
