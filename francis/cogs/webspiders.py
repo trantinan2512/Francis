@@ -444,3 +444,94 @@ class GMSMSiteSpider(WebSpider):
                         break
                 print('[GMS site] Scan finished.')
             await asyncio.sleep(delay)
+
+
+class GMS2SiteSpider(WebSpider):
+
+    async def parse(self):
+
+        await self.bot.wait_until_ready()
+        if config.DEBUG:
+            delay = 10
+        else:
+            delay = 60
+
+        # cập-nhật-mới-gms2 channel
+        channel = ch.get_channel(id='505584303154135040')
+
+        while not self.bot.is_closed:
+
+            print('Scanning GMS2 site for news...')
+            url = 'http://maplestory2.nexon.net/en/news'
+            content = self.get_content_by_url(url)
+
+            if content is not None:
+
+                html = BeautifulSoup(content, 'html.parser')
+
+                # regex for finding the news ID
+                news_id_re = re.compile('/news/article/(\d+)/')
+                now = datetime.now()
+                vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+
+                news_items = html.select('.news-item')
+                read_db = True
+                for news in news_items:
+                    link = news.select_one('.news-item-link')['href']
+                    image = news.select_one('.news-item-image')['style']
+                    news_category = news.select_one('.news-category-tag').get_text()
+                    title = news.select_one('h2').get_text()
+                    short_post_text = news.select_one('.short-post-text').get_text()
+
+                    post_id = news_id_re.search(link).group(1)
+
+                    data = {
+                        'id': post_id,
+                        'fetch_date': vn_tz.strftime('%d/%m/%Y'),
+                        'fetch_time': vn_tz.strftime('%H:%M:%S'),
+                        'category': news_category,
+                        'title': title,
+                        'link': f'http://maplestory2.nexon.net{link}',
+                        'description': short_post_text,
+                        'image': image.lstrip("background-image:url('").rstrip("')")
+                    }
+
+                    if read_db is True:
+                        print('[GMS2 site] Database read...')
+                        try:
+                            db = self.db.worksheet('site_gms2')
+
+                        except APIError:
+                            print('API ERROR')
+                            quit()
+
+                        posted_ids = db.col_values(1)[1:]
+                        posted_titles = db.col_values(5)[1:]
+
+                    if (data['id'], data['title']) in zip(posted_ids, posted_titles):
+
+                        print(f'Site Fetch: [GMS] [Already posted]')
+                        read_db = False
+
+                    else:
+
+                        read_db = True
+
+                        embed = discord.Embed(
+                            title=f"{data['category']} - {data['title']}",
+                            url=data['link'],
+                            description=data['description'],
+                            color=discord.Color.teal())
+                        embed.set_image(url=data['image'])
+
+                        # send the message to channel
+                        print(channel)
+                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
+
+                        # save to drive and print the result title
+                        db.insert_row([value for value in data.values()], index=2)
+
+                        print(f'Site Fetch: [GMS2] [Fetched {data["title"]}]')
+
+            print('[GMS2 site] Scan finished.')
+            await asyncio.sleep(delay)

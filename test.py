@@ -53,7 +53,39 @@ ITEM_SUB_TYPES = [
 
 
 def test_func():
-    Item.objects.all().delete()
+    url = 'http://maplestory2.nexon.net/en/news'
+    content = get_content_by_url(url)
+
+    if content is not None:
+        html = BeautifulSoup(content, 'html.parser')
+
+        # regex for finding the news ID
+        news_id_re = re.compile('/news/article/(\d+)/')
+        now = datetime.now()
+        vn_tz = now.astimezone(tz('Asia/Ho_Chi_Minh'))
+
+        news_items = html.select('.news-item')
+        for news in news_items:
+            link = news.select_one('.news-item-link')['href']
+            image = news.select_one('.news-item-image')
+            news_category = news.select_one('.news-category-tag').get_text()
+            title = news.select_one('h2').get_text()
+            short_post_text = news.select_one('.short-post-text').get_text()
+
+            post_id = news_id_re.search(link).group(1)
+
+            data = {
+                'id': post_id,
+                'fetch_date': vn_tz.strftime('%d/%m/%Y'),
+                'fetch_time': vn_tz.strftime('%H:%M:%S'),
+                'category': news_category,
+                'title': title,
+                'link': f'http://maplestory2.nexon.net{link}',
+                'desc': short_post_text,
+                'img': image.lstrip("background-image:url('").rstrip("')")
+            }
+
+            print(data)
 
 
 def gacha_roll():

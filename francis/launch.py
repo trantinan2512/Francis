@@ -5,6 +5,9 @@ import asyncio
 # import re
 # from discord.ext import commands
 from discord.errors import HTTPException
+# from pypresence import Presence
+# import time
+# from datetime import datetime
 
 from francis import bot
 
@@ -48,7 +51,26 @@ async def on_ready():
     print('------')
     print(f'Logged in as: {francis.user.name} (ID: {francis.user.id})')
     print('------')
+
+    # print('Running PyPresence...')
+    # client_id = "453579291897233409"  # Enter your Application ID here.
+    # RPC = Presence(client_id=client_id)
+    # RPC.connect()
+
+    # now = datetime.now()
+    # now_unix = time.mktime(now.timetuple())
+    # now_unix = int(now_unix)
+    # # Make sure you are using the same name that you used when uploading the image
+    # RPC.update(
+    #     large_image="orchid_wink", large_text="Best Girl! *wink wink*",
+    #     small_image="rrain", small_text="SAO waifu",
+    #     details="Battlefield: Bed", state="This is for Nijika - Rain :HAAHa:",
+    #     start=now_unix)
+    # print('PyPresence running!')
+
     if not config.DEBUG:
+        await francis.change_presence(game=discord.Game(name=f'{francis.command_prefix}help << hàng thật'))
+    else:
         await francis.change_presence(game=discord.Game(name=f'{francis.command_prefix}help << hàng thật'))
 
     open_channel = francis.get_channel('472965546485481473')
@@ -183,6 +205,7 @@ async def on_reaction_remove(reaction, user):
 
 if not config.DEBUG:
     francis.loop.create_task(webspiders.GMSSiteSpider(francis).parse())
+    francis.loop.create_task(webspiders.GMS2SiteSpider(francis).parse())
     francis.loop.create_task(webspiders.GMSMSiteSpider(francis).parse())
     francis.loop.create_task(tasks.Twitter(francis).fetch_maple_latest_tweet())
     francis.loop.create_task(tasks.Twitter(francis).fetch_maplem_latest_tweet())
@@ -191,6 +214,6 @@ if not config.DEBUG:
     francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
 
 # if config.DEBUG:
-#     francis.loop.create_task(webspiders.GMSSiteSpider(francis).parse())
+#     francis.loop.create_task(webspiders.GMS2SiteSpider(francis).parse())
 
 francis.run(config.FRANCIS_TOKEN)
