@@ -141,6 +141,7 @@ async def on_reaction_add(reaction, user):
     if reaction.message.channel == open_channel:
 
         gms_role = discord.utils.get(reaction.message.server.roles, name='GMS')
+        gms2_role = discord.utils.get(reaction.message.server.roles, name='GMS2')
         gmsm_role = discord.utils.get(reaction.message.server.roles, name='GMSM')
         gms_notify = discord.utils.get(reaction.message.server.roles, name='Notify GMS')
         gmsm_notify = discord.utils.get(reaction.message.server.roles, name='Notify GMSM')
@@ -156,6 +157,11 @@ async def on_reaction_add(reaction, user):
                 await francis.send_message_as_embed(
                     open_channel,
                     f'{user.mention} đã có thể xem các kênh liên quan đến {gms_role.mention}')
+            elif reaction.emoji == '🍁':
+                await francis.add_roles(user, gms2_role)
+                await francis.send_message_as_embed(
+                    open_channel,
+                    f'{user.mention} đã có thể xem các kênh liên quan đến {gms2_role.mention}')
 
         elif reaction.message.id == '472967231781863427':
             if reaction.emoji == '📱':
@@ -173,8 +179,10 @@ async def on_reaction_remove(reaction, user):
     if reaction.message.channel == open_channel:
 
         gms_role = discord.utils.get(reaction.message.server.roles, name='GMS')
+        gms2_role = discord.utils.get(reaction.message.server.roles, name='GMS2')
         gmsm_role = discord.utils.get(reaction.message.server.roles, name='GMSM')
         gms_notify = discord.utils.get(reaction.message.server.roles, name='Notify GMS')
+        # gms2_notify = discord.utils.get(reaction.message.server.roles, name='Notify GMSM')
         gmsm_notify = discord.utils.get(reaction.message.server.roles, name='Notify GMSM')
         if reaction.message.id == '472966572340674560':
             if reaction.emoji == '📱':
@@ -188,6 +196,12 @@ async def on_reaction_remove(reaction, user):
                 await francis.send_message_as_embed(
                     open_channel,
                     f'{user.mention} không còn xem được các kênh liên quan đến {gms_role.mention} nữa.')
+
+            elif reaction.emoji == '🍁':
+                await francis.remove_roles(user, gms2_role)
+                await francis.send_message_as_embed(
+                    open_channel,
+                    f'{user.mention} không còn xem được các kênh liên quan đến {gms2_role.mention} nữa.')
 
         elif reaction.message.id == '472967231781863427':
             if reaction.emoji == '📱':
