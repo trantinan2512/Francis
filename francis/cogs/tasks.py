@@ -104,6 +104,10 @@ class Twitter:
                         # get twitter_gms db
                         elif u_id == '34667202':
                             db = self.db.worksheet('twitter_gms')
+                        # get twitter_gms db
+                        elif u_id == '851835989702000640':
+                            db = self.db.worksheet('twitter_gms2')
+                            
                     except APIError:
                         print('API ERROR')
                         quit()
