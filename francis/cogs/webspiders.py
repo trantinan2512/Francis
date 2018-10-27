@@ -522,7 +522,7 @@ class GMS2SiteSpider(WebSpider):
                         read_db = True
 
                         embed = discord.Embed(
-                            title=f"{data['category']} - {data['title']}",
+                            title=f"[{data['category']}] {data['title']}",
                             url=data['link'],
                             description=data['description'],
                             color=discord.Color.teal())
