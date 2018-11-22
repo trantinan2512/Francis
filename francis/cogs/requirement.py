@@ -12,7 +12,7 @@ class Requirement:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True, name='req')
+    @commands.command(name='req')
     async def requirement(self, context, category=None):
         """Lệnh xem tiêu chí set các Role:
         - Content Creator
@@ -20,7 +20,7 @@ class Requirement:
         - Trader
         """
         prefix = self.bot.command_prefix
-        server = context.message.server
+        server = context.server
 
         gms_role = discord.utils.get(server.roles, name='GMS')
         gmsm_role = discord.utils.get(server.roles, name='GMSM')
@@ -48,7 +48,7 @@ class Requirement:
 
             embed.set_image(url='https://i.imgur.com/xTyqmzZ.jpg')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif category.startswith('lead'):
 
@@ -79,7 +79,7 @@ class Requirement:
                 value=''
                 f'» Không để xảy ra tình trạng "Người người leader, nhà nhà leader".\n')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif category.startswith('trade'):
 
@@ -111,7 +111,7 @@ class Requirement:
                 f'» Hạn chế tình trạng vào kênh để lừa đảo, spam.\n'
                 f'» Tương tác với Maplers khác sẽ dễ mua bán hơn.\n')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif category.startswith('creat'):
 
@@ -146,7 +146,7 @@ class Requirement:
                 f'» Những Maplers thực sự muốn góp công xây dựng cộng đồng MapleStory VN lớn mạnh hơn mới dám bỏ thời gian ra '
                 'làm hết những yêu cầu trên.\n')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
 
 def setup(bot):

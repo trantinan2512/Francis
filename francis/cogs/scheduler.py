@@ -1,14 +1,14 @@
-from pprint import pprint
-import json
+# from pprint import pprint
+# import json
 import asyncio
-import operator
-import os
+# import operator
+# import os
 import dateparser
 from datetime import datetime
 from pytz import timezone
 import re
 import discord
-from discord.ext import commands
+# from discord.ext import commands
 
 from utils.db import initialize_db
 from utils.channel import get_channel
@@ -26,7 +26,7 @@ class Scheduler:
     async def check_gms_schedule(self, delay=30):
 
         await self.bot.wait_until_ready()
-        server = self.bot.get_server(id='453555802670759947')
+        server = self.bot.get_server(id=453555802670759947)
         gms_noti_role = discord.utils.get(server.roles, name='Notify GMS')
 
         while not self.bot.is_closed:
@@ -60,10 +60,9 @@ class Scheduler:
                             tag_re = re.compile('(\[|\.)*gms(\]|\.)*\s*', re.IGNORECASE)
                             event_name = tag_re.sub('', row['event_name'], 1).title()
 
-                            await self.bot.edit_role(server, gms_noti_role, mentionable=True)
-                            await self.bot.send_message(
-                                channel, f'{gms_noti_role.mention} {event_name}.')
-                            await self.bot.edit_role(server, gms_noti_role, mentionable=False)
+                            await gms_noti_role.edit(mentionable=True)
+                            await channel.send(f'{gms_noti_role.mention} {event_name}.')
+                            await gms_noti_role.edit(mentionable=False)
                             schedule_db.update_cell(row_index, 3, 'x')
                             print(f'Schedule Check for GMS: Posted `{event_name}` to channel {channel.id}')
             except APIError:
@@ -74,7 +73,7 @@ class Scheduler:
     async def check_gmsm_schedule(self, delay=30):
 
         await self.bot.wait_until_ready()
-        server = self.bot.get_server(id='453555802670759947')
+        server = self.bot.get_server(id=453555802670759947)
         gmsm_noti_role = discord.utils.get(server.roles, name='Notify GMSM')
 
         while not self.bot.is_closed:
@@ -107,10 +106,9 @@ class Scheduler:
 
                             tag_re = re.compile('(\[|\.)*gmsm(\]|\.)*\s*', re.IGNORECASE)
                             event_name = tag_re.sub('', row['event_name']).title()
-                            await self.bot.edit_role(server, gmsm_noti_role, mentionable=True)
-                            await self.bot.send_message(
-                                channel, f'{gmsm_noti_role.mention} {event_name}.')
-                            await self.bot.edit_role(server, gmsm_noti_role, mentionable=False)
+                            await gmsm_noti_role.edit(mentionable=True)
+                            await channel.send(f'{gmsm_noti_role.mention} {event_name}.')
+                            await gmsm_noti_role.edit(mentionable=False)
                             schedule_db.update_cell(row_index, 3, 'x')
                             print(f'Schedule Check for GMSM: Posted `{event_name}` to channel {channel.id}')
             except APIError:
@@ -148,8 +146,7 @@ class Scheduler:
                             channel = get_channel(id='373663985368563717')
 
                             event_name = row['event_name'].title()
-                            await self.bot.send_message(
-                                channel, f'{event_name}.')
+                            await channel.send(f'{event_name}.')
                             schedule_db.update_cell(row_index, 3, 'x')
                             print(f'Schedule Check for Dawn - SAOMD: Posted `{event_name}` to channel {channel.id}')
             except APIError:

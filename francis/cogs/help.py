@@ -8,8 +8,8 @@ class Help:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True)
-    async def help(self, context, category=None):
+    @commands.command(name='help')
+    async def _help(self, context, category=None):
         """Trợ giúp về sử dụng bot"""
 
         if category:
@@ -57,7 +57,7 @@ class Help:
 
             embed.set_image(url='https://i.imgur.com/xTyqmzZ.jpg')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif category.startswith('role'):
 
@@ -80,7 +80,7 @@ class Help:
                 name='Danh sách Role.',
                 value=f'`{prefix}list`')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif category.startswith('lead'):
 
@@ -123,7 +123,7 @@ class Help:
             )
             embed.set_image(url='https://i.imgur.com/Vh7DoMX.jpg')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
         elif category.startswith('trade'):
 
             trader_gms = discord.utils.get(server.roles, name='Trader GMS')
@@ -188,14 +188,14 @@ class Help:
             )
             embed.set_image(url='https://i.imgur.com/thF09Sa.jpg')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif category.startswith('music'):
             music_txt_channel = discord.utils.get(server.channels, name='music')
             music_vce_channel = discord.utils.get(server.channels, name='Music')
             # for ch in server.channels:
             #     print(ch.name, ch.id)
-            await self.bot.say_as_embed(
+            await context.say_as_embed(
                 message=''
                 '**Hướng dẫn sử dụng Music Bot**\n'
                 f'1. Vào Voice Channel {music_vce_channel.mention}.\n'
@@ -254,7 +254,7 @@ class Help:
             )
             embed.set_image(url='https://i.imgur.com/fG47Wtx.jpg')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif category.startswith('link'):
 
@@ -268,7 +268,7 @@ class Help:
 
             embed.set_image(url='https://i.imgur.com/1TBNvkc.jpg')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
 
 def setup(bot):

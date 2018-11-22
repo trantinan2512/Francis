@@ -10,12 +10,8 @@ from utils.db import initialize_db
 import config
 
 from dateparser import parse
-
-import os
-import django
 from django.db.models import F
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
-django.setup()
+
 
 from web.apps.users.models import DiscordUser
 
@@ -28,13 +24,13 @@ class Admin:
         self.db = initialize_db()
 
     def is_me(ctx):
-        return ctx.message.author.id == config.MY_ID
+        return ctx.author.id == config.MY_ID
 
     def is_mod(ctx):
-        author = ctx.message.author
-        server = ctx.message.server
+        author = ctx.author
+        server = ctx.server
         # MSVN Community server
-        if server.id == '453555802670759947':
+        if server.id == 453555802670759947:
             mod_gms_role = discord.utils.get(author.roles, name='Mod GMS')
             mod_gmsm_role = discord.utils.get(author.roles, name='Mod GMSM')
             super_mod_role = discord.utils.get(author.roles, name='Super Mod')
@@ -44,49 +40,48 @@ class Admin:
                 return False
         else:
             # Vice commander id or myself
-            return author.id == config.MY_ID or author.top_role.id == '373667156468170755'
+            return author.id == config.MY_ID or author.top_role.id == 373667156468170755
 
-    @commands.command(pass_context=True, name='clear')
+    @commands.command(name='clear')
     @commands.check(is_me)
     async def clear_messages(self, context, limit=100, check=None):
         """Lệnh xóa tin nhắn
         """
-        channel = context.message.channel
+        channel = context.channel
 
         if check is None:
             messages = []
-            async for message in self.bot.logs_from(channel, limit=limit):
+            async for message in channel.history(limit=limit):
                 messages.append(message)
 
-            note = await self.bot.say(f'Tiến hành xóa {len(messages)} tin nhắn :hourglass_flowing_sand:')
+            note = await context.send(f'Tiến hành xóa {len(messages)} tin nhắn :hourglass_flowing_sand:')
             chunks = [messages[x:x + 100] for x in range(0, len(messages), 100)]
             counter = 0
             for chunk in chunks:
-                await self.bot.delete_messages(chunk)
+                await channel.delete_messages(chunk)
                 counter += len(chunk)
                 if chunk != chunks[-1]:
-                    await self.bot.edit_message(
-                        note,
-                        f'Xóa thành công {counter}/{len(messages)} tin nhắn :hourglass_flowing_sand:')
+                    await note.edit(
+                        content=f'Xóa thành công {counter}/{len(messages)} tin nhắn :hourglass_flowing_sand:')
                 else:
-                    end_note = await self.bot.edit_message(
-                        note,
+                    await note.edit(
+                        content=''
                         f'Xóa thành công {counter}/{len(messages)} tin nhắn :white_check_mark:\n'
                         '*Tự động xóa tin nhắn này sau 10 giây*')
                     print(f'Deleted {counter}/{len(messages)} messages.')
 
             await asyncio.sleep(10)
-            await self.bot.delete_message(end_note)
+            await note.delete()
 
         else:
 
-            def is_me(m):
+            def is_bot(m):
                 return m.author == self.bot.user
 
-            deleted = await self.bot.purge_from(channel, limit=limit, check=is_me)
-            await self.bot.say(f'Deleted {len(deleted)} message(s)')
+            deleted = await channel.purge(limit=limit, check=is_bot)
+            await channel.send(f'Deleted {len(deleted)} message(s)')
 
-    @commands.command(pass_context=True, name='countmsg')
+    @commands.command(name='countmsg')
     @commands.check(is_me)
     async def count_users_messages(self, context, prefix=None, limit=5000):
         """Lệnh đếm số tin nhắn trong kênh
@@ -94,10 +89,10 @@ class Admin:
         KHÔNG đếm những tin nhắn của bot (có role Artificial Intelligence)
         """
 
-        channel = context.message.channel
-        ai_role = discord.utils.get(context.message.server.roles, name='Artificial Intelligence')
+        channel = context.channel
+        ai_role = discord.utils.get(context.server.roles, name='Artificial Intelligence')
 
-        note = await self.bot.say(f'Đang xử lý...')
+        note = await channel.send(f'Đang xử lý...')
         counter = 0
         data_dict = {}
         async for message in self.bot.logs_from(channel, limit=limit):
@@ -144,14 +139,23 @@ class Admin:
                 value=f'Số tin nhắn: `{item[1]}`')
 
         await self.bot.delete_message(note)
-        await self.bot.say_as_embed(embed=embed)
+        await context.say_as_embed(embed=embed)
 
-    @commands.command(pass_context=True, name='playing')
+    @commands.command(name='playing')
     @commands.check(is_me)
     async def change_bot_presence(self, context, *, presence: str):
         await self.bot.change_presence(game=discord.Game(name=presence))
 
-    @commands.command(pass_context=True, name='sc')
+    @commands.command(name='e')
+    @commands.check(is_me)
+    async def _emoji_sender(self, context, *, emoji: int):
+        await context.message.delete()
+        emoji_obj = self.bot.get_emoji(id=emoji)
+        print(emoji)
+        await context.send(emoji_obj)
+        # await self.bot.change_presence(game=discord.Game(name=presence))
+
+    @commands.command(name='sc')
     @commands.check(is_mod)
     async def event_scheduler(self, context, *, data=None):
         to_delete_messages = []
@@ -165,12 +169,15 @@ class Admin:
         elif context.message.server.id == '364323564737789953':
             schedule_db = self.db.worksheet('schedules_saomd')
 
+        def check_same_author(message):
+            return message.author == context.author
+
         # display help text when no/wrong data provided
         if data is None \
                 or '--' not in data \
                 and not data.startswith('start') \
                 and not data.startswith('list'):
-            await self.bot.say(
+            await context.send(
                 '**Schedule Function 101**\n'
                 f'`{prefix}sc` : show this message.\n'
                 f'`{prefix}sc list` : show a list of to-be-announced events.\n'
@@ -186,7 +193,7 @@ class Admin:
             event_name = event_name.strip()
             parsed_datetime = parse(event_datetime, settings={'DATE_ORDER': 'DMY'})
             if parsed_datetime is None:
-                msg = await self.bot.say('Cannot recognize the Date Time provided. Please try again.')
+                msg = await context.send('Cannot recognize the Date Time provided. Please try again.')
                 to_delete_messages.append(msg)
                 pass
             else:
@@ -195,7 +202,7 @@ class Admin:
                 else:
                     str_datetime = parsed_datetime.strftime('%I:%M:%S %p %d/%m/%Y (UTC)')
 
-                msg = await self.bot.say(
+                msg = await context.send(
                     'Here is the data you provided (date time format: `HH:MM:SS PP dd/mm/yyyy (Timezone)`):'
                     f'```Event Name: {event_name}\n'
                     f'Event Date: {str_datetime}```'
@@ -206,9 +213,10 @@ class Admin:
                 done = False
 
                 while done is not True:
-                    confirm = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
-                    if confirm is None:
-                        msg = await self.bot.say(f'Session timed out. Please start over.')
+                    try:
+                        confirm = await self.bot.wait_for('message', check=check_same_author, timeout=timeout)
+                    except asyncio.TimeoutError:
+                        msg = await context.send(f'Session timed out. Please start over.')
                         to_delete_messages.append(msg)
                         break
                     to_delete_messages.append(confirm)
@@ -217,36 +225,36 @@ class Admin:
 
                         schedule_db.insert_row([event_name, str_datetime], index=2)
 
-                        msg = await self.bot.say('Done! Thanks.')
+                        msg = await context.send('Done! Thanks.')
                         to_delete_messages.append(msg)
                         done = True
                     elif confirm.content.lower().startswith('n'):
-                        msg = await self.bot.say(f'No schedule created. Please try again.')
+                        msg = await context.send(f'No schedule created. Please try again.')
                         to_delete_messages.append(msg)
                         done = True
                     else:
-                        msg = await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
+                        msg = await context.send(f'Please type either `yes (y)` or `no (n)`.')
                         to_delete_messages.append(msg)
 
         # start listening to the user with `schedule start`
         elif data.startswith('start'):
             to_delete_messages.append(context.message)
-            msg = await self.bot.say('Please provide the Event Name')
+            msg = await context.send('Please provide the Event Name')
             to_delete_messages.append(msg)
 
-            event_name = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
+            event_name = await self.bot.wait_for('message', check=check_same_author, timeout=timeout)
             if event_name is None:
-                msg = await self.bot.say(timeout_msg)
+                msg = await context.send(timeout_msg)
                 to_delete_messages.append(msg)
                 pass
             to_delete_messages.append(event_name)
 
-            msg = await self.bot.say('Please provide the Date and Time for the event. Provide the timezone also, default is UTC.')
+            msg = await context.send('Please provide the Date and Time for the event. Provide the timezone also, default is UTC.')
             to_delete_messages.append(msg)
 
-            event_datetime = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
+            event_datetime = await self.bot.wait_for('message', check=check_same_author, timeout=timeout)
             if event_datetime is None:
-                msg = await self.bot.say(timeout_msg)
+                msg = await context.send(timeout_msg)
                 to_delete_messages.append(msg)
                 pass
             to_delete_messages.append(event_datetime)
@@ -254,18 +262,18 @@ class Admin:
             parsed_datetime = parse(event_datetime.content, settings={'DATE_ORDER': 'DMY'})
             while parsed_datetime is None:
 
-                msg = await self.bot.say('Please provide a correct Date and Time (default timezone: UTC). Or type `quit` to exit.')
+                msg = await context.send('Please provide a correct Date and Time (default timezone: UTC). Or type `quit` to exit.')
                 to_delete_messages.append(msg)
 
-                event_datetime = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
+                event_datetime = await self.bot.wait_for('message', check=check_same_author, timeout=timeout)
                 if event_datetime is None:
-                    msg = await self.bot.say(timeout_msg)
+                    msg = await context.send(timeout_msg)
                     to_delete_messages.append(msg)
                     break
                 to_delete_messages.append(event_datetime)
 
                 if event_datetime.content == 'quit':
-                    msg = await self.bot.say('Successfully terminated.')
+                    msg = await context.send('Successfully terminated.')
                     to_delete_messages.append(msg)
                     return
                 else:
@@ -278,7 +286,7 @@ class Admin:
                 else:
                     str_datetime = parsed_datetime.strftime('%I:%M:%S %p %d/%m/%Y (UTC)')
 
-                msg = await self.bot.say(
+                msg = await context.send(
                     'Here is the data you provided (date time format: `HH:MM:SS PP dd/mm/yyyy (Timezone)`):'
                     f'```Event Name: {event_name.content}\n'
                     f'Event Date: {str_datetime}```'
@@ -289,9 +297,9 @@ class Admin:
                 done = False
 
                 while done is not True:
-                    confirm = await self.bot.wait_for_message(author=context.message.author, timeout=timeout)
+                    confirm = await self.bot.wait_for('message', check=check_same_author, timeout=timeout)
                     if confirm is None:
-                        msg = await self.bot.say(timeout_msg)
+                        msg = await context.send(timeout_msg)
                         to_delete_messages.append(msg)
                         pass
                     to_delete_messages.append(confirm)
@@ -300,15 +308,15 @@ class Admin:
 
                         schedule_db.insert_row([event_name.content, str_datetime], index=2)
 
-                        msg = await self.bot.say('Done! Thanks.')
+                        msg = await context.send('Done! Thanks.')
                         to_delete_messages.append(msg)
                         done = True
                     elif confirm.content.lower().startswith('n'):
-                        msg = await self.bot.say(f'No schedule created. Please start over by typing `{prefix}schedule start`.')
+                        msg = await context.send(f'No schedule created. Please start over by typing `{prefix}schedule start`.')
                         to_delete_messages.append(msg)
                         done = True
                     else:
-                        msg = await self.bot.say(f'Please type either `yes (y)` or `no (n)`.')
+                        msg = await context.send(f'Please type either `yes (y)` or `no (n)`.')
                         to_delete_messages.append(msg)
         elif data.startswith('list'):
             # from the list of db show it here
@@ -331,31 +339,31 @@ class Admin:
                             value=f'{record["date_time"]}',
                             inline=False)
                 if posted_counter == len(records):
-                    await self.bot.say('No events available.')
+                    await context.send('No events available.')
                 else:
-                    await self.bot.say_as_embed(embed=embed)
+                    await context.say_as_embed(embed=embed)
             else:
-                await self.bot.say('Empty schedules.')
+                await context.send('Empty schedules.')
 
         # delete messages generated by scheduling
         if len(to_delete_messages) != 0:
-            note = await self.bot.say(f'The above messages ({len(to_delete_messages)}) will be deleted in 10 seconds'
+            note = await context.send(f'The above messages ({len(to_delete_messages)}) will be deleted in 10 seconds'
                                       ':hourglass_flowing_sand:')
             await asyncio.sleep(10)
             await self.bot.delete_messages(to_delete_messages)
-            await self.bot.edit_message(note, 'Done :white_check_mark:')
+            await note.edit('Done :white_check_mark:')
             await asyncio.sleep(5)
-            await self.bot.delete_message(note)
+            await note.delete()
 
-    @commands.command(pass_context=True, name='give')
+    @commands.command(name='give')
     @commands.check(is_me)
-    async def give_credit(self, context, item, to, amount):
+    async def give_credit(self, context, item, to: int, amount):
         await self.bot.delete_message(context.message)
         if item.lower() in ['cr', 'pl', 'crystal']:
             try:
                 user = DiscordUser.objects.get(discord_id=to)
             except DiscordUser.DoesNotExist:
-                note = await self.bot.say(f'The user with ID: {to} does not exist.')
+                note = await context.send(f'The user with ID: {to} does not exist.')
                 await asyncio.sleep(5)
                 await self.bot.delete_message(note)
 
@@ -364,15 +372,15 @@ class Admin:
 
             discord_user = await self.bot.get_user_info(to)
             amount = '{:,}'.format(int(amount))
-            await self.bot.say(f'{discord_user.mention} has been credited **{amount} Crystals**.')
+            await context.send(f'{discord_user.mention} has been credited **{amount} Crystals**.')
 
-    @commands.command(pass_context=True, name='grcc')
+    @commands.command(name='grcc')
     @commands.check(is_me)
     async def get_roles_color_code(self, context):
 
-        await self.bot.delete_message(context.message)
-        ms_server = self.bot.get_server('453555802670759947')
-        dawn_server = self.bot.get_server('364323564737789953')
+        await context.message.delete()
+        ms_server = self.bot.get_server(453555802670759947)
+        dawn_server = self.bot.get_server(364323564737789953)
 
         for ms_role in ms_server.roles:
             if ms_role.name in config.AUTOASIGN_COLOR_ROLES:
@@ -386,13 +394,13 @@ class Admin:
                         server=dawn_server, name=ms_role.name, color=ms_role.color, hoist=False, mentionable=False)
                     print(f'Created role: {new_role.name} in server: {dawn_server.name}')
 
-    @clear_messages.error
-    @count_users_messages.error
-    @change_bot_presence.error
-    @event_scheduler.error
-    async def clear_messages_error(self, error, context):
-        print(error)
-        return  # fail silently
+    # @clear_messages.error
+    # @count_users_messages.error
+    # @change_bot_presence.error
+    # @event_scheduler.error
+    # async def clear_messages_error(self, error, context):
+    #     print(error)
+    #     return  # fail silently
 
 
 def setup(bot):

@@ -38,7 +38,7 @@ class GMSSiteSpider(WebSpider):
             delay = 60
 
         # cập-nhật-mới-gms channel
-        channel = ch.get_channel(id='453565620915535872')
+        channel = ch.get_channel(id=453565620915535872)
         sc_data = None
 
         while not self.bot.is_closed:
@@ -145,7 +145,7 @@ class GMSSiteSpider(WebSpider):
                                     color=discord.Color.teal())
                                 embed.set_image(url=data['img'])
                                 # send the message to channel
-                                await self.bot.send_message_as_embed(channel=channel, embed=embed)
+                                await self.bot.say_as_embed(channel=channel, embed=embed)
                                 # save to drive and print the result title
                                 db.insert_row([value for value in data.values()], index=2)
                                 print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
@@ -159,7 +159,7 @@ class GMSSiteSpider(WebSpider):
                             color=discord.Color.teal())
                         embed.set_image(url=data['img'])
                         # send the message to channel
-                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
+                        await self.bot.say_as_embed(channel=channel, embed=embed)
                         # save to drive and print the result title
                         db.insert_row([value for value in data.values()], index=2)
                         print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
@@ -184,7 +184,7 @@ class GMSSiteSpider(WebSpider):
 
         strongs = html.select('.article-content p span strong')
         # regex to get the string that contains UTC -7 related stuff
-        utc_re = re.compile('\s*\(UTC\s*-*–*\s*7\)\s*', re.IGNORECASE)
+        utc_re = re.compile('\s*\(UTC\s*-*–*\s*(7|8)\)\s*', re.IGNORECASE)
         # regex to get the string that contains either pst or pdt
         tz_re = re.compile('p(d|s)t', re.IGNORECASE)
         # regex to get the TBD string in 'finish' duration
@@ -205,7 +205,6 @@ class GMSSiteSpider(WebSpider):
 
                 # re remove UTC -7 stuff if exists
                 date = utc_re.sub('', date)
-
 
                 if len(date) <= 5:
                     for strong in strongs:
@@ -438,7 +437,7 @@ class GMSMSiteSpider(WebSpider):
                             embed.set_image(url='https://i.imgur.com/DH5rVQd.jpg')
 
                         # send the message to channel
-                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
+                        await self.bot.say_as_embed(channel=channel, embed=embed)
                         # save to drive and print the result title
                         site_gmsm.insert_row(list(data.values()), index=2)
                         print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
@@ -529,7 +528,7 @@ class GMS2SiteSpider(WebSpider):
                         embed.set_image(url=data['image'])
 
                         # send the message to channel
-                        await self.bot.send_message_as_embed(channel=channel, embed=embed)
+                        await self.bot.say_as_embed(channel=channel, embed=embed)
 
                         # save to drive and print the result title
                         db.insert_row([value for value in data.values()], index=2)

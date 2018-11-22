@@ -33,7 +33,7 @@ class Twitter:
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = ch.get_channel(id='455635507561627648')
+        channel = ch.get_channel(id=455635507561627648)
 
         while not self.bot.is_closed:
 
@@ -45,7 +45,7 @@ class Twitter:
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = ch.get_channel(id='455634325086404608')
+        channel = ch.get_channel(id=455634325086404608)
 
         # keep executing the codes until bot is closed
         while not self.bot.is_closed:
@@ -107,7 +107,7 @@ class Twitter:
                         # get twitter_gms db
                         elif u_id == '851835989702000640':
                             db = self.db.worksheet('twitter_gms2')
-                            
+
                     except APIError:
                         print('API ERROR')
                         quit()
@@ -129,7 +129,7 @@ class Twitter:
                     db.insert_row([status_id, timestamp_date, timestamp_time], index=2)
 
                     # send the message to channel
-                    await self.bot.send_message(channel, status_url)
+                    await channel.send(status_url)
                     print(f'Twitter Fetch: [{u_screen_name}] [Fetched: {status_url}]')
             else:
 
@@ -150,14 +150,14 @@ class Facebook:
 
         if config.DEBUG is True:
             # bot-test channel
-            channel = discord.Object(id='454890599410302977')
+            channel = discord.Object(id=454890599410302977)
         else:
             # twitter-facebook-gms channel
-            channel = discord.Object(id='455634325086404608')
+            channel = discord.Object(id=455634325086404608)
 
         access_token = config.FACEBOOK_ACCESS_TOKEN
         # Francis Discordpy
-        user = '1195053647303141'
+        user = 1195053647303141
 
         graph = facebook.GraphAPI(access_token)
         profile = graph.get_object(user)
@@ -197,7 +197,7 @@ class Facebook:
                         if pic_url is not None:
                             embed.set_image(url=post_pic['full_picture'])
 
-                        await self.bot.send_message_as_embed(channel, embed=embed)
+                        await self.bot.say_as_embed(channel, embed=embed)
 
                 else:
                     data = {'Maple': {'ids': [latest_post['id'], ]}}
@@ -211,6 +211,6 @@ class Facebook:
                     if pic_url is not None:
                         embed.set_image(url=post_pic['full_picture'])
 
-                    await self.bot.send_message_as_embed(channel, embed=embed)
+                    await self.bot.say_as_embed(channel, embed=embed)
 
             await asyncio.sleep(40)

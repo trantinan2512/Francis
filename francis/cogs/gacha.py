@@ -26,13 +26,12 @@ class Gacha:
         else:
             return context.message.channel.id == '481712884196573194'
 
-    @commands.command(pass_context=True, aliases=['g', 'gs'])
+    @commands.command(aliases=['g', 'gs'])
     @commands.check(is_treasure_box_channel)
     async def gacha(self, context, job=None, rolls=None):
         """MapleStory Mobile Treasure Box Gacha"""
 
-        message = context.message
-        author = message.author
+        author = context.author
         prefix = self.bot.command_prefix
         command_name = context.invoked_with
 
@@ -63,7 +62,7 @@ class Gacha:
                 value=f'• Quay rương 10+1 cho Dark Knight: **`{prefix}g dk`**\n'
                 f'• Quay rương 1 cho Bishop: **`{prefix}gs bs`**\n'
                 f'Có thể dùng tên job viết liền (không dấu cách) để quay rương:\n**`{prefix}g darkknight`**',)
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         else:
             if command_name == 'g':
@@ -82,7 +81,7 @@ class Gacha:
                         f' Cần tối thiểu {"{:,}".format(min_cr)} :gem: để quay rương.\n'
                         f'Nhập lệnh `{prefix}gdaily` để nhận :gem: hằng ngày nhé!',
                         color=discord.Color.teal())
-                    await self.bot.say_as_embed(embed=embed)
+                    await context.say_as_embed(embed=embed)
                     return
                 # take 1,000 crystals from the user's balance
                 else:
@@ -115,7 +114,7 @@ class Gacha:
                         title=f'Không tìm được Job với cụm: {job}',
                         description=f'Vui lòng thử lại với *tên viết tắt của Job* hoặc *tên đầy đủ không dấu cách*.',
                         colour=discord.Color.teal())
-                    await self.bot.say_as_embed(embed=embed)
+                    await context.say_as_embed(embed=embed)
                     return
 
                 gacha_items = TreasureBoxGacha.objects.filter(job__job=job_processed)
@@ -247,9 +246,9 @@ class Gacha:
                 embed.set_footer(
                     text=f'Bạn còn [💎 x{crystals}] trong tài khoản.',
                     icon_url='https://i.imgur.com/Sh9kXA8.png')
-                await self.bot.say_as_embed(embed=embed)
+                await context.say_as_embed(embed=embed)
 
-    @commands.command(pass_context=True, name='glist')
+    @commands.command(name='glist')
     @commands.check(is_treasure_box_channel)
     async def gachalist(self, context):
         prefix = self.bot.command_prefix
@@ -267,8 +266,8 @@ class Gacha:
             ('Thunder Breaker', 'tb'),
 
         ]
-        message = context.message
-        author = message.author
+
+        author = context.author
         self.check_user_in_db(author.id, author.name)
 
         text_job_abbrs = 'Viết tắt | Tên Job\n'
@@ -283,14 +282,13 @@ class Gacha:
             f'• `{prefix}g viết_tắt` (10+1 lần)\n'
             f'Ví dụ quay rương 10+1 lần cho Dark Knight: `{prefix}g dk`\n',
             colour=discord.Color.teal())
-        await self.bot.say(embed=embed)
+        await context.send(embed=embed)
 
-    @commands.command(pass_context=True, name='gdaily')
+    @commands.command(name='gdaily')
     @commands.check(is_treasure_box_channel)
     async def gachadaily(self, context):
 
-        message = context.message
-        author = message.author
+        author = context.author
         discord_user = self.check_user_in_db(author.id, author.name)
 
         # check if user already redeemed crystals
@@ -299,7 +297,7 @@ class Gacha:
                 title=None,
                 description='Bạn đã nhận :gem: hôm nay rồi nhé. Vui lòng thử lại **sau 00:00 sáng mai**.',
                 colour=discord.Color.teal())
-            await self.bot.say(embed=embed)
+            await context.send(embed=embed)
             return
 
         # gives the user crystals
@@ -316,14 +314,13 @@ class Gacha:
             description=f'{author.mention} đã nhận :gem: x10,000  vào tài khoản quay rương!\n'
             f'Hiện tại bạn đang có **:gem: x{crystals}**.',
             colour=discord.Color.teal())
-        await self.bot.say(embed=embed)
+        await context.send(embed=embed)
 
-    @commands.command(pass_context=True, name='ginfo')
+    @commands.command(name='ginfo')
     @commands.check(is_treasure_box_channel)
     async def gachainfo(self, context):
 
-        message = context.message
-        author = message.author
+        author = context.author
 
         # check for user in db, create one if not present
         discord_user = self.check_user_in_db(author.id, author.name)
@@ -359,7 +356,7 @@ class Gacha:
             value=text_daily_checked)
         # set the thumbnail image for better visualizations
         embed.set_thumbnail(url='https://i.imgur.com/Sj2rPTN.png')
-        await self.bot.say(embed=embed)
+        await context.send(embed=embed)
 
     def check_user_in_db(self, user_id, user_name):
         discord_user, created = DiscordUser.objects.get_or_create(discord_id=user_id, defaults={'discord_name': user_name})

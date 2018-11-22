@@ -8,8 +8,8 @@ class Link:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True)
-    async def link(self, context, game=None):
+    @commands.command(name='link')
+    async def _link(self, context, game=None):
         """Lệnh lấy link hữu ích cho game"""
 
         if game:
@@ -27,7 +27,7 @@ class Link:
                 f'Ví dụ: `{prefix}link gms`',
                 color=discord.Color.red())
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif game == 'gms':
 
@@ -57,7 +57,7 @@ class Link:
                 '[Mô phỏng hệ thống Cube](https://stripedypaper.github.io/cube/)\n'
                 '[Orange Mushroom Blog - Update Notes KMS Anh hóa](https://orangemushroom.net/)')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         elif game == 'gmsm':
 
@@ -85,7 +85,7 @@ class Link:
                 name='Các link hữu ích khác',
                 value=f'[Các câu hỏi xoay quanh Official Launch](https://www.facebook.com/zblackwing/posts/2055933801331800)\n')
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
 
 def setup(bot):

@@ -1,6 +1,11 @@
 import sys
+import os
+import django
 
 if __name__ == "__main__":
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
+    django.setup()
     try:
         bot = sys.argv[1]
         if bot == 'francis':

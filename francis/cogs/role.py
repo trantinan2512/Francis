@@ -12,11 +12,11 @@ class Role:
 
     def is_dawn_member(ctx):
         author = ctx.message.author
-        server = ctx.message.server
+        server = ctx.message.guild
 
         # Dawn member check
         if server.id == config.DAWN_SERVER_ID:
-            dawn_role = discord.utils.get(author.roles, id='364967220193001472')
+            dawn_role = discord.utils.get(author.roles, id=364967220193001472)
             if dawn_role:
                 return True
             else:
@@ -24,14 +24,14 @@ class Role:
         else:
             return True
 
-    @commands.command(pass_context=True)
+    @commands.command(aliases=['role', 'iam'])
     @commands.check(is_dawn_member)
-    async def role(self, context, *, role=None):
+    async def _role(self, context, *, role=None):
         """Set Role theo yêu cầu"""
 
         message = context.message
         author = message.author
-        server = message.server
+        server = message.guild
         prefix = self.bot.command_prefix
 
         if server.id == config.MSVN_SERVER_ID:
@@ -56,7 +56,7 @@ class Role:
                 title=field_1_name,
                 description=field_1_value,
                 color=discord.Color.teal())
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         else:
 
@@ -66,28 +66,28 @@ class Role:
 
             if type(role) != tuple and role is not None:
 
-                r = discord.utils.get(message.server.roles, name=role)
+                r = discord.utils.get(message.guild.roles, name=role)
                 if server.id == config.MSVN_SERVER_ID:
                     role_set_msg = f'{author.mention} đã được set role {r.mention}.'
                 elif server.id == config.DAWN_SERVER_ID:
                     role_set_msg = f'{author.mention}, you now has the role: {r.mention}.'
 
                 if r in author.roles:
-                    await self.bot.say_as_embed(message=role_exists_msg)
+                    await context.say_as_embed(message=role_exists_msg)
 
                 else:
-                    await self.bot.add_roles(author, r)
-                    await self.bot.say_as_embed(
+                    await author.add_roles(r)
+                    await context.say_as_embed(
                         message=role_set_msg,
                         color=r.color)
             else:
-                await self.bot.say_as_embed(
+                await context.say_as_embed(
                     message=wrong_role_name_provided_msg,
                     color='error')
 
-    @commands.command(pass_context=True)
+    @commands.command(aliases=['rrole', 'iamn'])
     @commands.check(is_dawn_member)
-    async def rrole(self, context, *, role=None):
+    async def _rrole(self, context, *, role=None):
         """Xóa Role theo yêu cầu
         - Xóa từng role: !rrole tên_role
         - Xóa nhiều role: !rrole all loại_role
@@ -95,7 +95,7 @@ class Role:
         """
         message = context.message
         author = message.author
-        server = message.server
+        server = message.guild
         prefix = self.bot.command_prefix
 
         if server.id == config.MSVN_SERVER_ID:
@@ -146,7 +146,7 @@ class Role:
             embed.add_field(
                 name=field_2_name,
                 value=field_2_value)
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         # requested role input detected
         else:
@@ -169,7 +169,7 @@ class Role:
                     embed.add_field(
                         name=field_2_name,
                         value=field_2_value)
-                    await self.bot.say_as_embed(embed=embed)
+                    await context.say_as_embed(embed=embed)
 
                 # remove roles by valid provided role_type
                 else:
@@ -204,7 +204,7 @@ class Role:
 
                     # remove roles if there are any
                     if to_rmv_roles['roles']:
-                        await self.bot.remove_roles(author, *to_rmv_roles['roles'])
+                        await author.remove_roles(*to_rmv_roles['roles'])
                         mention_roles = ", ".join(to_rmv_roles['role_mentions'])
 
                         if server.id == config.MSVN_SERVER_ID:
@@ -215,7 +215,7 @@ class Role:
                             remove_roles_done_msg = f'{author.mention}, {mention_roles} has been removed from your roles.'
                             no_role_type_found_msg = f'{author.mention}, role type: `{role_type}` not found. Try using `colors` instead.'
 
-                        await self.bot.say_as_embed(
+                        await context.say_as_embed(
                             message=remove_roles_done_msg,
                             color='success')
                     else:
@@ -226,13 +226,13 @@ class Role:
                         elif server.id == config.DAWN_SERVER_ID:
                             no_role_type_found_msg = f'{author.mention}, role type: `{role_type}` not found. Try using `colors` instead.'
 
-                        await self.bot.say_as_embed(
+                        await context.say_as_embed(
                             message=no_role_type_found_msg,
                             color='error')
 
             elif role is not None:
 
-                r = discord.utils.get(message.server.roles, name=r)
+                r = discord.utils.get(message.guild.roles, name=r)
 
                 if server.id == config.MSVN_SERVER_ID:
                     remove_role_done_msg = f'{author.mention}, role {r.mention} đã được xóa thành công.'
@@ -240,26 +240,26 @@ class Role:
                     remove_role_done_msg = f'{author.mention}, {r.mention} has been removed.'
 
                 if r not in author.roles:
-                    await self.bot.say_as_embed(
+                    await context.say_as_embed(
                         message=no_role_found_msg,
                         color='error')
 
                 else:
-                    await self.bot.remove_roles(author, r)
-                    await self.bot.say_as_embed(
+                    await author.remove_roles(r)
+                    await context.say_as_embed(
                         message=remove_role_done_msg,
                         color='success')
 
             else:
-                await self.bot.say_as_embed(
+                await context.say_as_embed(
                     message=wrong_role_name_provided_msg,
                     color='error')
 
-    @commands.command(pass_context=True)
+    @commands.command()
     async def list(self, context):
         """Xem danh sách Role có thể tự thêm/xóa"""
         message = context.message
-        server = message.server
+        server = message.guild
         prefix = self.bot.command_prefix
 
         if server.id == config.MSVN_SERVER_ID:
@@ -329,12 +329,12 @@ class Role:
 
         await self.bot.say(embed=embed)
 
-    @role.error
-    @rrole.error
+    @_role.error
+    @_rrole.error
     async def clear_messages_error(self, error, context):
-        dawn_role = discord.utils.get(context.message.server.roles, id='364967220193001472')
+        dawn_role = discord.utils.get(context.message.guild.roles, id=364967220193001472)
         if context.invoked_with in ['role', 'rrole']:
-            await self.bot.say_as_embed(message=f'Sorry, only {dawn_role.mention} can use this command. Join us for these awesome colors!')
+            await context.say_as_embed(message=f'Sorry, only {dawn_role.mention} can use this command. Join us for these awesome colors!')
         return  # fail silently
 
 

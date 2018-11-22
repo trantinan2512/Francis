@@ -1,9 +1,5 @@
 from discord.ext import commands
 import discord
-import os
-import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
-django.setup()
 from web.apps.items.models import ItemStatRange
 
 
@@ -13,7 +9,7 @@ class StatCheck:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True, aliases=['st', 'stat'])
+    @commands.command(aliases=['st', 'stat'])
     async def check_stat(self, context, sub_type=None, job=None):
         """Lệnh lấy stat cho MapleStory Mobile"""
 
@@ -29,7 +25,7 @@ class StatCheck:
                 f'• **`{prefix}stinfo`** : xem ghi chú và nguồn của các chỉ số.',
                 color=discord.Color.teal())
 
-            await self.bot.say_as_embed(embed=embed)
+            await context.say_as_embed(embed=embed)
 
         else:
 
@@ -48,7 +44,7 @@ class StatCheck:
                     title=f':x: Không tìm thấy trang bị có loại: {sub_type}',
                     description=f'Nhập lệnh `{prefix}stlist` để biết các `loại_trang_bị` và tên `job` khả dụng.',
                     color=discord.Color.red())
-                await self.bot.say_as_embed(embed=embed)
+                await context.say_as_embed(embed=embed)
                 return
             else:
                 table_text = 'Rank           Min    Max            \n'
@@ -60,7 +56,7 @@ class StatCheck:
                             description=f'Vui lòng thử lại với cú pháp: `{prefix}st {sub_type} job`\n'
                             f'Nhập lệnh `{prefix}stlist` để biết các tên `job` khả dụng.',
                             color=discord.Color.red())
-                        await self.bot.say_as_embed(embed=embed)
+                        await context.say_as_embed(embed=embed)
                         return
                     else:
                         # process job given by the user
@@ -95,7 +91,7 @@ class StatCheck:
                                 description=f'Có thể bạn đã nhập sai tên `job`.\n'
                                 f'Nhập lệnh `{prefix}stlist` để biết các `job` khả dụng.',
                                 color=discord.Color.red())
-                            await self.bot.say_as_embed(embed=embed)
+                            await context.say_as_embed(embed=embed)
                             return
 
                 for item in item_list:
@@ -119,9 +115,9 @@ class StatCheck:
                     name='Kết quả',
                     value=f'```{table_text}```')
 
-                await self.bot.say_as_embed(embed=embed)
+                await context.say_as_embed(embed=embed)
 
-    @commands.command(pass_context=True, name='stlist')
+    @commands.command(name='stlist')
     async def stat_list(self, context):
         prefix = self.bot.command_prefix
         job_abbrs = [
@@ -164,19 +160,19 @@ class StatCheck:
             value=f'• Kiểm tra chỉ số Spear: `{prefix}st spear`\n'
             f'• Kiểm tra chỉ số Outfit của Bishop: `{prefix}st outfit bs`')
 
-        await self.bot.say(embed=embed)
+        await context.send(embed=embed)
 
-    @commands.command(pass_context=True, name='stinfo')
+    @commands.command(name='stinfo')
     async def stat_information(self, context):
 
         embed = discord.Embed(
             title='Ghi chú về thông tin chỉ số',
             description='• Dữ kiện về đồ có nền (Emblem) còn thiếu, nên tạm tính Min-Max bằng 130% so với item thông thường.\n'
             '• Chỉ số đã được làm tròn, bạn có thể xem nguồn bên dưới để biết chỉ số chính xác.\n'
-            '• Nguồn: [Bách khoa toàn thư của Lukishi](https://docs.google.com/spreadsheets/d/1zEix7SJoHMyqKJxxheUtluKLOEmwtfgTJwXENZHsEoY/htmlview)',
+            '• Nguồn: [Bách khoa toàn thư của Lukishi](https://docs.google.com/spreadsheets/d/1zEix7SJoHMyqKJxxheUtluKLOEmwtfgTJwXENZHsEoY/htmlview)',  # noqa e501
             colour=discord.Color.teal())
 
-        await self.bot.say(embed=embed)
+        await context.send(embed=embed)
 
     def add_space(self, no_of_spaces):
         spaces = ''
