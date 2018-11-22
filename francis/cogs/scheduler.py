@@ -26,7 +26,7 @@ class Scheduler:
     async def check_gms_schedule(self, delay=30):
 
         await self.bot.wait_until_ready()
-        server = self.bot.get_server(id=453555802670759947)
+        server = self.bot.get_guild(id=453555802670759947)
         gms_noti_role = discord.utils.get(server.roles, name='Notify GMS')
 
         while not self.bot.is_closed:
@@ -73,7 +73,7 @@ class Scheduler:
     async def check_gmsm_schedule(self, delay=30):
 
         await self.bot.wait_until_ready()
-        server = self.bot.get_server(id=453555802670759947)
+        server = self.bot.get_guild(id=453555802670759947)
         gmsm_noti_role = discord.utils.get(server.roles, name='Notify GMSM')
 
         while not self.bot.is_closed:
