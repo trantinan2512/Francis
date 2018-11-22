@@ -42,6 +42,27 @@ class Admin:
             # Vice commander id or myself
             return author.id == config.MY_ID or author.top_role.id == 373667156468170755
 
+    @commands.command(name='e')
+    @commands.check(is_me)
+    async def _emoji_sender(self, context, *, emoji: str):
+        await context.message.delete()
+
+        if emoji == 'yuianone':
+            yui1 = discord.utils.get(self.bot.emojis, name='yuianone1')
+            yui2 = discord.utils.get(self.bot.emojis, name='yuianone2')
+            yui3 = discord.utils.get(self.bot.emojis, name='yuianone3')
+            yui4 = discord.utils.get(self.bot.emojis, name='yuianone4')
+            await context.send(f'{yui1}{yui2}\n{yui3}{yui4}')
+            return
+
+        emoji = discord.utils.get(self.bot.emojis, name=emoji)
+        if not emoji:
+            msg = await context.say_as_embed(f'Unable to find any emojis with argument `{emoji}`.')
+            await asyncio.sleep(3)
+            await msg.delete()
+            return
+        await context.send(emoji)
+
     @commands.command(name='clear')
     @commands.check(is_me)
     async def clear_messages(self, context, limit=100, check=None):
@@ -145,19 +166,6 @@ class Admin:
     @commands.check(is_me)
     async def change_bot_presence(self, context, *, presence: str):
         await self.bot.change_presence(game=discord.Game(name=presence))
-
-    @commands.command(name='e')
-    @commands.check(is_me)
-    async def _emoji_sender(self, context, *, emoji: str):
-        await context.message.delete()
-
-        emoji = discord.utils.get(self.bot.emojis, name=emoji)
-        if not emoji:
-            msg = await context.say_as_embed(f'Unable to find any emojis with argument `{emoji}`.')
-            await asyncio.sleep(3)
-            await msg.delete()
-            return
-        await context.send(emoji)
 
     @commands.command(name='sc')
     @commands.check(is_mod)
