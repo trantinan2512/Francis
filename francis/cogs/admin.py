@@ -148,12 +148,16 @@ class Admin:
 
     @commands.command(name='e')
     @commands.check(is_me)
-    async def _emoji_sender(self, context, *, emoji: int):
+    async def _emoji_sender(self, context, *, emoji: str):
         await context.message.delete()
-        emoji_obj = self.bot.get_emoji(id=emoji)
-        print(emoji)
-        await context.send(emoji_obj)
-        # await self.bot.change_presence(game=discord.Game(name=presence))
+
+        emoji = discord.utils.get(self.bot.emojis, name=emoji)
+        if not emoji:
+            msg = await context.say_as_embed(f'Unable to find any emojis with argument `{emoji}`.')
+            await asyncio.sleep(3)
+            await msg.delete()
+            return
+        await context.send(emoji)
 
     @commands.command(name='sc')
     @commands.check(is_mod)
