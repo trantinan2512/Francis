@@ -1,16 +1,5 @@
 import discord
-# import json
-import asyncio
-# from datetime import datetime
-# import re
-# from discord.ext import commands
-from discord.errors import HTTPException
-# from pypresence import Presence
-# import time
-# from datetime import datetime
-
 from francis import bot
-
 from francis.cogs import tasks, webspiders, scheduler
 import config
 
@@ -88,8 +77,5 @@ if not config.DEBUG:
     francis.loop.create_task(scheduler.Scheduler(francis).check_gms_schedule())
     francis.loop.create_task(scheduler.Scheduler(francis).check_gmsm_schedule())
     francis.loop.create_task(scheduler.Scheduler(francis).check_dawn_schedule())
-
-# if config.DEBUG:
-#     francis.loop.create_task(tasks.Twitter(francis).fetch_maple2_latest_tweet())
 
 francis.run(config.FRANCIS_TOKEN)

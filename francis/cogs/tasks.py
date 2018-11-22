@@ -33,9 +33,9 @@ class Twitter:
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = ch.get_channel(id=455635507561627648)
+        channel = ch.get_channel(bot=self.bot, id=455635507561627648)
 
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
 
             # fetch MapleM twitter stuff
             await self.send_latest_status(self.api, 816396540017152000, channel)
@@ -45,10 +45,10 @@ class Twitter:
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = ch.get_channel(id=455634325086404608)
+        channel = ch.get_channel(bot=self.bot, id=455634325086404608)
 
         # keep executing the codes until bot is closed
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
 
             await self.send_latest_status(self.api, 34667202, channel)
 
@@ -57,10 +57,10 @@ class Twitter:
         await self.bot.wait_until_ready()
 
         # use this for development and production
-        channel = ch.get_channel(id='505584446074781697')
+        channel = ch.get_channel(bot=self.bot, id=505584446074781697)
 
         # keep executing the codes until bot is closed
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
 
             await self.send_latest_status(self.api, 851835989702000640, channel)
 
@@ -68,6 +68,7 @@ class Twitter:
     async def send_latest_status(self, api, user_id, channel, delay=60):
         """Send the latest status of given user_id, to the channel
         """
+
         if config.DEBUG:
             delay = 10
 

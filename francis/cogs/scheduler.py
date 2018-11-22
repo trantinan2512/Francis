@@ -29,7 +29,7 @@ class Scheduler:
         server = self.bot.get_guild(id=453555802670759947)
         gms_noti_role = discord.utils.get(server.roles, name='Notify GMS')
 
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
             print('Schedule Check for GMS: ...')
             try:
                 schedule_db = self.db.worksheet('schedules_ms')
@@ -55,7 +55,7 @@ class Scheduler:
                         # event has started
                         else:
                             # send the notification here!
-                            channel = get_channel(id='461067276980977674')
+                            channel = get_channel(bot=self.bot, id=461067276980977674)
 
                             tag_re = re.compile('(\[|\.)*gms(\]|\.)*\s*', re.IGNORECASE)
                             event_name = tag_re.sub('', row['event_name'], 1).title()
@@ -76,7 +76,7 @@ class Scheduler:
         server = self.bot.get_guild(id=453555802670759947)
         gmsm_noti_role = discord.utils.get(server.roles, name='Notify GMSM')
 
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
             print('Schedule Check for GMSM: ...')
             try:
                 schedule_db = self.db.worksheet('schedules_ms')
@@ -102,7 +102,7 @@ class Scheduler:
                         # event has started
                         else:
                             # send the notification here!
-                            channel = get_channel(id='461067191735943168')
+                            channel = get_channel(bot=self.bot, id=461067191735943168)
 
                             tag_re = re.compile('(\[|\.)*gmsm(\]|\.)*\s*', re.IGNORECASE)
                             event_name = tag_re.sub('', row['event_name']).title()
@@ -120,7 +120,7 @@ class Scheduler:
 
         await self.bot.wait_until_ready()
 
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
             print('Schedule Check for Dawn - SAOMD: ...')
             try:
                 schedule_db = self.db.worksheet('schedules_saomd')
@@ -143,7 +143,7 @@ class Scheduler:
                         # event has started
                         else:
                             # send the notification here!
-                            channel = get_channel(id='373663985368563717')
+                            channel = get_channel(bot=self.bot, id=373663985368563717)
 
                             event_name = row['event_name'].title()
                             await channel.send(f'{event_name}.')

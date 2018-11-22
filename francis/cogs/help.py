@@ -21,7 +21,7 @@ class Help:
         # gms_role = discord.utils.get(server.roles, name='GMS')
         # gmsm_role = discord.utils.get(server.roles, name='GMSM')
 
-        role_request_channel = server.get_channel('453930352365273099')  # yêu-cầu-role
+        role_request_channel = server.get_channel(id=453930352365273099)  # yêu-cầu-role
 
         if category is None \
                 or not category.startswith('role') \

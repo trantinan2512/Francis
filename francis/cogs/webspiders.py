@@ -38,10 +38,10 @@ class GMSSiteSpider(WebSpider):
             delay = 60
 
         # cập-nhật-mới-gms channel
-        channel = ch.get_channel(id=453565620915535872)
+        channel = ch.get_channel(bot=self.bot, id=453565620915535872)
         sc_data = None
 
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
 
             content = self.get_content_by_url('http://maplestory.nexon.net/news/')
 
@@ -331,9 +331,9 @@ class GMSMSiteSpider(WebSpider):
             delay = 60
 
         # cập-nhật-mới-gms-m channel
-        channel = ch.get_channel(id='453565659637481472')
+        channel = ch.get_channel(bot=self.bot, id='453565659637481472')
 
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
 
             site_fetches = 10
 
@@ -460,9 +460,9 @@ class GMS2SiteSpider(WebSpider):
             delay = 60
 
         # cập-nhật-mới-gms2 channel
-        channel = ch.get_channel(id='505584303154135040')
+        channel = ch.get_channel(bot=self.bot, id='505584303154135040')
 
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
 
             print('Scanning GMS2 site for news...')
             url = 'http://maplestory2.nexon.net/en/news'
