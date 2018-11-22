@@ -118,7 +118,7 @@ class Twitter:
 
                 if status_id in posted_ids:
                     read_db = False
-                    print(f'Twitter Fetch: [{u_screen_name}] [Already posted]')
+                    # print(f'Twitter Fetch: [{u_screen_name}] [Already posted]')
 
                 else:
                     read_db = True
@@ -132,9 +132,9 @@ class Twitter:
                     # send the message to channel
                     await channel.send(status_url)
                     print(f'Twitter Fetch: [{u_screen_name}] [Fetched: {status_url}]')
-            else:
+            # else:
 
-                print(f'Twitter Fetch: [{u_screen_name}] [NOT a tweet or self reply]')
+            #     print(f'Twitter Fetch: [{u_screen_name}] [NOT a tweet or self reply]')
         print('Tweets scan finished.')
         await asyncio.sleep(delay)
 

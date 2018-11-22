@@ -96,7 +96,7 @@ class GMSSiteSpider(WebSpider):
 
                     if (data['id'], data['title']) in zip(posted_ids, posted_titles):
 
-                        print(f'Site Fetch: [GMS] [Already posted]')
+                        # print(f'Site Fetch: [GMS] [Already posted]')
                         read_db = False
 
                     else:
@@ -393,7 +393,7 @@ class GMSMSiteSpider(WebSpider):
 
                     if (int(data['id']), data['title']) in zip(posted_ids, posted_titles):
 
-                        print(f'Site Fetch: [GMSM] [Already posted]')
+                        # print(f'Site Fetch: [GMSM] [Already posted]')
                         read_db = False
 
                     else:
@@ -513,7 +513,7 @@ class GMS2SiteSpider(WebSpider):
 
                     if (data['id'], data['title']) in zip(posted_ids, posted_titles):
 
-                        print(f'Site Fetch: [GMS2] [Already posted]')
+                        # print(f'Site Fetch: [GMS2] [Already posted]')
                         read_db = False
 
                     else:
