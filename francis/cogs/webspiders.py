@@ -331,7 +331,7 @@ class GMSMSiteSpider(WebSpider):
             delay = 60
 
         # cập-nhật-mới-gms-m channel
-        channel = ch.get_channel(bot=self.bot, id='453565659637481472')
+        channel = ch.get_channel(bot=self.bot, id=453565659637481472)
 
         while not self.bot.is_closed():
 
@@ -460,7 +460,7 @@ class GMS2SiteSpider(WebSpider):
             delay = 60
 
         # cập-nhật-mới-gms2 channel
-        channel = ch.get_channel(bot=self.bot, id='505584303154135040')
+        channel = ch.get_channel(bot=self.bot, id=505584303154135040)
 
         while not self.bot.is_closed():
 

@@ -41,7 +41,7 @@ class Role:
             wrong_role_name_provided_msg = f'{author.mention}, role này không tồn tại hoặc không tự xử được nha. '
             wrong_role_name_provided_msg += f'Gõ `{prefix}list` để xem các Role.'
         elif server.id == config.DAWN_SERVER_ID:
-            dawn_role = discord.utils.get(server.roles, id='364967220193001472')
+            dawn_role = discord.utils.get(server.roles, id=364967220193001472)
 
             field_1_name = f'Format: `{prefix}role role_name`'
             field_1_value = f'Use this command to auto-asign a Role. Type `{prefix}list` to see a full list of available roles.\n'
@@ -119,7 +119,7 @@ class Role:
             wrong_role_name_provided_msg += f'Gõ `{prefix}list` để xem các Role.'
 
         elif server.id == config.DAWN_SERVER_ID:
-            dawn_role = discord.utils.get(server.roles, id='364967220193001472')
+            dawn_role = discord.utils.get(server.roles, id=364967220193001472)
 
             field_1_name = f'Format: `{prefix}rrole role_name`'
             field_1_value = f'Use this command to remove an auto-asigned Role.\n'
@@ -303,7 +303,7 @@ class Role:
 
         elif server.id == config.DAWN_SERVER_ID:
 
-            dawn_role = discord.utils.get(server.roles, id='364967220193001472')
+            dawn_role = discord.utils.get(server.roles, id=364967220193001472)
 
             embed = discord.Embed(
                 title='Auto-asign color roles',
