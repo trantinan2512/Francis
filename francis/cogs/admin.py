@@ -430,7 +430,6 @@ class Admin:
     @_emoji_sender.error
     async def _emoji_sender_error(self, context, error):
 
-        await context.message.delete()
         pon = self.bot.get_user(id=config.MY_ID)
         nom_emoji = discord.utils.get(self.bot.emojis, name='nom')
         cry_emoji = discord.utils.get(self.bot.emojis, name='cry')
@@ -448,7 +447,7 @@ class Admin:
 
         msg = await context.say_as_embed(random.choice(only_pon_messages))
         await asyncio.sleep(5)
-        await msg.delete()
+        await context.channel.delete_messages(context.message, msg)
 
 
 def setup(bot):
