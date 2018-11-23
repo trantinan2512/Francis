@@ -1,8 +1,8 @@
-from pprint import pprint
-import json
+# from pprint import pprint
+# import json
 import asyncio
 import operator
-
+import random
 import discord
 from discord.ext import commands
 
@@ -413,6 +413,38 @@ class Admin:
     # async def clear_messages_error(self, error, context):
     #     print(error)
     #     return  # fail silently
+
+    @commands.command(name='slap')
+    @commands.check(is_me)
+    async def _slap_the_bot(self, context):
+        cry_emoji = discord.utils.get(self.bot.emojis, name='cry')
+        sweat_emoji = discord.utils.get(self.bot.emojis, name='sweat')
+        sorry_messages = [
+            f'Itai! Gomenasai! Gomenasai! {cry_emoji}',
+            f'I\'m so sorry! Please forgib! {cry_emoji}',
+            f'Ouch, you\'re trying to carve your handprint on my cheeks aren\'t you',
+            f'It hurts, but sorry I\'m not sorry. {sweat_emoji}'
+        ]
+        await context.say_as_embed(random.choice(sorry_messages))
+
+    @_emoji_sender.error
+    async def _emoji_sender_error(self, context, error):
+        pon = self.bot.get_user(id=config.MY_ID)
+        nom_emoji = discord.utils.get(self.bot.emojis, name='nom')
+        cry_emoji = discord.utils.get(self.bot.emojis, name='cry')
+        derp_emoji = discord.utils.get(self.bot.emojis, name='derp')
+        ree_emoji = discord.utils.get(self.bot.emojis, name='ree')
+        wave_emoji = discord.utils.get(self.bot.emojis, name='wave')
+
+        only_pon_messages = [
+            f'Oof, only {pon.mention} sama can use this. {derp_emoji}',
+            f'You can\'t make me do that, {context.author.mention}. {nom_emoji}',
+            f'Who are you, you are not my daddy. {ree_emoji}',
+            f'I\'d rather not do that. {pon.mention} could punish me at any time {cry_emoji}.',
+            f'Gib {pon.mention} Nitro, I will consider letting you use this command {wave_emoji}'
+        ]
+
+        await context.say_as_embed(random.choice(only_pon_messages))
 
 
 def setup(bot):
