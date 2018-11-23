@@ -423,7 +423,7 @@ class Admin:
             f'Itai! Gomenasai! Gomenasai! {cry_emoji}',
             f'I\'m so sorry! Please forgib! {cry_emoji}',
             f'Ouch, you\'re trying to carve your handprint on my cheeks aren\'t you',
-            f'It hurts, but sorry I\'m not sorry. {sweat_emoji}'
+            f'It hurts, but sorry I\'m not sorry {sweat_emoji}'
         ]
         await context.say_as_embed(random.choice(sorry_messages))
 
@@ -438,16 +438,16 @@ class Admin:
         wave_emoji = discord.utils.get(self.bot.emojis, name='wave')
 
         only_pon_messages = [
-            f'Oof, only {pon.mention} sama can use this. {derp_emoji}',
-            f'You can\'t make me do that, {context.author.mention}. {nom_emoji}',
-            f'Who are you, you are not my daddy. {ree_emoji}',
-            f'I\'d rather not do that. {pon.mention} could punish me at any time {cry_emoji}.',
+            f'Oof, only {pon.mention} sama can use this {derp_emoji}',
+            f'You can\'t make me do that, {context.author.mention} {nom_emoji}',
+            f'Who are you, you are not my daddy {ree_emoji}',
+            f'I\'d rather not do that. {pon.mention} could punish me at any time {cry_emoji}',
             f'Gib {pon.mention} Nitro, I will consider letting you use this command {wave_emoji}'
         ]
 
         msg = await context.say_as_embed(random.choice(only_pon_messages))
         await asyncio.sleep(5)
-        await context.channel.delete_messages(context.message, msg)
+        await context.channel.delete_messages([context.message, msg])
 
 
 def setup(bot):
