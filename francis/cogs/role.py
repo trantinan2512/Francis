@@ -331,9 +331,9 @@ class Role:
 
     @_role.error
     @_rrole.error
-    async def clear_messages_error(self, error, context):
-        dawn_role = discord.utils.get(context.message.guild.roles, id=364967220193001472)
-        if context.invoked_with in ['role', 'rrole']:
+    async def clear_messages_error(self, context, error):
+        dawn_role = discord.utils.get(context.guild.roles, id=364967220193001472)
+        if context.invoked_with in ['role', 'rrole', 'iam', 'iamn']:
             await context.say_as_embed(message=f'Sorry, only {dawn_role.mention} can use this command. Join us for these awesome colors!')
         return  # fail silently
 
