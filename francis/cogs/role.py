@@ -327,7 +327,7 @@ class Role:
             embed.add_field(name='List of available Color Roles', value='\n'.join(co_roles))
             embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
 
-        await self.bot.say(embed=embed)
+        await context.send(embed=embed)
 
     @_role.error
     @_rrole.error
