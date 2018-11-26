@@ -70,7 +70,7 @@ class Role:
                 if server.id == config.MSVN_SERVER_ID:
                     role_set_msg = f'{author.mention} đã được set role {r.mention}.'
                 elif server.id == config.DAWN_SERVER_ID:
-                    role_set_msg = f'{author.mention}, you now has the role: {r.mention}.'
+                    role_set_msg = f'{author.mention}, you now have the role: {r.mention}.'
 
                 if r in author.roles:
                     await context.say_as_embed(message=role_exists_msg)
@@ -237,7 +237,7 @@ class Role:
                 if server.id == config.MSVN_SERVER_ID:
                     remove_role_done_msg = f'{author.mention}, role {r.mention} đã được xóa thành công.'
                 elif server.id == config.DAWN_SERVER_ID:
-                    remove_role_done_msg = f'{author.mention}, {r.mention} has been removed.'
+                    remove_role_done_msg = f'{author.mention}, your {r.mention} role has been removed.'
 
                 if r not in author.roles:
                     await context.say_as_embed(
