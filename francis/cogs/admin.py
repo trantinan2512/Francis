@@ -28,7 +28,7 @@ class Admin:
 
     def is_mod(ctx):
         author = ctx.author
-        server = ctx.server
+        server = ctx.guild
         # MSVN Community server
         if server.id == 453555802670759947:
             mod_gms_role = discord.utils.get(author.roles, name='Mod GMS')
@@ -175,10 +175,10 @@ class Admin:
         timeout = 30
         timeout_msg = f'Session timed out. Please start over by typing `{prefix}schedule start`.'
         # maplestory
-        if context.message.server.id == '453555802670759947':
+        if context.guild.id == 453555802670759947:
             schedule_db = self.db.worksheet('schedules_ms')
         # saomd Dawn
-        elif context.message.server.id == '364323564737789953':
+        elif context.guild.id == 364323564737789953:
             schedule_db = self.db.worksheet('schedules_saomd')
 
         def check_same_author(message):
@@ -203,7 +203,11 @@ class Admin:
             to_delete_messages.append(context.message)
             event_name, event_datetime = data.split('--', 1)
             event_name = event_name.strip()
-            parsed_datetime = parse(event_datetime, settings={'DATE_ORDER': 'DMY'})
+            parsed_datetime = parse(
+                event_datetime,
+                settings={
+                    'DATE_ORDER': 'DMY',
+                    'RETURN_AS_TIMEZONE_AWARE': True})
             if parsed_datetime is None:
                 msg = await context.send('Cannot recognize the Date Time provided. Please try again.')
                 to_delete_messages.append(msg)
