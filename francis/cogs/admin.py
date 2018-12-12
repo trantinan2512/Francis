@@ -366,7 +366,7 @@ class Admin:
             note = await context.send(f'The above messages ({len(to_delete_messages)}) will be deleted in 10 seconds'
                                       ':hourglass_flowing_sand:')
             await asyncio.sleep(10)
-            await self.bot.delete_messages(to_delete_messages)
+            await context.channel.delete_messages(to_delete_messages)
             await note.edit('Done :white_check_mark:')
             await asyncio.sleep(5)
             await note.delete()
