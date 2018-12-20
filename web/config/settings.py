@@ -35,7 +35,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 INSTALLED_APPS = [
 
-    'web.apps.francis',
+    # 'web.apps.francis',
     'web.apps.gachas',
     'web.apps.jobs',
     'web.apps.users',

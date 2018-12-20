@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
-import asyncio
-import operator
+# import asyncio
+# import operator
 # from pprint import pprint
 from config import MY_ID
 
