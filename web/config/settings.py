@@ -35,19 +35,21 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 INSTALLED_APPS = [
 
-    # 'web.apps.francis',
-    'web.apps.gachas',
-    'web.apps.jobs',
-    'web.apps.users',
-    'web.apps.inventories',
-    'web.apps.items',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'web.apps.chapters',
+    'web.apps.configs',
+    'web.apps.gachas',
+    'web.apps.jobs',
+    'web.apps.users',
+    'web.apps.inventories',
+    'web.apps.investigations',
+    'web.apps.items',
 ]
 
 

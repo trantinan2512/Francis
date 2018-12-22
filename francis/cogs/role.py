@@ -70,7 +70,7 @@ class Role:
                 if server.id == config.MSVN_SERVER_ID:
                     role_set_msg = f'{author.mention} đã được set role {r.mention}.'
                 elif server.id == config.DAWN_SERVER_ID:
-                    role_set_msg = f'{author.mention}, you now have the role: {r.mention}.'
+                    role_set_msg = f'{author.mention}, you now have {r.mention} role.'
 
                 if r in author.roles:
                     await context.say_as_embed(message=role_exists_msg)
@@ -324,7 +324,14 @@ class Role:
                 if r is not None:
                     no_roles.append(r.mention)
 
-            embed.add_field(name='List of available Color Roles', value='\n'.join(co_roles))
+            ev_roles = []
+            for role_name in config.AUTOASIGN_DAWN_EVENT_ROLES:
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    ev_roles.append(r.mention)
+
+            embed.add_field(name='Color Roles', value='\n'.join(co_roles))
+            embed.add_field(name='Event Roles', value='\n'.join(ev_roles))
             embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
 
         await context.send(embed=embed)

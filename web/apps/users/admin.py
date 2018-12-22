@@ -1,6 +1,9 @@
 from django.contrib import admin
+from django.contrib.auth.models import User, Group
 from .models import DiscordUser, GachaInfo
-# Register your models here.
+
+admin.site.unregister(User)
+admin.site.unregister(Group)
 
 
 class GachaInfoAdmin(admin.ModelAdmin):
@@ -20,3 +23,6 @@ class GachaInfoAdmin(admin.ModelAdmin):
 
 admin.site.register(DiscordUser)
 admin.site.register(GachaInfo, GachaInfoAdmin)
+
+admin.site.site_header = 'Francis Discord Bot Admin Panel'
+admin.site.site_title = admin.site.site_header

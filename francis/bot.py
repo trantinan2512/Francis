@@ -40,6 +40,9 @@ class CustomBot(commands.Bot):
 
     async def on_member_join(self, member):
         """Says when a member joined."""
+        if member.guild.id != config.MSVN_SERVER_ID:
+            return
+
         welcome_channel = self.get_channel(453886339570597890)
         rules_channel = self.get_channel(453566033190584321)
         intro_channel = self.get_channel(455025500071526401)
