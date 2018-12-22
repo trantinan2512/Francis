@@ -1,7 +1,7 @@
 from django.db import models
 from pytz import timezone
 from datetime import datetime
-# Create your models here.
+from django.contrib.postgres.fields import ArrayField
 
 
 class DiscordUser(models.Model):
@@ -12,6 +12,27 @@ class DiscordUser(models.Model):
 
     def __str__(self):
         return f'{self.discord_name} - {self.discord_id}'
+
+    def save(self, *args, **kwargs):
+
+        super().save(*args, **kwargs)
+
+        if not hasattr(self, 'investigation_info'):
+            InvestigationInfo.objects.create(discord_user=self)
+        if not hasattr(self, 'gacha_info'):
+            GachaInfo.objects.create(discord_user=self)
+
+
+class InvestigationInfo(models.Model):
+    discord_user = models.OneToOneField(
+        DiscordUser, on_delete=models.CASCADE, blank=True, null=True, related_name='investigation_info')
+    discovered_hints = ArrayField(models.PositiveIntegerField(), blank=True, null=True)
+
+    def get_discovered_hints(self):
+        if not self.discovered_hints:
+            return []
+        else:
+            return self.discovered_hints
 
 
 class GachaInfo(models.Model):

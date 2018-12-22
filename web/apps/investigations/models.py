@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from utils.user import get_user_obj
 from web.apps.configs.models import TrophyRoomConfig
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 
 
 class Case(models.Model):
@@ -78,6 +78,8 @@ class Hint(models.Model):
 
     actions = JSONField(blank=True, null=True)
 
+    required_hints = ArrayField(models.PositiveIntegerField(), blank=True, null=True)
+
     def __str__(self):
         if self.name:
             return self.name
@@ -88,6 +90,12 @@ class Hint(models.Model):
         if self.is_pinned is True:
             self.pinned_at = timezone.now()
         super().save(*args, **kwargs)
+
+    def get_required_hints(self):
+        if not self.required_hints:
+            return []
+        else:
+            return self.required_hints
 
     async def discover_trophy(self, bot, context):
         if not hasattr(self, 'trophy'):

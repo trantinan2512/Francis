@@ -84,6 +84,7 @@ class HintAdmin(admin.ModelAdmin):
         'is_pinned',
         'created_at',
         'pinned_at',
+        'required_hints',
     )
 
     list_editable = (
@@ -92,6 +93,7 @@ class HintAdmin(admin.ModelAdmin):
         'triggers',
         'message',
         'is_clue',
+        'required_hints',
     )
 
     list_filter = (

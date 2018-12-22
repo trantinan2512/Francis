@@ -4,6 +4,8 @@ import traceback
 
 from textblob import TextBlob
 from discord.ext import commands
+from utils.user import get_user_obj
+
 import config as settings
 
 from web.apps.investigations.models import Case
@@ -59,6 +61,22 @@ class InvestigationGameCommands:
             await err.edit(delete_after=5)
             await context.message.delete()
             return
+
+        user_obj = get_user_obj(context.author)
+        investigation_info = user_obj.investigation_info
+        discovered_hints = investigation_info.get_discovered_hints()
+
+        if not all(required_hint in discovered_hints for required_hint in hint.get_required_hints()):
+            err = await context.say_as_embed(
+                f'{context.author.mention}, you haven\'t met the requirements to inspect this yet.\n'
+                'Go around and find the requirement(s) then come back!', color='error')
+            await err.edit(delete_after=7)
+            await context.message.delete()
+            return
+
+        if hint.id not in investigation_info.discovered_hints:
+            investigation_info.discovered_hints.append(hint.id)
+            investigation_info.save()
 
         if hint.is_pinned:
             err = await context.say_as_embed(
