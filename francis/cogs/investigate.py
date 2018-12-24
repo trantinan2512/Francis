@@ -20,19 +20,22 @@ class InvestigationGameCommands:
     @commands.command(pass_context=True, name='inspect', aliases=['check', 'investigate', ])
     @commands.has_role(settings.DISCORD_ROLE_FOR_INVESTIGATION)
     async def _inspect_object_command(self, context, *, sentence: str):
+
+        await context.message.delete()
+
         active_case = Case.objects.filter(status='active').first()
         if not active_case:
             err = await context.say_as_embed(
                 f'{context.author.mention}, there are no active events right now. Please check back later!', color='error')
             await err.edit(delete_after=5)
-            await context.message.delete()
+            # await context.message.delete()
             return
 
         if not active_case.hints.filter(channel_id=context.channel.id).exists():
             err = await context.say_as_embed(
                 f'{context.author.mention}, this channel does not have any objects to inspect.', color='error')
             await err.edit(delete_after=5)
-            await context.message.delete()
+            # await context.message.delete()
             return
 
         objects = self.process_input_for_nouns(sentence)
@@ -49,7 +52,7 @@ class InvestigationGameCommands:
                 f'{context.author.mention}, nothing could be yielded from your inspection. '
                 'Please refer to the area description to continue the investigation.', color='error')
             await err.edit(delete_after=5)
-            await context.message.delete()
+            # await context.message.delete()
             return
 
         triggers = hint.triggers.split(';')
@@ -59,7 +62,7 @@ class InvestigationGameCommands:
                 f'{context.author.mention}, nothing could be yielded from your inspection. '
                 'Please refer to the area description to continue the investigation.', color='error')
             await err.edit(delete_after=5)
-            await context.message.delete()
+            # await context.message.delete()
             return
 
         user_obj = get_user_obj(context.author)
@@ -70,24 +73,27 @@ class InvestigationGameCommands:
             err = await context.say_as_embed(
                 f'{context.author.mention}, you haven\'t met the requirements to inspect this yet.\n'
                 'Go around and find the requirement(s) then come back!', color='error')
-            await err.edit(delete_after=7)
-            await context.message.delete()
+            await err.edit(delete_after=10)
+            # await context.message.delete()
             return
 
         if hint.id not in discovered_hints:
-            investigation_info.discovered_hints = discovered_hints.append(hint.id)
+            discovered_hints.append(hint.id)
+            investigation_info.discovered_hints = discovered_hints
             investigation_info.save()
 
         if hint.is_pinned:
             err = await context.say_as_embed(
                 f'{context.author.mention}, a clue in the **{triggered_word.capitalize()}** has already been discovered! '
                 'Please check pinned message.', color='warning')
-            await err.edit(delete_after=5)
-            await context.message.delete()
+            await err.edit(delete_after=10)
+            # await context.message.delete()
             return
 
         if not hint.is_clue:
             msg = await context.say_as_embed(f'{context.author.mention}, {hint.message}')
+            await msg.edit(delete_after=12)
+            # await context.message.delete()
             await hint.discover_trophy(self.bot, context)
             await hint.act(self.bot, context)
             return
