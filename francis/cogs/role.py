@@ -20,7 +20,7 @@ class Role:
             if dawn_role:
                 return True
             else:
-                return False
+                return True
         else:
             return True
 
