@@ -74,8 +74,8 @@ class InvestigationGameCommands:
             await context.message.delete()
             return
 
-        if hint.id not in investigation_info.discovered_hints:
-            investigation_info.discovered_hints.append(hint.id)
+        if hint.id not in discovered_hints:
+            investigation_info.discovered_hints = discovered_hints.append(hint.id)
             investigation_info.save()
 
         if hint.is_pinned:
