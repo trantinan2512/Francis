@@ -82,8 +82,6 @@ class HintAdmin(admin.ModelAdmin):
         'message',
         'is_clue',
         'is_pinned',
-        'created_at',
-        'pinned_at',
         'required_hints',
     )
 
@@ -93,6 +91,7 @@ class HintAdmin(admin.ModelAdmin):
         'triggers',
         'message',
         'is_clue',
+        'is_pinned',
         'required_hints',
     )
 
