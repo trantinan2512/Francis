@@ -1,5 +1,5 @@
 import discord
-from django.conf import settings
+import config
 from django.db import models
 from django.utils import timezone
 from utils.user import get_user_obj
@@ -157,7 +157,7 @@ class Hint(models.Model):
         embed = discord.Embed(
             title='Trophy List',
             description=msg,
-            color=settings.EMBED_DEFAULT_COLOR
+            color=config.EMBED_DEFAULT_COLOR
         )
         msg = await channel.send(embed=embed)
         trophy_room_config.trophy_list_message_id = msg.id
