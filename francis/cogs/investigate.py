@@ -77,18 +77,16 @@ class InvestigationGameCommands:
             # await context.message.delete()
             return
 
+        if hint.is_clue and hint.id in discovered_hints:
+            msg = await context.say_as_embed(
+                f'{context.author.mention}, you have already discovered this clue!')
+            await msg.edit(delete_after=5)
+            return
+
         if hint.id not in discovered_hints:
             discovered_hints.append(hint.id)
             investigation_info.discovered_hints = discovered_hints
             investigation_info.save()
-
-        if hint.is_pinned:
-            err = await context.say_as_embed(
-                f'{context.author.mention}, a clue in the **{triggered_word.capitalize()}** has already been discovered! '
-                'Please check pinned message.', color='warning')
-            await err.edit(delete_after=10)
-            # await context.message.delete()
-            return
 
         if not hint.is_clue:
             msg = await context.say_as_embed(f'{context.author.mention}, {hint.message}')
@@ -99,28 +97,12 @@ class InvestigationGameCommands:
             return
 
         embed = discord.Embed(
-            title=f'A clue has been discovered by [{context.author.display_name}]',
+            title=f'[{context.author.display_name}] discovered a clue',
             description=hint.message,
             color=settings.EMBED_DEFAULT_COLOR
         )
         msg = await context.send(embed=embed)
 
-        try:
-            await msg.pin()
-        except discord.Forbidden:
-            await context.say_as_embed(
-                'Unable to pin the clue. Insufficient permission.', color='error')
-            return
-        except discord.NotFound:
-            await context.say_as_embed(
-                'Unable to pin the clue. Message not found.', color='error')
-            return
-        except discord.HTTPException:
-            await context.say_as_embed(
-                'Unable to pin the clue. Probably due to reach channel\'s pinned messages limit (50).', color='error')
-            return
-        hint.is_pinned = True
-        hint.save()
         await hint.discover_trophy(self.bot, context)
         await hint.act(self.bot, context)
 
