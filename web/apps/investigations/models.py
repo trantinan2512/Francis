@@ -139,7 +139,7 @@ class Hint(models.Model):
         try:
             active_chapters = Chapter.objects.filter(is_active=True).order_by('chapter')
         except NameError:
-            from db.apps.chapters.models import Chapter
+            from web.apps.chapters.models import Chapter
             active_chapters = Chapter.objects.filter(is_active=True).order_by('chapter')
 
         if not active_chapters.exists():
