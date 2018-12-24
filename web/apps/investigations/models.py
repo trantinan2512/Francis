@@ -162,7 +162,6 @@ class Hint(models.Model):
         msg = await channel.send(embed=embed)
         trophy_room_config.trophy_list_message_id = msg.id
         trophy_room_config.save()
-        await self.act(bot, context)
 
     async def act(self, bot, context):
         if self.actions:

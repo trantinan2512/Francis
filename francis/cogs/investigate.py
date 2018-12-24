@@ -89,6 +89,7 @@ class InvestigationGameCommands:
         if not hint.is_clue:
             msg = await context.say_as_embed(f'{context.author.mention}, {hint.message}')
             await hint.discover_trophy(self.bot, context)
+            await hint.act(self.bot, context)
             return
 
         embed = discord.Embed(
@@ -115,6 +116,7 @@ class InvestigationGameCommands:
         hint.is_pinned = True
         hint.save()
         await hint.discover_trophy(self.bot, context)
+        await hint.act(self.bot, context)
 
     def process_input_for_nouns(self, sentence):
         """
