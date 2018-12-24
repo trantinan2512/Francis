@@ -162,6 +162,7 @@ class Hint(models.Model):
         msg = await channel.send(embed=embed)
         trophy_room_config.trophy_list_message_id = msg.id
         trophy_room_config.save()
+        await self.act(bot, context)
 
     async def act(self, bot, context):
         if self.actions:
@@ -171,3 +172,6 @@ class Hint(models.Model):
                     await context.say_as_embed('Channel not found.', color='error')
                     return
                 await channel.set_permissions(context.author, read_messages=True, send_messages=True)
+                msg = await context.say_as_embed(
+                    f'{context.author.mention}, {channel.mention} unlocked! You can now access it.')
+                await msg.edit(delete_after=7)
