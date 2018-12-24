@@ -94,6 +94,8 @@ class InvestigationGameCommands:
             # await context.message.delete()
             await hint.discover_trophy(self.bot, context)
             await hint.act(self.bot, context)
+            hint.is_pinned = True
+            hint.save()
             return
 
         embed = discord.Embed(
@@ -105,6 +107,8 @@ class InvestigationGameCommands:
 
         await hint.discover_trophy(self.bot, context)
         await hint.act(self.bot, context)
+        hint.is_pinned = True
+        hint.save()
 
     def process_input_for_nouns(self, sentence):
         """
