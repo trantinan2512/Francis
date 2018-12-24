@@ -166,7 +166,7 @@ class Hint(models.Model):
     async def act(self, bot, context):
         if self.actions:
             if 'channel_access' in self.actions:
-                channel = self.bot.get_channel(self.actions['channel_access'])
+                channel = bot.get_channel(self.actions['channel_access'])
                 if not channel:
                     await context.say_as_embed('Channel not found.', color='error')
                     return
