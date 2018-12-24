@@ -17,7 +17,7 @@ class InvestigationGameCommands:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True, name='inspect', aliases=['check', 'investigate', ])
+    @commands.command(pass_context=True, name='inspect', aliases=['check', 'action', ])
     @commands.has_role(settings.DISCORD_ROLE_FOR_INVESTIGATION)
     async def _inspect_object_command(self, context, *, sentence: str):
 
@@ -39,12 +39,10 @@ class InvestigationGameCommands:
             return
 
         objects = self.process_input_for_nouns(sentence)
-        triggered_word = ''
         hint = None
         for obj in objects:
             hint = active_case.hints.filter(triggers__icontains=obj).first()
             if hint:
-                triggered_word = obj
                 break
 
         if not hint:
