@@ -39,25 +39,10 @@ class InvestigationGameCommands:
             # await context.message.delete()
             return
 
-        objects = self.process_input_for_nouns(sentence)
-        print(objects)
-        hint = None
-        for obj in objects:
-            hint = channel_hints.filter(triggers__icontains=obj).first()
-            if hint:
-                break
+        hint = channel_hints.filter(triggers__icontains=sentence).first()
+        print(f'{context.author.display_name} - {sentence}')
 
         if not hint:
-            err = await context.say_as_embed(
-                f'{context.author.mention}, nothing could be yielded from your inspection. '
-                'Please refer to the area description to continue the investigation.', color='error')
-            await err.edit(delete_after=5)
-            # await context.message.delete()
-            return
-
-        triggers = hint.triggers.split(';')
-        triggers_lowered = [trigger.lower() for trigger in triggers]
-        if not any(obj.lower() in triggers_lowered for obj in objects):
             err = await context.say_as_embed(
                 f'{context.author.mention}, nothing could be yielded from your inspection. '
                 'Please refer to the area description to continue the investigation.', color='error')
