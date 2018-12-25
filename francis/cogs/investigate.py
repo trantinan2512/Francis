@@ -121,7 +121,7 @@ class InvestigationGameCommands:
             # check if the word is a noun
             # More info:
             # https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
-            if chunk[1] in ['NN', 'NNS', 'NNP', 'NNPS'] or chunk[0] in ['1st', '2nd', '3rd']:
+            if chunk[1] in ['NN', 'NNS', 'NNP', 'NNPS'] or chunk[0] in ['1st', '2nd', '3rd', '4th', '5th']:
                 # forms the noun
                 word = chunk[0]
 
@@ -129,12 +129,14 @@ class InvestigationGameCommands:
 
                 # initiates while loop index
                 init_loop = 1
+
                 while (
                     # check if the previous word of the noun is a Noun or an Adjective and
+                    0 <= index - init_loop < len(tb.pos_tags) and
                     tb.pos_tags[index - init_loop][1] in ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'NNP', 'NNPS'] or
-                    tb.pos_tags[index - init_loop][0] in ['1st', '2nd', '3rd'] and
+                    tb.pos_tags[index - init_loop][0] in ['1st', '2nd', '3rd', '4th', '5th']
                     # the checking index is within the length of pos_tags
-                    0 <= index - init_loop < len(tb.pos_tags)
+
                 ):
                     # prepend the previous N/Adj to the current noun
                     word = tb.pos_tags[index - init_loop][0] + ' ' + word
