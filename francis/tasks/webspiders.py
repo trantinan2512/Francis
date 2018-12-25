@@ -64,7 +64,7 @@ class GMSSiteSpider(WebSpider):
 
                 read_db = True
 
-                print('Scanning GMS site for news...')
+                # print('Scanning GMS site for news...')
                 for link, desc, photo in zip(links, descs, photos):
 
                     news_search = news_id_re.search(link['href'])
@@ -83,7 +83,7 @@ class GMSSiteSpider(WebSpider):
                     }
 
                     if read_db is True:
-                        print('[GMS site] Database read...')
+                        # print('[GMS site] Database read...')
                         try:
                             db = self.db.worksheet('site_gms')
 
@@ -163,7 +163,7 @@ class GMSSiteSpider(WebSpider):
                         # save to drive and print the result title
                         db.insert_row([value for value in data.values()], index=2)
                         print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
-                print('[GMS site] Scan finished.')
+                # print('[GMS site] Scan finished.')
             await asyncio.sleep(delay)
 
     def maintenance_post(self, url, *args):
@@ -363,7 +363,7 @@ class GMSMSiteSpider(WebSpider):
                 now = datetime.now()
                 vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
 
-                print('Scanning GMSM site for news...')
+                # print('Scanning GMSM site for news...')
                 for label, title, id in zip(news_labels, news_titles, news_ids):
 
                     data = {
@@ -375,7 +375,7 @@ class GMSMSiteSpider(WebSpider):
                     }
 
                     if read_db is True:
-                        print('[GMSM site] Database read...')
+                        # print('[GMSM site] Database read...')
                         try:
                             site_gmsm = self.db.worksheet('site_gmsm')
 
@@ -445,7 +445,7 @@ class GMSMSiteSpider(WebSpider):
                     site_fetches -= 1
                     if site_fetches <= 0:
                         break
-                print('[GMS site] Scan finished.')
+                # print('[GMS site] Scan finished.')
             await asyncio.sleep(delay)
 
 
@@ -464,7 +464,7 @@ class GMS2SiteSpider(WebSpider):
 
         while not self.bot.is_closed():
 
-            print('Scanning GMS2 site for news...')
+            # print('Scanning GMS2 site for news...')
             url = 'http://maplestory2.nexon.net/en/news'
             content = self.get_content_by_url(url)
 
@@ -500,7 +500,7 @@ class GMS2SiteSpider(WebSpider):
                     }
 
                     if read_db is True:
-                        print('[GMS2 site] Database read...')
+                        # print('[GMS2 site] Database read...')
                         try:
                             db = self.db.worksheet('site_gms2')
 
@@ -535,5 +535,5 @@ class GMS2SiteSpider(WebSpider):
 
                         print(f'Site Fetch: [GMS2] [Fetched {data["title"]}]')
 
-            print('[GMS2 site] Scan finished.')
+            # print('[GMS2 site] Scan finished.')
             await asyncio.sleep(delay)

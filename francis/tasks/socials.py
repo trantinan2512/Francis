@@ -76,7 +76,7 @@ class Twitter:
         tweet_count = 5
         latest_tweets = api.user_timeline(user_id, count=tweet_count)
         read_db = True
-        print(f'Scanning {tweet_count} tweets from USER_ID: {user_id} ...')
+        # print(f'Scanning {tweet_count} tweets from USER_ID: {user_id} ...')
         for tweet in latest_tweets:
 
             # build these things for later use
@@ -114,7 +114,7 @@ class Twitter:
                         quit()
 
                     posted_ids = db.col_values(1)
-                    print('Database read')
+                    # print('Database read')
 
                 if status_id in posted_ids:
                     read_db = False
@@ -135,7 +135,7 @@ class Twitter:
             # else:
 
             #     print(f'Twitter Fetch: [{u_screen_name}] [NOT a tweet or self reply]')
-        print('Tweets scan finished.')
+        # print('Tweets scan finished.')
         await asyncio.sleep(delay)
 
 

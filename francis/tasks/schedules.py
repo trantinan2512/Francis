@@ -30,7 +30,7 @@ class Scheduler:
         gms_noti_role = discord.utils.get(server.roles, name='Notify GMS')
 
         while not self.bot.is_closed():
-            print('Schedule Check for GMS: ...')
+            # print('Schedule Check for GMS: ...')
             try:
                 schedule_db = self.db.worksheet('schedules_ms')
                 data = schedule_db.get_all_records()
@@ -67,7 +67,7 @@ class Scheduler:
                             print(f'Schedule Check for GMS: Posted `{event_name}` to channel {channel.id}')
             except APIError:
                 pass
-            print('Schedule Check for GMS: Done.')
+            # print('Schedule Check for GMS: Done.')
             await asyncio.sleep(delay)
 
     async def check_gmsm_schedule(self, delay=30):
@@ -77,7 +77,7 @@ class Scheduler:
         gmsm_noti_role = discord.utils.get(server.roles, name='Notify GMSM')
 
         while not self.bot.is_closed():
-            print('Schedule Check for GMSM: ...')
+            # print('Schedule Check for GMSM: ...')
             try:
                 schedule_db = self.db.worksheet('schedules_ms')
                 data = schedule_db.get_all_records()
@@ -113,7 +113,7 @@ class Scheduler:
                             print(f'Schedule Check for GMSM: Posted `{event_name}` to channel {channel.id}')
             except APIError:
                 pass
-            print('Schedule Check for GMSM: Done.')
+            # print('Schedule Check for GMSM: Done.')
             await asyncio.sleep(delay)
 
     async def check_dawn_schedule(self, delay=30):
@@ -121,7 +121,7 @@ class Scheduler:
         await self.bot.wait_until_ready()
 
         while not self.bot.is_closed():
-            print('Schedule Check for Dawn - SAOMD: ...')
+            # print('Schedule Check for Dawn - SAOMD: ...')
             try:
                 schedule_db = self.db.worksheet('schedules_saomd')
                 data = schedule_db.get_all_records()
@@ -151,7 +151,7 @@ class Scheduler:
                             print(f'Schedule Check for Dawn - SAOMD: Posted `{event_name}` to channel {channel.id}')
             except APIError:
                 pass
-            print('Schedule Check for Dawn - SAOMD: Done.')
+            # print('Schedule Check for Dawn - SAOMD: Done.')
             await asyncio.sleep(delay)
 
 

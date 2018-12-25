@@ -178,6 +178,8 @@ class InvestigationGameCommands:
 
         if settings.DEBUG:
             await context.send(f'```bash\n{traceback.format_exc()}```')
+        else:
+            traceback.print_exc()
 
 
 def setup(bot):
