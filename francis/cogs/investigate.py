@@ -31,7 +31,8 @@ class InvestigationGameCommands:
             # await context.message.delete()
             return
 
-        if not active_case.hints.filter(channel_id=context.channel.id).exists():
+        channel_hints = active_case.hints.filter(channel_id=context.channel.id)
+        if not channel_hints.exists():
             err = await context.say_as_embed(
                 f'{context.author.mention}, this channel does not have any objects to inspect.', color='error')
             await err.edit(delete_after=5)
@@ -41,7 +42,7 @@ class InvestigationGameCommands:
         objects = self.process_input_for_nouns(sentence)
         hint = None
         for obj in objects:
-            hint = active_case.hints.filter(triggers__icontains=obj).first()
+            hint = channel_hints.filter(triggers__icontains=obj).first()
             if hint:
                 break
 

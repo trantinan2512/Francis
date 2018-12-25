@@ -31,7 +31,12 @@ class WebSpider:
 class GMSSiteSpider(WebSpider):
     async def parse(self):
 
+        print('[GMS Site Spider] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMS Site Spider] Ready and running!')
+
         if config.DEBUG:
             delay = 10
         else:
@@ -324,7 +329,11 @@ class GMSMSiteSpider(WebSpider):
 
     async def parse(self):
 
+        print('[GMSM Site Spider] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMSM Site Spider] Ready and running!')
         if config.DEBUG:
             delay = 10
         else:
@@ -453,7 +462,12 @@ class GMS2SiteSpider(WebSpider):
 
     async def parse(self):
 
+        print('[GMS2 Site Spider] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMS2 Site Spider] Ready and running!')
+
         if config.DEBUG:
             delay = 10
         else:
