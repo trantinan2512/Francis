@@ -42,6 +42,22 @@ class Admin:
             # Vice commander id or myself
             return author.id == config.MY_ID or author.top_role.id == 373667156468170755
 
+    @commands.command(name='say', aliases=['botsay', ])
+    @commands.is_owner()
+    async def _make_bot_say(
+            self, context,
+            channel: commands.TextChannelConverter, *, text: str):
+
+        text_splitted = text.split(' ', 1)
+        message_type = text_splitted[0] if len(text_splitted) > 1 else ''
+        message = text if len(text_splitted) == 1 or message_type != 'normal' else text_splitted[1]
+
+        if message_type == 'normal':
+            await channel.send(message)
+        else:
+            embed = discord.Embed(description=message, color=config.EMBED_DEFAULT_COLOR)
+            await channel.send(embed=embed)
+
     @commands.command(name='e')
     @commands.check(is_me)
     async def _emoji_sender(self, context, *, emoji: str):
