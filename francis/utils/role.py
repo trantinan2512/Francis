@@ -1,4 +1,5 @@
 import config
+import re
 
 
 def process_role(role):
@@ -33,3 +34,23 @@ def process_role(role):
 
     else:
         return None
+
+
+def is_image_url(argument):
+    img_extensions = ('.png', '.jpg', '.jpeg', '.webp', '.gif', '.tiff')
+    return argument.lower().startswith('http') and any(ext in argument.lower() for ext in img_extensions)
+
+
+def is_hex_code(argument):
+    hex_re = re.compile('^0x\w{6}$', re.IGNORECASE)
+    if hex_re.match(argument):
+        return True
+    else:
+        return False
+
+
+def is_normal_message_type(argument):
+    if argument == 'normal':
+        return True
+    else:
+        return False

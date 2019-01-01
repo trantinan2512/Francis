@@ -12,6 +12,7 @@ import config
 from dateparser import parse
 from django.db.models import F
 
+from francis.utils.role import is_image_url, is_hex_code, is_normal_message_type
 
 from web.apps.users.models import DiscordUser
 
@@ -46,16 +47,40 @@ class Admin:
     @commands.is_owner()
     async def _make_bot_say(
             self, context,
-            channel: commands.TextChannelConverter, *, text: str):
+            channel: commands.TextChannelConverter, *, text_input: str):
 
-        text_splitted = text.split(' ', 1)
-        message_type = text_splitted[0] if len(text_splitted) > 1 else ''
-        message = text if len(text_splitted) == 1 or message_type != 'normal' else text_splitted[1]
+        text_splitted = text_input.split(' ')
+        image_url, color_code, message_type = None, None, None
+        for item in text_splitted[:3]:
+            if is_image_url(item):
+                image_url = item
+            elif is_hex_code(item):
+                color_code = int(item, 16)
+            elif is_normal_message_type(item):
+                message_type = item
+
+        exist_count = [not image_url, not color_code, not message_type].count(False)
+
+        message = ' '.join(text_splitted[exist_count:])
+
+        if not color_code:
+            color_code = config.EMBED_DEFAULT_COLOR
+
+        if not message and not image_url:
+            await context.say_as_embed('I can\'t send empty messages!', color='warning')
+            return
 
         if message_type == 'normal':
-            await channel.send(message)
+            if not message:
+                await channel.send(image_url)
+            elif not image_url:
+                await channel.send(message)
+            else:
+                await channel.send(f'{message} {image_url}')
         else:
-            embed = discord.Embed(description=message, color=config.EMBED_DEFAULT_COLOR)
+            embed = discord.Embed(description=message, color=color_code)
+            if image_url:
+                embed.set_image(url=image_url)
             await channel.send(embed=embed)
 
     @commands.command(name='e')
