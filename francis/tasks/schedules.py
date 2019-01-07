@@ -25,7 +25,11 @@ class Scheduler:
 
     async def check_gms_schedule(self, delay=30):
 
+        print('[GMS Schedule Checker] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMS Schedule Checker] Ready and running!')
         server = self.bot.get_guild(id=453555802670759947)
         gms_noti_role = discord.utils.get(server.roles, name='Notify GMS')
 
@@ -72,7 +76,12 @@ class Scheduler:
 
     async def check_gmsm_schedule(self, delay=30):
 
+        print('[GMSM Schedule Checker] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMSM Schedule Checker] Ready and running!')
+
         server = self.bot.get_guild(id=453555802670759947)
         gmsm_noti_role = discord.utils.get(server.roles, name='Notify GMSM')
 
@@ -118,7 +127,11 @@ class Scheduler:
 
     async def check_dawn_schedule(self, delay=30):
 
+        print('[Dawn SAOMD Schedule Checker] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[Dawn SAOMD Schedule Checker] Ready and running!')
 
         while not self.bot.is_closed():
             # print('Schedule Check for Dawn - SAOMD: ...')

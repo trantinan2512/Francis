@@ -30,7 +30,11 @@ class Twitter:
 
     async def fetch_maplem_latest_tweet(self):
 
+        print('[GMSM Tweet Fetcher] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMSM Tweet Fetcher] Ready and running!')
 
         # use this for development and production
         channel = ch.get_channel(bot=self.bot, id=455635507561627648)
@@ -42,7 +46,11 @@ class Twitter:
 
     async def fetch_maple_latest_tweet(self):
 
+        print('[GMS Tweet Fetcher] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMS Tweet Fetcher] Ready and running!')
 
         # use this for development and production
         channel = ch.get_channel(bot=self.bot, id=455634325086404608)
@@ -54,7 +62,11 @@ class Twitter:
 
     async def fetch_maple2_latest_tweet(self):
 
+        print('[GMS2 Tweet Fetcher] Waiting for ready state...')
+
         await self.bot.wait_until_ready()
+
+        print('[GMS2 Tweet Fetcher] Ready and running!')
 
         # use this for development and production
         channel = ch.get_channel(bot=self.bot, id=505584446074781697)
@@ -71,6 +83,8 @@ class Twitter:
 
         if config.DEBUG:
             delay = 10
+
+        await asyncio.sleep(delay)
 
         # fetch the user_id twitter info
         tweet_count = 5
@@ -111,7 +125,7 @@ class Twitter:
 
                     except APIError:
                         print('API ERROR')
-                        quit()
+                        break
 
                     posted_ids = db.col_values(1)
                     # print('Database read')
@@ -136,7 +150,6 @@ class Twitter:
 
             #     print(f'Twitter Fetch: [{u_screen_name}] [NOT a tweet or self reply]')
         # print('Tweets scan finished.')
-        await asyncio.sleep(delay)
 
 
 class Facebook:
