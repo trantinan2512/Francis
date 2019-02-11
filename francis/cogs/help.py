@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+import config
 
 
 class Help:
@@ -8,7 +9,11 @@ class Help:
     def __init__(self, bot):
         self.bot = bot
 
+    def only_msvn_server(context):
+        return context.guild.id == config.MSVN_SERVER_ID
+
     @commands.command(name='help')
+    @commands.check(only_msvn_server)
     async def _help(self, context, category=None):
         """Trợ giúp về sử dụng bot"""
 
@@ -16,12 +21,12 @@ class Help:
             category = category.lower()
 
         prefix = self.bot.command_prefix
-        server = context.message.server
+        guild = context.guild
 
-        # gms_role = discord.utils.get(server.roles, name='GMS')
-        # gmsm_role = discord.utils.get(server.roles, name='GMSM')
+        # gms_role = discord.utils.get(guild.roles, name='GMS')
+        # gmsm_role = discord.utils.get(guild.roles, name='GMSM')
 
-        role_request_channel = server.get_channel(id=453930352365273099)  # yêu-cầu-role
+        role_request_channel = guild.get_channel(453930352365273099)  # yêu-cầu-role
 
         if category is None \
                 or not category.startswith('role') \
@@ -84,11 +89,11 @@ class Help:
 
         elif category.startswith('lead'):
 
-            leader_gms = discord.utils.get(server.roles, name='Guild Leader GMS')
-            leader_gmsm = discord.utils.get(server.roles, name='Guild Leader GMSM')
+            leader_gms = discord.utils.get(guild.roles, name='Guild Leader GMS')
+            leader_gmsm = discord.utils.get(guild.roles, name='Guild Leader GMSM')
 
-            guild_recruit_gms = discord.utils.get(server.channels, name='tuyển-mem-guild-gms')
-            guild_recruit_gmsm = discord.utils.get(server.channels, name='tuyển-mem-guild-gms-m')
+            guild_recruit_gms = discord.utils.get(guild.channels, name='tuyển-mem-guild-gms')
+            guild_recruit_gmsm = discord.utils.get(guild.channels, name='tuyển-mem-guild-gms-m')
 
             embed = discord.Embed(
                 title='1. Thông tin về Role @Guild Leader',
@@ -126,15 +131,15 @@ class Help:
             await context.say_as_embed(embed=embed)
         elif category.startswith('trade'):
 
-            trader_gms = discord.utils.get(server.roles, name='Trader GMS')
-            trader_gmsm = discord.utils.get(server.roles, name='Trader GMSM')
+            trader_gms = discord.utils.get(guild.roles, name='Trader GMS')
+            trader_gmsm = discord.utils.get(guild.roles, name='Trader GMSM')
 
-            trade_warning_role = discord.utils.get(server.roles, name='Trade Warning')
-            admin_role = discord.utils.get(server.roles, name='Admin')
-            super_mod_role = discord.utils.get(server.roles, name='Super Mod')
+            trade_warning_role = discord.utils.get(guild.roles, name='Trade Warning')
+            admin_role = discord.utils.get(guild.roles, name='Admin')
+            super_mod_role = discord.utils.get(guild.roles, name='Super Mod')
 
-            trade_gms = discord.utils.get(server.channels, name='mua-bán-gms')
-            trade_gmsm = discord.utils.get(server.channels, name='mua-bán-gms-m')
+            trade_gms = discord.utils.get(guild.channels, name='mua-bán-gms')
+            trade_gmsm = discord.utils.get(guild.channels, name='mua-bán-gms-m')
 
             embed = discord.Embed(
                 title='1. Thông tin về Role @Trader',
@@ -191,9 +196,9 @@ class Help:
             await context.say_as_embed(embed=embed)
 
         elif category.startswith('music'):
-            music_txt_channel = discord.utils.get(server.channels, name='music')
-            music_vce_channel = discord.utils.get(server.channels, name='Music')
-            # for ch in server.channels:
+            music_txt_channel = discord.utils.get(guild.channels, name='music')
+            music_vce_channel = discord.utils.get(guild.channels, name='Music')
+            # for ch in guild.channels:
             #     print(ch.name, ch.id)
             await context.say_as_embed(
                 message=''
@@ -213,19 +218,19 @@ class Help:
 
         elif category.startswith('creat'):
 
-            creator_gms = discord.utils.get(server.roles, name='Content Creator GMS')
-            creator_gmsm = discord.utils.get(server.roles, name='Content Creator GMSM')
+            creator_gms = discord.utils.get(guild.roles, name='Content Creator GMS')
+            creator_gmsm = discord.utils.get(guild.roles, name='Content Creator GMSM')
 
-            trade_warning_role = discord.utils.get(server.roles, name='Trade Warning')
+            trade_warning_role = discord.utils.get(guild.roles, name='Trade Warning')
 
-            mod_gms_role = discord.utils.get(server.roles, name='Mod GMS')
-            mod_gmsm_role = discord.utils.get(server.roles, name='Mod GMSM')
+            mod_gms_role = discord.utils.get(guild.roles, name='Mod GMS')
+            mod_gmsm_role = discord.utils.get(guild.roles, name='Mod GMSM')
 
-            creator_channel_gms = discord.utils.get(server.channels, name='creator-gms')
-            creator_channel_gmsm = discord.utils.get(server.channels, name='creator-gms-m')
+            creator_channel_gms = discord.utils.get(guild.channels, name='creator-gms')
+            creator_channel_gmsm = discord.utils.get(guild.channels, name='creator-gms-m')
 
-            show_off_gms = discord.utils.get(server.channels, name='show-hàng-gms')
-            show_off_gmsm = discord.utils.get(server.channels, name='show-hàng-gms-m')
+            show_off_gms = discord.utils.get(guild.channels, name='show-hàng-gms')
+            show_off_gmsm = discord.utils.get(guild.channels, name='show-hàng-gms-m')
 
             embed = discord.Embed(
                 title='1. Thông tin về Role @Content Creator',

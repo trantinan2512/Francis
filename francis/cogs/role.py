@@ -10,14 +10,15 @@ class Role:
     def __init__(self, bot):
         self.bot = bot
 
-    def is_dawn_member(ctx):
-        author = ctx.message.author
-        server = ctx.message.guild
+    def good_for_role_assign(ctx):
+        author = ctx.author
+        server = ctx.guild
 
         # Dawn member check
         if server.id == config.DAWN_SERVER_ID:
             dawn_role = discord.utils.get(author.roles, id=364967220193001472)
-            if dawn_role:
+            collector_role = discord.utils.get(author.roles, id=544542640838934528)
+            if dawn_role or collector_role:
                 return True
             else:
                 return False
@@ -25,7 +26,7 @@ class Role:
             return True
 
     @commands.command(aliases=['role', 'iam'])
-    @commands.check(is_dawn_member)
+    @commands.check(good_for_role_assign)
     async def _role(self, context, *, role=None):
         """Set Role theo yêu cầu"""
 
@@ -42,10 +43,11 @@ class Role:
             wrong_role_name_provided_msg += f'Gõ `{prefix}list` để xem các Role.'
         elif server.id == config.DAWN_SERVER_ID:
             dawn_role = discord.utils.get(server.roles, id=364967220193001472)
+            collector_role = discord.utils.get(server.roles, id=544542640838934528)
 
             field_1_name = f'Format: `{prefix}role role_name`'
             field_1_value = f'Use this command to auto-asign a Role. Type `{prefix}list` to see a full list of available roles.\n'
-            field_1_value += f'**This command is available for {dawn_role.mention} only**.'
+            field_1_value += f'**This command is available for {dawn_role.mention} and {collector_role.mention} only**.'
             role_exists_msg = f'{author.mention}, you already have this role.'
             wrong_role_name_provided_msg = f'{author.mention}, this role does not exist, or not auto-asignable. '
             wrong_role_name_provided_msg += f'Type `{prefix}list` to see a full list of available roles.'
@@ -86,7 +88,7 @@ class Role:
                     color='error')
 
     @commands.command(aliases=['rrole', 'iamn'])
-    @commands.check(is_dawn_member)
+    @commands.check(good_for_role_assign)
     async def _rrole(self, context, *, role=None):
         """Xóa Role theo yêu cầu
         - Xóa từng role: !rrole tên_role
@@ -120,10 +122,11 @@ class Role:
 
         elif server.id == config.DAWN_SERVER_ID:
             dawn_role = discord.utils.get(server.roles, id=364967220193001472)
+            collector_role = discord.utils.get(server.roles, id=544542640838934528)
 
             field_1_name = f'Format: `{prefix}rrole role_name`'
             field_1_value = f'Use this command to remove an auto-asigned Role.\n'
-            field_1_value += f'**This command is available for {dawn_role.mention} only**.'
+            field_1_value += f'**This command is available for {dawn_role.mention} and {collector_role.mention} only**.'
 
             field_2_name = f'Remove multiple Roles: `{prefix}rrole all role_type`'
             field_2_value = f'`role_type` can be `colors`\n'
@@ -304,12 +307,13 @@ class Role:
         elif server.id == config.DAWN_SERVER_ID:
 
             dawn_role = discord.utils.get(server.roles, id=364967220193001472)
+            collector_role = discord.utils.get(server.roles, id=544542640838934528)
 
             embed = discord.Embed(
                 title='Auto-asign color roles',
                 description=f'Use `{prefix}role role_name` to add yourself a **Color Role**.\n'
                 f'Use `{prefix}rrole role_name` to remove a color role you have.\n'
-                f'**These commands are available for {dawn_role.mention} only**.',
+                f'**These commands are available for {dawn_role.mention} and {collector_role.mention} only**.',
                 colour=discord.Color.teal())
 
             co_roles = []
@@ -338,10 +342,15 @@ class Role:
 
     @_role.error
     @_rrole.error
-    async def clear_messages_error(self, context, error):
-        dawn_role = discord.utils.get(context.guild.roles, id=364967220193001472)
-        if context.invoked_with in ['role', 'rrole', 'iam', 'iamn']:
-            await context.say_as_embed(message=f'Sorry, only {dawn_role.mention} can use this command. Join us for these awesome colors!')
+    async def _handle_errors(self, context, error):
+        if context.guild.id == config.DAWN_SERVER_ID:
+            dawn_role = discord.utils.get(context.guild.roles, id=364967220193001472)
+            collector_role = discord.utils.get(context.guild.roles, id=544542640838934528)
+            if context.invoked_with in ['role', 'rrole', 'iam', 'iamn']:
+                await context.say_as_embed(
+                    message=f'Sorry, only {dawn_role.mention} and {collector_role.mention} '
+                    'can use this command. Join us for these awesome colors! '
+                    'Or get special roles by participating in events!')
         return  # fail silently
 
 

@@ -3,7 +3,7 @@ import discord
 # import asyncio
 # import operator
 # from pprint import pprint
-from config import MY_ID
+from config import MY_ID, MSVN_SERVER_ID
 
 
 class Requirement:
@@ -12,7 +12,11 @@ class Requirement:
     def __init__(self, bot):
         self.bot = bot
 
+    def only_msvn_server(context):
+        return context.guild.id == MSVN_SERVER_ID
+
     @commands.command(name='req')
+    @commands.check(only_msvn_server)
     async def requirement(self, context, category=None):
         """Lệnh xem tiêu chí set các Role:
         - Content Creator
@@ -20,12 +24,12 @@ class Requirement:
         - Trader
         """
         prefix = self.bot.command_prefix
-        server = context.server
+        guild = context.guild
 
-        gms_role = discord.utils.get(server.roles, name='GMS')
-        gmsm_role = discord.utils.get(server.roles, name='GMSM')
+        gms_role = discord.utils.get(guild.roles, name='GMS')
+        gmsm_role = discord.utils.get(guild.roles, name='GMSM')
 
-        role_request_channel = discord.utils.get(server.channels, name='yêu-cầu-role')
+        role_request_channel = discord.utils.get(guild.channels, name='yêu-cầu-role')
 
         if category is None \
                 or not category.startswith('trade') \
@@ -52,8 +56,8 @@ class Requirement:
 
         elif category.startswith('lead'):
 
-            leader_gms = discord.utils.get(server.roles, name='Guild Leader GMS')
-            leader_gmsm = discord.utils.get(server.roles, name='Guild Leader GMSM')
+            leader_gms = discord.utils.get(guild.roles, name='Guild Leader GMS')
+            leader_gmsm = discord.utils.get(guild.roles, name='Guild Leader GMSM')
 
             embed = discord.Embed(
                 title=None,
@@ -83,8 +87,8 @@ class Requirement:
 
         elif category.startswith('trade'):
 
-            trader_gms = discord.utils.get(server.roles, name='Trader GMS')
-            trader_gmsm = discord.utils.get(server.roles, name='Trader GMSM')
+            trader_gms = discord.utils.get(guild.roles, name='Trader GMS')
+            trader_gmsm = discord.utils.get(guild.roles, name='Trader GMSM')
 
             embed = discord.Embed(
                 title=None,
@@ -115,8 +119,8 @@ class Requirement:
 
         elif category.startswith('creat'):
 
-            creator_gms = discord.utils.get(server.roles, name='Content Creator GMS')
-            creator_gmsm = discord.utils.get(server.roles, name='Content Creator GMSM')
+            creator_gms = discord.utils.get(guild.roles, name='Content Creator GMS')
+            creator_gmsm = discord.utils.get(guild.roles, name='Content Creator GMSM')
 
             ponpon = await self.bot.get_user_info(MY_ID)
 
