@@ -59,14 +59,14 @@ class CustomBot(commands.Bot):
 
         await welcome_channel.send(message)
 
-    async def on_raw_reaction_add(self, payload, message_id, channel_id, user_id):
+    async def on_raw_reaction_add(self, payload):
 
-        if message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
+        if payload.message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
             zip_list = self.zip_role_emoji_lists('role')
-        elif message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
+        elif payload.message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
             zip_list = self.zip_role_emoji_lists('notify')
         else:
-            print('ERROR - Message ID not found.')
+            # print('ERROR - Message ID not found.')
             return
 
         react_role_name = None
@@ -78,12 +78,12 @@ class CustomBot(commands.Bot):
         if react_role_name is None:
             return
 
-        channel = self.get_channel(channel_id)
+        channel = self.get_channel(payload.channel_id)
         if channel is None:
             return
 
         guild = channel.guild
-        member = guild.get_member(user_id)
+        member = guild.get_member(payload.user_id)
         if member is None:
             response = await self.say_as_embed(channel, message='Unable to find the user that reacted.', color='error')
             await asyncio.sleep(5)
@@ -98,27 +98,27 @@ class CustomBot(commands.Bot):
             await response.delete()
             return
 
-        if message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
+        if payload.message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
             await member.add_roles(react_role)
             response = await self.say_as_embed(
                 channel, message=f'{member.mention} đã nhận được danh hiệu **{react_role.mention}**')
             await asyncio.sleep(5)
             await response.delete()
-        elif message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
+        elif payload.message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
             await member.add_roles(react_role)
             response = await self.say_as_embed(
                 channel, message=f'{member.mention} sẽ nhận được thông báo khi ping **{react_role.mention}**.')
             await asyncio.sleep(5)
             await response.delete()
 
-    async def on_raw_reaction_remove(self, payload, message_id, channel_id, user_id):
+    async def on_raw_reaction_remove(self, payload):
 
-        if message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
+        if payload.message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
             zip_list = self.zip_role_emoji_lists('role')
-        elif message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
+        elif payload.message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
             zip_list = self.zip_role_emoji_lists('notify')
         else:
-            print('ERROR - Message ID not found.')
+            # print('ERROR - Message ID not found.')
             return
 
         react_role_name = None
@@ -130,12 +130,12 @@ class CustomBot(commands.Bot):
         if react_role_name is None:
             return
 
-        channel = self.get_channel(channel_id)
+        channel = self.get_channel(payload.channel_id)
         if channel is None:
             return
 
         guild = channel.guild
-        member = guild.get_member(user_id)
+        member = guild.get_member(payload.user_id)
         if member is None:
             response = await self.say_as_embed(channel, message='Unable to find the user that reacted.', color='error')
             await asyncio.sleep(5)
@@ -150,13 +150,13 @@ class CustomBot(commands.Bot):
             await response.delete()
             return
 
-        if message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
+        if payload.message_id == config.REACT_FOR_ROLE_MESSAGE_ID:
             await member.remove_roles(react_role)
             response = await self.say_as_embed(
                 channel, message=f'{member.mention} đã được xóa bỏ danh hiệu **{react_role.mention}**.')
             await asyncio.sleep(5)
             await response.delete()
-        elif message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
+        elif payload.message_id == config.REACT_FOR_NOTIFICATION_ROLE_MESSAGE_ID:
             await member.remove_roles(react_role)
             response = await self.say_as_embed(
                 channel, message=f'{member.mention} sẽ không nhận thông báo khi ping **{react_role.mention}** nữa.')

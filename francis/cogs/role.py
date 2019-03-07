@@ -1,10 +1,12 @@
 import discord
 from discord.ext import commands
 from francis.utils.role import process_role
+from utils.user import get_user_obj
 import config
+from datetime import datetime
 
 
-class Role:
+class Role(commands.Cog):
     """A cog for role management commands"""
 
     def __init__(self, bot):
@@ -339,6 +341,55 @@ class Role:
             embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
 
         await context.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        if payload.emoji.name == '\N{REGIONAL INDICATOR SYMBOL LETTER F}':
+            if payload.message_id != 553086377562996767:
+                return
+
+            # role add
+            dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
+            died_role = dawn.get_role(553084583265042434)
+            member = dawn.get_member(payload.user_id)
+            monument_channel = dawn.get_channel(553086153553870858)
+            user_obj = get_user_obj(member)
+            await member.add_roles(died_role)
+            embed = discord.Embed(
+                title='',
+                description=
+                f'{member.mention}',
+                timestamp=datetime.utcnow(),
+                color=discord.Color.darker_grey()
+            )
+            # sends message
+            msg = await monument_channel.send(embed=embed)
+
+            # update user info
+            user_obj.monument_message_id = msg.id
+            user_obj.monument_channel_id = msg.channel.id
+            user_obj.save()
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        if payload.emoji.name == '\N{REGIONAL INDICATOR SYMBOL LETTER F}':
+            if payload.message_id != 553086377562996767:
+                return
+
+            # role removal
+            dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
+            died_role = dawn.get_role(553084583265042434)
+            member = dawn.get_member(payload.user_id)
+            user_obj = get_user_obj(member)
+            await member.remove_roles(died_role)
+            # msg removal
+            msg_db = await user_obj.get_message(dawn)
+            if msg_db:
+                await msg_db.delete()
+
+            user_obj.monument_message_id = None
+            user_obj.monument_channel_id = None
+            user_obj.save()
 
     @_role.error
     @_rrole.error

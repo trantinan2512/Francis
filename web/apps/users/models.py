@@ -10,6 +10,9 @@ class DiscordUser(models.Model):
     joined_date = models.DateTimeField(auto_now_add=True)
     blocked = models.BooleanField(default=False)
 
+    monument_channel_id = models.BigIntegerField(blank=True, null=True)
+    monument_message_id = models.BigIntegerField(blank=True, null=True)
+
     def __str__(self):
         return f'{self.discord_name} - {self.discord_id}'
 
@@ -21,6 +24,21 @@ class DiscordUser(models.Model):
             InvestigationInfo.objects.create(discord_user=self)
         if not hasattr(self, 'gacha_info'):
             GachaInfo.objects.create(discord_user=self)
+
+    async def get_message(self, guild):
+        if self.monument_channel_id and self.monument_message_id:
+
+            channel = guild.get_channel(self.monument_channel_id)
+            if not channel:
+                return None
+
+            try:
+                message = await channel.get_message(self.monument_message_id)
+                return message
+            except Exception:
+                return None
+
+        return None
 
 
 class InvestigationInfo(models.Model):
@@ -66,4 +84,5 @@ class GachaInfo(models.Model):
                 return False
         else:
             return False
+
     daily_checked.boolean = True

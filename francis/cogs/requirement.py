@@ -6,7 +6,7 @@ import discord
 from config import MY_ID, MSVN_SERVER_ID
 
 
-class Requirement:
+class Requirement(commands.Cog):
     """Bộ lệnh xem các tiêu chí set role"""
 
     def __init__(self, bot):

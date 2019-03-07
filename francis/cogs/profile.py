@@ -6,7 +6,7 @@ import discord
 from utils.user import get_user_obj
 
 
-class ProfileCommands:
+class ProfileCommands(commands.Cog):
     """Profile related commands"""
 
     def __init__(self, bot):

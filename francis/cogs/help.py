@@ -3,7 +3,7 @@ import discord
 import config
 
 
-class Help:
+class Help(commands.Cog):
     """A cog for Help management commands"""
 
     def __init__(self, bot):

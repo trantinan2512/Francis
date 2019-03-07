@@ -14,7 +14,7 @@ from web.apps.gachas.models import TreasureBoxGacha
 from web.apps.users.models import DiscordUser, GachaInfo
 
 
-class Gacha:
+class Gacha(commands.Cog):
     """A cog for gacha commands"""
 
     def __init__(self, bot):

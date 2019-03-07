@@ -11,7 +11,7 @@ import config as settings
 from web.apps.investigations.models import Case
 
 
-class InvestigationGameCommands:
+class InvestigationGameCommands(commands.Cog):
     """Command package for Investigation Game!"""
 
     def __init__(self, bot):

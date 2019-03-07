@@ -3,7 +3,7 @@ import discord
 from web.apps.items.models import ItemStatRange
 
 
-class StatCheck:
+class StatCheck(commands.Cog):
     """A cog for Link management commands"""
 
     def __init__(self, bot):

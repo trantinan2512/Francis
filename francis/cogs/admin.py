@@ -17,7 +17,7 @@ from francis.utils.role import is_image_url, is_hex_code, is_normal_message_type
 from web.apps.users.models import DiscordUser
 
 
-class Admin:
+class Admin(commands.Cog):
     """A cog for Admin-only commands"""
 
     def __init__(self, bot):

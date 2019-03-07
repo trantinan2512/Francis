@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 
 
-class Link:
+class Link(commands.Cog):
     """A cog for Link management commands"""
 
     def __init__(self, bot):

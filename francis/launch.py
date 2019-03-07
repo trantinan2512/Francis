@@ -44,9 +44,9 @@ async def on_ready():
     print('------')
 
     if not config.DEBUG:
-        await francis.change_presence(game=discord.Game(name=f'{francis.command_prefix}help'))
+        await francis.change_presence(activity=discord.Game(name=f'{francis.command_prefix}help'))
     else:
-        await francis.change_presence(game=discord.Game(name=f'{francis.command_prefix}help'))
+        await francis.change_presence(activity=discord.Game(name=f'{francis.command_prefix}help'))
 
 
 if not config.DEBUG:
