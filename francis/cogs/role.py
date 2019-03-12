@@ -19,11 +19,9 @@ class Role(commands.Cog):
         # Dawn member check
         if server.id == config.DAWN_SERVER_ID:
             dawn_role = discord.utils.get(author.roles, id=364967220193001472)
+            lostlight_role = discord.utils.get(author.roles, id=554875913586737152)
             collector_role = discord.utils.get(author.roles, id=544542640838934528)
-            if dawn_role or collector_role:
-                return True
-            else:
-                return False
+            return any(role is not None for role in [dawn_role, lostlight_role, collector_role])
         else:
             return True
 
@@ -46,10 +44,12 @@ class Role(commands.Cog):
         elif server.id == config.DAWN_SERVER_ID:
             dawn_role = discord.utils.get(server.roles, id=364967220193001472)
             collector_role = discord.utils.get(server.roles, id=544542640838934528)
+            lostlight_role = discord.utils.get(server.roles, id=554875913586737152)
 
             field_1_name = f'Format: `{prefix}role role_name`'
             field_1_value = f'Use this command to auto-asign a Role. Type `{prefix}list` to see a full list of available roles.\n'
-            field_1_value += f'**This command is available for {dawn_role.mention} and {collector_role.mention} only**.'
+            field_1_value += f'**This command is available for {dawn_role.mention},' \
+                f' {lostlight_role.mention}, and {collector_role.mention} only**.'
             role_exists_msg = f'{author.mention}, you already have this role.'
             wrong_role_name_provided_msg = f'{author.mention}, this role does not exist, or not auto-asignable. '
             wrong_role_name_provided_msg += f'Type `{prefix}list` to see a full list of available roles.'
@@ -125,10 +125,12 @@ class Role(commands.Cog):
         elif server.id == config.DAWN_SERVER_ID:
             dawn_role = discord.utils.get(server.roles, id=364967220193001472)
             collector_role = discord.utils.get(server.roles, id=544542640838934528)
+            lostlight_role = discord.utils.get(server.roles, id=554875913586737152)
 
             field_1_name = f'Format: `{prefix}rrole role_name`'
             field_1_value = f'Use this command to remove an auto-asigned Role.\n'
-            field_1_value += f'**This command is available for {dawn_role.mention} and {collector_role.mention} only**.'
+            field_1_value += f'**This command is available for {dawn_role.mention},' \
+                f' {lostlight_role.mention}, and {collector_role.mention} only**.'
 
             field_2_name = f'Remove multiple Roles: `{prefix}rrole all role_type`'
             field_2_value = f'`role_type` can be `colors`\n'
@@ -397,9 +399,11 @@ class Role(commands.Cog):
         if context.guild.id == config.DAWN_SERVER_ID:
             dawn_role = discord.utils.get(context.guild.roles, id=364967220193001472)
             collector_role = discord.utils.get(context.guild.roles, id=544542640838934528)
+            lostlight_role = discord.utils.get(context.guild.roles, id=554875913586737152)
+
             if context.invoked_with in ['role', 'rrole', 'iam', 'iamn']:
                 await context.say_as_embed(
-                    message=f'Sorry, only {dawn_role.mention} and {collector_role.mention} '
+                    message=f'Sorry, only {dawn_role.mention}, {lostlight_role.mention}, and {collector_role.mention} '
                     'can use this command. Join us for these awesome colors! '
                     'Or get special roles by participating in events!')
         return  # fail silently
