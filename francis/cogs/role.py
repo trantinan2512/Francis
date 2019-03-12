@@ -312,12 +312,14 @@ class Role(commands.Cog):
 
             dawn_role = discord.utils.get(server.roles, id=364967220193001472)
             collector_role = discord.utils.get(server.roles, id=544542640838934528)
+            lostlight_role = discord.utils.get(server.roles, id=554875913586737152)
 
             embed = discord.Embed(
                 title='Auto-asign color roles',
                 description=f'Use `{prefix}role role_name` to add yourself a **Color Role**.\n'
                 f'Use `{prefix}rrole role_name` to remove a color role you have.\n'
-                f'**These commands are available for {dawn_role.mention} and {collector_role.mention} only**.',
+                f'**These commands are available for {dawn_role.mention}'
+                f', {lostlight_role.mention}, and {collector_role.mention} only**.',
                 colour=discord.Color.teal())
 
             co_roles = []
