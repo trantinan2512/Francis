@@ -348,14 +348,21 @@ class Role(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
+        dawn_rfr = {
+            # emoji ID : role ID
+            557785973598060545: dawn.get_role(557783193470631981),
+            557785972956200960: dawn.get_role(557783112843657264),
+            557785972939685888: dawn.get_role(557783125137031168)
+        }
+        member = dawn.get_member(payload.user_id)
+
         if payload.emoji.name == '\N{REGIONAL INDICATOR SYMBOL LETTER F}':
             if payload.message_id != 553086377562996767:
                 return
 
             # role add
-            dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
             died_role = dawn.get_role(553084583265042434)
-            member = dawn.get_member(payload.user_id)
             monument_channel = dawn.get_channel(553086153553870858)
             user_obj = get_user_obj(member)
             await member.add_roles(died_role)
@@ -374,16 +381,41 @@ class Role(commands.Cog):
             user_obj.monument_channel_id = msg.channel.id
             user_obj.save()
 
+        if payload.emoji.id in dawn_rfr:
+
+            if payload.message_id != 557788422379667457:
+                return
+
+            await member.add_roles(dawn_rfr[payload.emoji.id])
+
+            channel = dawn.get_channel(payload.channel_id)
+            embed = discord.Embed(
+                title='',
+                description=
+                f'{member.mention} has been given the '
+                f'{dawn_rfr[payload.emoji.id].mention} role.',
+                color=discord.Color.blurple()
+            )
+            await channel.send(embed=embed, delete_after=5)
+
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
+
+        dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
+        member = dawn.get_member(payload.user_id)
+        dawn_rfr = {
+            # emoji ID : role ID
+            557785973598060545: dawn.get_role(557783193470631981),
+            557785972956200960: dawn.get_role(557783112843657264),
+            557785972939685888: dawn.get_role(557783125137031168)
+        }
+
         if payload.emoji.name == '\N{REGIONAL INDICATOR SYMBOL LETTER F}':
             if payload.message_id != 553086377562996767:
                 return
 
             # role removal
-            dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
             died_role = dawn.get_role(553084583265042434)
-            member = dawn.get_member(payload.user_id)
             user_obj = get_user_obj(member)
             await member.remove_roles(died_role)
             # msg removal
@@ -394,6 +426,23 @@ class Role(commands.Cog):
             user_obj.monument_message_id = None
             user_obj.monument_channel_id = None
             user_obj.save()
+
+        if payload.emoji.id in dawn_rfr:
+            if payload.message_id != 557788422379667457:
+                return
+
+            member = dawn.get_member(payload.user_id)
+            await member.remove_roles(dawn_rfr[payload.emoji.id])
+
+            channel = dawn.get_channel(payload.channel_id)
+            embed = discord.Embed(
+                title='',
+                description=
+                f'{dawn_rfr[payload.emoji.id].mention} role '
+                f'has been removed from {member.mention}.',
+                color=discord.Color.blurple()
+            )
+            await channel.send(embed=embed, delete_after=5)
 
     @_role.error
     @_rrole.error

@@ -1,4 +1,5 @@
 import discord
+import traceback
 from francis import bot
 from francis.tasks import socials, webspiders, schedules
 import config
@@ -32,7 +33,7 @@ for extension in initial_extensions:
     try:
         francis.load_extension(extension)
     except Exception as e:
-        print(f'Failed to load extension {extension}. Exception: "{e}"')
+        traceback.print_exc()
 
 
 # EVENTS
