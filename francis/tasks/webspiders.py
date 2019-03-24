@@ -9,14 +9,14 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from dateparser import parse
 import discord
-from utils import db, channel as ch
+from utils import db as googledrive, channel as ch
 import config
 
 
 class WebSpider:
     def __init__(self, bot):
         self.bot = bot
-        self.db = db.initialize_db()
+        self.db = googledrive.initialize_db()
 
     def get_content_by_url(self, url):
 
@@ -29,6 +29,10 @@ class WebSpider:
 
 
 class GMSSiteSpider(WebSpider):
+    def __init__(self, bot):
+        super().__init__(bot)
+        self.sheet = self.db.worksheet('site_gms')
+
     async def parse(self):
 
         print('[GMS Site Spider] Waiting for ready state...')
@@ -88,20 +92,18 @@ class GMSSiteSpider(WebSpider):
                     }
 
                     if read_db is True:
-                        # print('[GMS site] Database read...')
                         try:
-                            db = self.db.worksheet('site_gms')
+                            self.sheet = self.db.worksheet('site_gms')
 
                         except APIError:
                             print('API ERROR')
-                            quit()
+                            self.db = googledrive.initialize_db()
+                            break
 
-                        posted_ids = db.col_values(1)[1:]
-                        posted_titles = db.col_values(4)[1:]
+                    posted_ids = self.sheet.col_values(1)[1:]
+                    posted_titles = self.sheet.col_values(4)[1:]
 
                     if (data['id'], data['title']) in zip(posted_ids, posted_titles):
-
-                        # print(f'Site Fetch: [GMS] [Already posted]')
                         read_db = False
 
                     else:
@@ -152,7 +154,7 @@ class GMSSiteSpider(WebSpider):
                                 # send the message to channel
                                 await self.bot.say_as_embed(channel=channel, embed=embed)
                                 # save to drive and print the result title
-                                db.insert_row([value for value in data.values()], index=2)
+                                self.sheet.insert_row([value for value in data.values()], index=2)
                                 print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
                                 return
 
@@ -166,7 +168,7 @@ class GMSSiteSpider(WebSpider):
                         # send the message to channel
                         await self.bot.say_as_embed(channel=channel, embed=embed)
                         # save to drive and print the result title
-                        db.insert_row([value for value in data.values()], index=2)
+                        self.sheet.insert_row([value for value in data.values()], index=2)
                         print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
                 # print('[GMS site] Scan finished.')
             await asyncio.sleep(delay)
@@ -326,6 +328,9 @@ class GMSSiteSpider(WebSpider):
 
 
 class GMSMSiteSpider(WebSpider):
+    def __init__(self, bot):
+        super().__init__(bot)
+        self.sheet = self.db.worksheet('site_gmsm')
 
     async def parse(self):
 
@@ -386,13 +391,14 @@ class GMSMSiteSpider(WebSpider):
                     if read_db is True:
                         # print('[GMSM site] Database read...')
                         try:
-                            site_gmsm = self.db.worksheet('site_gmsm')
+                            self.sheet = self.db.worksheet('site_gmsm')
 
                         except APIError:
                             print('API ERROR')
-                            quit()
+                            self.db = googledrive.initialize_db()
+                            break
 
-                        site_gmsm_db = site_gmsm.get_all_records()
+                    site_gmsm_db = self.sheet.get_all_records()
 
                     posted_ids = []
                     posted_titles = []
@@ -448,7 +454,7 @@ class GMSMSiteSpider(WebSpider):
                         # send the message to channel
                         await self.bot.say_as_embed(channel=channel, embed=embed)
                         # save to drive and print the result title
-                        site_gmsm.insert_row(list(data.values()), index=2)
+                        self.sheet.insert_row(list(data.values()), index=2)
                         print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
 
                     site_fetches -= 1
@@ -459,6 +465,9 @@ class GMSMSiteSpider(WebSpider):
 
 
 class GMS2SiteSpider(WebSpider):
+    def __init__(self, bot):
+        super().__init__(bot)
+        self.sheet = self.db.worksheet('site_gms2')
 
     async def parse(self):
 
@@ -516,18 +525,21 @@ class GMS2SiteSpider(WebSpider):
                     if read_db is True:
                         # print('[GMS2 site] Database read...')
                         try:
-                            db = self.db.worksheet('site_gms2')
+                            self.sheet = self.db.worksheet('site_gms2')
+
 
                         except APIError:
-                            print('API ERROR')
-                            quit()
 
-                        posted_ids = db.col_values(1)[1:]
-                        posted_titles = db.col_values(5)[1:]
+                            print('API ERROR')
+
+                            self.db = googledrive.initialize_db()
+
+                            break
+
+                    posted_ids = self.sheet.col_values(1)[1:]
+                    posted_titles = self.sheet.col_values(5)[1:]
 
                     if (data['id'], data['title']) in zip(posted_ids, posted_titles):
-
-                        # print(f'Site Fetch: [GMS2] [Already posted]')
                         read_db = False
 
                     else:
@@ -545,9 +557,117 @@ class GMS2SiteSpider(WebSpider):
                         await self.bot.say_as_embed(channel=channel, embed=embed)
 
                         # save to drive and print the result title
-                        db.insert_row([value for value in data.values()], index=2)
+                        self.sheet.insert_row([value for value in data.values()], index=2)
 
                         print(f'Site Fetch: [GMS2] [Fetched {data["title"]}]')
 
             # print('[GMS2 site] Scan finished.')
+            await asyncio.sleep(delay)
+
+
+class HonkaiImpactSpider(WebSpider):
+    def __init__(self, bot):
+        super().__init__(bot)
+        self.sheet = self.db.worksheet('site_honkai_impact_3rd')
+
+    async def parse(self):
+
+        print('[Honkai Impact Global Site Spider] Waiting for ready state...')
+
+        await self.bot.wait_until_ready()
+
+        print('[Honkai Impact Global Site Spider] Ready and running!')
+
+        if config.DEBUG:
+            delay = 10
+        else:
+            delay = 60
+
+        # Dawn's HI3rd #news channel
+        channel = self.bot.get_channel(559210580146126848)
+
+        while not self.bot.is_closed():
+
+            url = 'http://www.global.honkaiimpact3.com/index.php/news/'
+            content = self.get_content_by_url(url)
+
+            if content is not None:
+                html = BeautifulSoup(content, 'html.parser')
+
+                now = datetime.now()
+                vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+
+                news_items = html.select_one('#news_list')
+
+                read_db = True
+                for news in news_items.find_all('li'):
+                    post_id = news.select_one('a')['href']
+
+                    # getting the image inside the post for better quality
+                    post_html_content = self.get_content_by_url(f'{url}{post_id}')
+                    if not post_html_content:
+                        image = news.select_one('img')['src']
+                        short_post_text = news.select_one('.summary').get_text()
+                    else:
+                        html = BeautifulSoup(post_html_content, 'html.parser')
+                        image = html.select_one('#title_img_big')['src']
+
+                        content = html.select_one('.content')
+                        short_post_text = '\n'.join([p.get_text() for p in content.find_all('p')])
+
+                    title = news.select_one('h3').get_text()
+
+                    data = {
+                        'id': post_id,
+                        'fetch_date': vn_tz.strftime('%d/%m/%Y'),
+                        'fetch_time': vn_tz.strftime('%H:%M:%S'),
+                        'title': title,
+                        'link': f'{url}{post_id}',
+                        'description': short_post_text,
+                        'image': f'http:{image}'
+                    }
+
+                    # permitted to read the spreadsheet
+                    if read_db is True:
+                        try:
+                            self.sheet = self.db.worksheet('site_honkai_impact_3rd')
+
+                        except APIError:
+                            print('API ERROR')
+                            self.db = googledrive.initialize_db()
+                            break
+
+                    posted_ids = self.sheet.col_values(1)[1:]
+                    posted_titles = self.sheet.col_values(4)[1:]
+
+                    # check if the post has already been posted or not
+                    # if posted then no need to re-read database
+                    if (data['id'], data['title']) in zip(posted_ids, posted_titles):
+                        read_db = False
+                        continue
+
+                    embed_desc = ''
+                    for line in data['description'].split('\n'):
+                        if len(embed_desc) > 500:
+                            break
+                        embed_desc += f'{line}\n'
+
+                    # sending news message to channel
+                    embed = discord.Embed(
+                        title=f"{data['title']}",
+                        url=data['link'],
+                        description=f"{embed_desc}...\n***[Read more]({url}{post_id})***",
+                        color=discord.Color.teal())
+                    embed.set_image(url=data['image'])
+
+                    # send the message to channel
+                    await self.bot.say_as_embed(channel=channel, embed=embed)
+
+                    # save to drive and print the result title
+                    self.sheet.insert_row([value for value in data.values()], index=2)
+                    print(f'Site Fetch: [HI3rd] [Fetched {data["title"]}]')
+
+                    # updates permission to re-read the database after update
+                    read_db = True
+
             await asyncio.sleep(delay)
