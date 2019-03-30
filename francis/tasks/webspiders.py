@@ -144,6 +144,9 @@ class GMSSiteSpider(WebSpider):
 
             for data in site_datas:
 
+                if not checking_data:
+                    break
+
                 if (data['id'], data['title']) in checking_data:
                     continue
 
@@ -410,6 +413,9 @@ class GMSMSiteSpider(WebSpider):
 
             for data in site_datas:
 
+                if not checking_data:
+                    break
+
                 if (data['id'], data['title']) in checking_data:
                     continue
 
@@ -492,7 +498,10 @@ class GMS2SiteSpider(WebSpider):
             site_datas = self.fetch_data()
 
             for data in site_datas:
-                # already posted, continue the loop
+
+                if not checking_data:
+                    break
+
                 if (data['id'], data['title']) in checking_data:
                     continue
 
@@ -581,6 +590,9 @@ class HonkaiImpactSpider(WebSpider):
             site_datas = self.fetch_data()
 
             for data in site_datas:
+
+                if not checking_data:
+                    break
 
                 if (data['id'], data['title']) in checking_data:
                     continue
