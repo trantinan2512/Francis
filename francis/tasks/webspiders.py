@@ -20,7 +20,7 @@ class WebSpider:
         self.db = googledrive.initialize_db()
         self.sheet_name = drive_sheet_name
         self.sheet = self.db.worksheet(self.sheet_name)
-        self.delay = 10 if config.DEBUG else 60
+        self.delay = 10 if config.DEBUG else 30
 
     def get_content_by_url(self, url):
 
