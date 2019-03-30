@@ -36,6 +36,7 @@ class WebSpider:
         try:
             records = self.sheet.get_all_records()
         except APIError:
+            traceback.print_exc()
             return None
 
         checking_data = [(str(record['id']), record['title']) for record in records]
