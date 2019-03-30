@@ -139,7 +139,6 @@ class GMSSiteSpider(WebSpider):
 
         while not self.bot.is_closed():
 
-            await asyncio.sleep(self.delay)
             checking_data = self.form_checking_data()
             site_datas = self.fetch_data()
 
@@ -169,6 +168,8 @@ class GMSSiteSpider(WebSpider):
 
                 print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
                 checking_data = self.form_checking_data()
+
+            await asyncio.sleep(self.delay)
 
     def maintenance_post(self, url, *args):
 
@@ -427,6 +428,8 @@ class GMSMSiteSpider(WebSpider):
                 # updates the checking data
                 checking_data = self.form_checking_data()
 
+            await asyncio.sleep(self.delay)
+
 
 class GMS2SiteSpider(WebSpider):
     def __init__(self, bot, drive_sheet_name):
@@ -485,7 +488,6 @@ class GMS2SiteSpider(WebSpider):
 
         while not self.bot.is_closed():
 
-            await asyncio.sleep(self.delay)
             checking_data = self.form_checking_data()
             site_datas = self.fetch_data()
 
@@ -511,6 +513,8 @@ class GMS2SiteSpider(WebSpider):
 
                 # updates the checking data
                 checking_data = self.form_checking_data()
+
+            await asyncio.sleep(self.delay)
 
 
 class HonkaiImpactSpider(WebSpider):
@@ -573,7 +577,6 @@ class HonkaiImpactSpider(WebSpider):
 
         while not self.bot.is_closed():
 
-            await asyncio.sleep(self.delay)
             checking_data = self.form_checking_data()
             site_datas = self.fetch_data()
 
@@ -605,3 +608,5 @@ class HonkaiImpactSpider(WebSpider):
 
                 # updates the checking data
                 checking_data = self.form_checking_data()
+
+            await asyncio.sleep(self.delay)
