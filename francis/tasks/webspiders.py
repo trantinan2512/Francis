@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 # import json
 import re
 import requests
@@ -14,9 +15,12 @@ import config
 
 
 class WebSpider:
-    def __init__(self, bot):
+    def __init__(self, bot, drive_sheet_name):
         self.bot = bot
         self.db = googledrive.initialize_db()
+        self.sheet_name = drive_sheet_name
+        self.sheet = self.db.worksheet(self.sheet_name)
+        self.delay = 10 if config.DEBUG else 60
 
     def get_content_by_url(self, url):
 
@@ -27,11 +31,100 @@ class WebSpider:
         else:
             return None
 
+    def form_checking_data(self):
+
+        try:
+            records = self.sheet.get_all_records()
+        except APIError:
+            return None
+
+        checking_data = [(str(record['id']), record['title']) for record in records]
+
+        return checking_data
+
+    def fetch_data(self):
+        pass
+
 
 class GMSSiteSpider(WebSpider):
-    def __init__(self, bot):
-        super().__init__(bot)
-        self.sheet = self.db.worksheet('site_gms')
+    def __init__(self, bot, drive_sheet_name):
+        super().__init__(bot, drive_sheet_name)
+        self.url = 'http://maplestory.nexon.net/news/'
+        self.channel = None
+
+    def fetch_data(self):
+        content = self.get_content_by_url(self.url)
+
+        if content is None:
+            return None
+
+        html = BeautifulSoup(content, 'html.parser')
+
+        links = html.select('.news-container .news-item .text h3 a')
+        news_texts = html.select('.news-container .news-item .text')
+        descs = []
+        for text in news_texts:
+            descs.append(text.p)
+        photos = html.select('.news-container .news-item .photo')
+
+        # regex for finding the news ID
+        news_id_re = re.compile('/news/(\d+)/')
+        # regex to check if post is a maintenance post
+        sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
+        # regex to check if the post is an updated post
+        updated_re = re.compile('\[(update|updated|complete|completed).*', re.IGNORECASE)
+
+        datas = []
+        for link, desc, photo in zip(links, descs, photos):
+            news_search = news_id_re.search(link['href'])
+
+            now = datetime.now()
+            vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+
+            data = {
+                'id': str(news_search.group(1)),
+                'timestamp_date': vn_tz.strftime('%d/%m/%Y'),
+                'timestamp_time': vn_tz.strftime('%H:%M:%S'),
+                'title': link.get_text(),
+                'link': f'http://maplestory.nexon.net{link["href"]}',
+                'desc': desc.get_text(),
+                'img': photo['style'].lstrip('background-image:url(').rstrip(')')
+            }
+
+            updated_search = updated_re.search(data['title'])
+
+            if updated_search is not None:
+
+                updated_type = updated_search.group(1).lower()
+
+                if updated_type.startswith('complete'):
+                    data['updated_type'] = '[Hoàn tất] '
+                else:
+                    data['updated_type'] = '[Update] '
+            else:
+                data['updated_type'] = ''
+
+            # search to get type of the maintenance
+            sc_search = sc_title_re.search(data['title'])
+
+            if sc_search is not None:
+                sc_catg = sc_search.group(1).lower()
+                sc_type = sc_search.group(3).lower()
+
+                if sc_catg == 'scheduled' and sc_type == 'maintenance':
+                    data['sc_type'] = 'Định kỳ'
+                elif sc_catg == 'unscheduled' and sc_type == 'maintenance':
+                    data['sc_type'] = 'Đột xuất'
+                elif sc_type == 'patch':
+                    data['sc_type'] = 'Patch Game'
+                elif sc_type == 'update':
+                    data['sc_type'] = 'Update mới'
+                else:
+                    data['sc_type'] = 'Bảo trì'
+
+            datas.append(data)
+
+        return datas
 
     async def parse(self):
 
@@ -41,137 +134,41 @@ class GMSSiteSpider(WebSpider):
 
         print('[GMS Site Spider] Ready and running!')
 
-        if config.DEBUG:
-            delay = 10
-        else:
-            delay = 60
-
         # cập-nhật-mới-gms channel
-        channel = ch.get_channel(bot=self.bot, id=453565620915535872)
-        sc_data = None
+        self.channel = ch.get_channel(bot=self.bot, id=453565620915535872)
 
         while not self.bot.is_closed():
 
-            content = self.get_content_by_url('http://maplestory.nexon.net/news/')
+            await asyncio.sleep(self.delay)
+            checking_data = self.form_checking_data()
+            site_datas = self.fetch_data()
 
-            if content is not None:
-                html = BeautifulSoup(content, 'html.parser')
+            for data in site_datas:
 
-                links = html.select('.news-container .news-item .text h3 a')
-                news_texts = html.select('.news-container .news-item .text')
-                descs = []
-                for text in news_texts:
-                    descs.append(text.p)
-                photos = html.select('.news-container .news-item .photo')
+                if (data['id'], data['title']) in checking_data:
+                    continue
 
-                # regex for finding the news ID
-                news_id_re = re.compile('/news/(\d+)/')
-                # regex to check if post is a maintenance post
-                sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
-                # regex to check if the post is an updated post
-                updated_re = re.compile('\[(update|updated|complete|completed).*', re.IGNORECASE)
+                embed = discord.Embed(
+                    title=data['title'],
+                    url=data['link'],
+                    description=data['desc'],
+                    color=discord.Color.teal())
 
-                read_db = True
+                # parse maintenance time before posting
+                sc_data = self.maintenance_post(data['link'], data['title'])
 
-                # print('Scanning GMS site for news...')
-                for link, desc, photo in zip(links, descs, photos):
+                if sc_data is not None:
+                    embed.title = f'{data["updated_type"]}{data["sc_type"]} - {sc_data[0]}'
+                    embed.description = sc_data[1]
 
-                    news_search = news_id_re.search(link['href'])
+                embed.set_image(url=data['img'])
+                # send the message to channel
+                await self.bot.say_as_embed(channel=self.channel, embed=embed)
+                # save to drive and print the result title
+                self.sheet.insert_row([value for value in data.values()], index=2)
 
-                    now = datetime.now()
-                    vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
-
-                    data = {
-                        'id': news_search.group(1),
-                        'timestamp_date': vn_tz.strftime('%d/%m/%Y'),
-                        'timestamp_time': vn_tz.strftime('%H:%M:%S'),
-                        'title': link.get_text(),
-                        'link': f'http://maplestory.nexon.net{link["href"]}',
-                        'desc': desc.get_text(),
-                        'img': photo['style'].lstrip('background-image:url(').rstrip(')')
-                    }
-
-                    if read_db is True:
-                        try:
-                            self.sheet = self.db.worksheet('site_gms')
-
-                        except APIError:
-                            print('API ERROR')
-                            self.db = googledrive.initialize_db()
-                            break
-
-                    posted_ids = self.sheet.col_values(1)[1:]
-                    posted_titles = self.sheet.col_values(4)[1:]
-
-                    if (data['id'], data['title']) in zip(posted_ids, posted_titles):
-                        read_db = False
-
-                    else:
-
-                        read_db = True
-
-                        updated_search = updated_re.search(data['title'])
-
-                        if updated_search is not None:
-
-                            updated_type = updated_search.group(1).lower()
-
-                            if updated_type.startswith('complete'):
-                                updated_type = '[Hoàn tất] '
-                            else:
-                                updated_type = '[Update] '
-                        else:
-                            updated_type = ''
-
-                        # search to get type of the maintenance
-                        sc_search = sc_title_re.search(data['title'])
-
-                        if sc_search is not None:
-                            sc_catg = sc_search.group(1).lower()
-                            sc_type = sc_search.group(3).lower()
-
-                            if sc_catg == 'scheduled' and sc_type == 'maintenance':
-                                sc_type = 'Định kỳ'
-                            elif sc_catg == 'unscheduled' and sc_type == 'maintenance':
-                                sc_type = 'Đột xuất'
-                            elif sc_type == 'patch':
-                                sc_type = 'Patch Game'
-                            elif sc_type == 'update':
-                                sc_type = 'Update mới'
-                            else:
-                                sc_type = 'Bảo trì'
-
-                            # send message as a maintenance post
-                            sc_data = self.maintenance_post(data['link'], data['title'])
-
-                            if sc_data is not None:
-                                embed = discord.Embed(
-                                    title=f'{updated_type}{sc_type} - {sc_data[0]}',
-                                    url=data['link'],
-                                    description=sc_data[1],
-                                    color=discord.Color.teal())
-                                embed.set_image(url=data['img'])
-                                # send the message to channel
-                                await self.bot.say_as_embed(channel=channel, embed=embed)
-                                # save to drive and print the result title
-                                self.sheet.insert_row([value for value in data.values()], index=2)
-                                print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
-                                return
-
-                        # the post is not a server maintenance post
-                        embed = discord.Embed(
-                            title=data['title'],
-                            url=data['link'],
-                            description=data['desc'],
-                            color=discord.Color.teal())
-                        embed.set_image(url=data['img'])
-                        # send the message to channel
-                        await self.bot.say_as_embed(channel=channel, embed=embed)
-                        # save to drive and print the result title
-                        self.sheet.insert_row([value for value in data.values()], index=2)
-                        print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
-                # print('[GMS site] Scan finished.')
-            await asyncio.sleep(delay)
+                print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
+                checking_data = self.form_checking_data()
 
     def maintenance_post(self, url, *args):
 
@@ -328,9 +325,73 @@ class GMSSiteSpider(WebSpider):
 
 
 class GMSMSiteSpider(WebSpider):
-    def __init__(self, bot):
-        super().__init__(bot)
-        self.sheet = self.db.worksheet('site_gmsm')
+    def __init__(self, bot, drive_sheet_name):
+        super().__init__(bot, drive_sheet_name)
+        # cập-nhật-mới-gms-m channel
+        self.channel = None
+        self.site_fetches = 10
+        self.url = 'https://m.nexon.com/notice/1?client_id=MTY3MDg3NDAy'
+
+    def fetch_data(self):
+        content = self.get_content_by_url(self.url)
+
+        if content is None:
+            return None
+        html = BeautifulSoup(content, 'html.parser')
+
+        bolt_labels = html.select('.list-group-item.pointer .bolt-label')
+        news_labels = []
+        for label in bolt_labels:
+            if label.get_text() != 'N':
+                news_labels.append(label)
+        news_titles = html.select('.list-group-item.pointer .bolt-ellipsis')
+        news_ids = html.select('.list-group-item.pointer .bolt-no-ellipsis')
+
+        now = datetime.now()
+        vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+
+        datas = []
+        site_fetches = self.site_fetches
+        for label, title, id in zip(news_labels, news_titles, news_ids):
+            data = {
+                'id': str(id['data-id']),
+                'date': vn_tz.strftime('%d/%m/%Y'),
+                'time': vn_tz.strftime('%H:%M:%S'),
+                'label': label.get_text().strip(),
+                'title': title.get_text().strip()
+            }
+
+            news_url = f'https://m.nexon.com/notice/get/{data["id"]}?client_id=MTY3MDg3NDAy'
+            news_content = self.get_content_by_url(news_url)
+            news_html = BeautifulSoup(news_content, 'html.parser')
+
+            img_link = 'N/A'
+            images = news_html.select('img')
+            for image in images:
+                if 'cloudfront.net' in image['src']:
+                    img_link = image['src']
+                    break
+
+            # set image based on the availability of image in data
+            is_event = data['label'].lower().startswith('e')
+            if img_link == 'N/A':
+                img_link = 'https://i.imgur.com/x4RoIPr.jpg' if is_event else 'https://i.imgur.com/DH5rVQd.jpg'
+
+            label_vn = 'Sự kiện' if is_event else 'Thông báo'
+
+            data_contents = {
+                'link': news_url,
+                'contents': news_html.select_one('.cnts').get_text().strip().replace('\n', '---'),
+                'image': img_link,
+                'label_vn': label_vn
+            }
+            data.update(data_contents)
+            datas.append(data)
+
+            site_fetches -= 1
+            if site_fetches <= 0:
+                break
+        return datas
 
     async def parse(self):
 
@@ -339,135 +400,78 @@ class GMSMSiteSpider(WebSpider):
         await self.bot.wait_until_ready()
 
         print('[GMSM Site Spider] Ready and running!')
-        if config.DEBUG:
-            delay = 10
-        else:
-            delay = 60
-
-        # cập-nhật-mới-gms-m channel
-        channel = ch.get_channel(bot=self.bot, id=453565659637481472)
+        self.channel = ch.get_channel(bot=self.bot, id=453565659637481472)
 
         while not self.bot.is_closed():
 
-            site_fetches = 10
+            checking_data = self.form_checking_data()
+            site_datas = self.fetch_data()
 
-            url = 'https://m.nexon.com/notice/1?client_id=MTY3MDg3NDAy'
-            content = self.get_content_by_url(url)
+            for data in site_datas:
 
-            if content is not None:
-                html = BeautifulSoup(content, 'html.parser')
+                if (data['id'], data['title']) in checking_data:
+                    continue
 
-                bolt_labels = html.select('.list-group-item.pointer .bolt-label')
-                news_labels = []
-                for label in bolt_labels:
-                    if label.get_text() != 'N':
-                        news_labels.append(label)
-                news_titles = html.select('.list-group-item.pointer .bolt-ellipsis')
-                news_ids = html.select('.list-group-item.pointer .bolt-no-ellipsis')
+                embed = discord.Embed(
+                    title=f"{data['label_vn']} - {data['title']}",
+                    url=data['link'],
+                    description=f"Cập nhật vào: {data['time']} {data['date']}",
+                    color=discord.Color.teal())
 
-                # # regex for finding the news ID
-                # news_id_re = re.compile('/news/(\d+)/')
-                # # regex to check if post is a maintenance post
-                # sc_title_re = re.compile('(scheduled|unscheduled)(.+)(maintenance|patch|update)', re.IGNORECASE)
-                # # regex to check if the post is an updated post
-                # updated_re = re.compile('\[(update|updated|complete|completed).*', re.IGNORECASE)
+                # send the message to channel
+                await self.bot.say_as_embed(channel=self.channel, embed=embed)
+                # save to drive and print the result title
+                self.sheet.insert_row(list(data.values()), index=2)
 
-                read_db = True
-
-                now = datetime.now()
-                vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
-
-                # print('Scanning GMSM site for news...')
-                for label, title, id in zip(news_labels, news_titles, news_ids):
-
-                    data = {
-                        'id': id['data-id'],
-                        'date': vn_tz.strftime('%d/%m/%Y'),
-                        'time': vn_tz.strftime('%H:%M:%S'),
-                        'label': label.get_text().strip(),
-                        'title': title.get_text().strip()
-                    }
-
-                    if read_db is True:
-                        # print('[GMSM site] Database read...')
-                        try:
-                            self.sheet = self.db.worksheet('site_gmsm')
-
-                        except APIError:
-                            print('API ERROR')
-                            self.db = googledrive.initialize_db()
-                            break
-
-                    site_gmsm_db = self.sheet.get_all_records()
-
-                    posted_ids = []
-                    posted_titles = []
-                    for record in site_gmsm_db:
-                        posted_ids.append(record['id'])
-                        posted_titles.append(record['title'])
-
-                    if (int(data['id']), data['title']) in zip(posted_ids, posted_titles):
-
-                        # print(f'Site Fetch: [GMSM] [Already posted]')
-                        read_db = False
-
-                    else:
-                        news_url = f'https://m.nexon.com/notice/get/{data["id"]}?client_id=MTY3MDg3NDAy'
-                        news_content = self.get_content_by_url(news_url)
-                        news_html = BeautifulSoup(news_content, 'html.parser')
-
-                        img_link = 'N/A'
-                        images = news_html.select('img')
-                        for image in images:
-                            if 'cloudfront.net' in image['src']:
-                                img_link = image['src']
-                                break
-
-                        data_contents = {
-                            'link': news_url,
-                            'contents': news_html.select_one('.cnts').get_text().strip().replace('\n', '---'),
-                            'image': img_link
-                        }
-                        data.update(data_contents)
-                        if data['label'].lower().startswith('e'):
-                            label = 'Sự kiện'
-                        else:
-                            label = 'Thông báo'
-
-                        read_db = True
-                        embed = discord.Embed(
-                            title=f"{label} - {data['title']}",
-                            url=data['link'],
-                            description=f"Cập nhật vào: {data['time']} {data['date']}",
-                            color=discord.Color.teal())
-
-                        # set image based on the availability of image in data
-                        if data['image'] != 'N/A':
-                            embed.set_image(url=data['image'])
-
-                        elif data['label'].lower().startswith('e'):
-                            embed.set_image(url='https://i.imgur.com/x4RoIPr.jpg')
-
-                        else:
-                            embed.set_image(url='https://i.imgur.com/DH5rVQd.jpg')
-
-                        # send the message to channel
-                        await self.bot.say_as_embed(channel=channel, embed=embed)
-                        # save to drive and print the result title
-                        self.sheet.insert_row(list(data.values()), index=2)
-                        print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
-
-                    site_fetches -= 1
-                    if site_fetches <= 0:
-                        break
-                # print('[GMS site] Scan finished.')
-            await asyncio.sleep(delay)
+                print(f'Site Fetch: [GMSM] [Fetched {data["title"]}]')
+                # updates the checking data
+                checking_data = self.form_checking_data()
 
 
 class GMS2SiteSpider(WebSpider):
-    def __init__(self, bot):
-        super().__init__(bot)
-        self.sheet = self.db.worksheet('site_gms2')
+    def __init__(self, bot, drive_sheet_name):
+        super().__init__(bot, drive_sheet_name)
+        # cập-nhật-mới-gms2 channel
+        self.channel = None
+        self.url = 'http://maplestory2.nexon.net/en/news'
+
+    def fetch_data(self):
+        content = self.get_content_by_url(self.url)
+
+        if content is None:
+            return None
+
+        html = BeautifulSoup(content, 'html.parser')
+
+        # regex for finding the news ID
+        news_id_re = re.compile('/news/article/(\d+)/')
+        now = datetime.now()
+        vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+
+        news_items = html.select('.news-item')
+
+        datas = []
+        for news in news_items:
+            link = news.select_one('.news-item-link')['href']
+            image = news.select_one('.news-item-image')['style']
+            news_category = news.select_one('.news-category-tag').get_text()
+            title = news.select_one('h2').get_text()
+            short_post_text = news.select_one('.short-post-text').get_text()
+
+            post_id = news_id_re.search(link).group(1)
+
+            data = {
+                'id': str(post_id),
+                'fetch_date': vn_tz.strftime('%d/%m/%Y'),
+                'fetch_time': vn_tz.strftime('%H:%M:%S'),
+                'category': news_category,
+                'title': title,
+                'link': f'http://maplestory2.nexon.net{link}',
+                'description': short_post_text,
+                'image': image.lstrip("background-image:url('").rstrip("')")
+            }
+            datas.append(data)
+        return datas
 
     async def parse(self):
 
@@ -477,98 +481,85 @@ class GMS2SiteSpider(WebSpider):
 
         print('[GMS2 Site Spider] Ready and running!')
 
-        if config.DEBUG:
-            delay = 10
-        else:
-            delay = 60
-
-        # cập-nhật-mới-gms2 channel
-        channel = ch.get_channel(bot=self.bot, id=505584303154135040)
+        self.channel = ch.get_channel(bot=self.bot, id=505584303154135040)
 
         while not self.bot.is_closed():
 
-            # print('Scanning GMS2 site for news...')
-            url = 'http://maplestory2.nexon.net/en/news'
-            content = self.get_content_by_url(url)
+            await asyncio.sleep(self.delay)
+            checking_data = self.form_checking_data()
+            site_datas = self.fetch_data()
 
-            if content is not None:
+            for data in site_datas:
+                # already posted, continue the loop
+                if (data['id'], data['title']) in checking_data:
+                    continue
 
-                html = BeautifulSoup(content, 'html.parser')
+                embed = discord.Embed(
+                    title=f"[{data['category']}] {data['title']}",
+                    url=data['link'],
+                    description=data['description'],
+                    color=discord.Color.teal())
+                embed.set_image(url=data['image'])
 
-                # regex for finding the news ID
-                news_id_re = re.compile('/news/article/(\d+)/')
-                now = datetime.now()
-                vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+                # send the message to channel
+                await self.bot.say_as_embed(channel=self.channel, embed=embed)
 
-                news_items = html.select('.news-item')
-                read_db = True
-                for news in news_items:
-                    link = news.select_one('.news-item-link')['href']
-                    image = news.select_one('.news-item-image')['style']
-                    news_category = news.select_one('.news-category-tag').get_text()
-                    title = news.select_one('h2').get_text()
-                    short_post_text = news.select_one('.short-post-text').get_text()
+                # save to drive and print the result title
+                self.sheet.insert_row([value for value in data.values()], index=2)
 
-                    post_id = news_id_re.search(link).group(1)
+                print(f'Site Fetch: [GMS2] [Fetched {data["title"]}]')
 
-                    data = {
-                        'id': post_id,
-                        'fetch_date': vn_tz.strftime('%d/%m/%Y'),
-                        'fetch_time': vn_tz.strftime('%H:%M:%S'),
-                        'category': news_category,
-                        'title': title,
-                        'link': f'http://maplestory2.nexon.net{link}',
-                        'description': short_post_text,
-                        'image': image.lstrip("background-image:url('").rstrip("')")
-                    }
-
-                    if read_db is True:
-                        # print('[GMS2 site] Database read...')
-                        try:
-                            self.sheet = self.db.worksheet('site_gms2')
-
-
-                        except APIError:
-
-                            print('API ERROR')
-
-                            self.db = googledrive.initialize_db()
-
-                            break
-
-                    posted_ids = self.sheet.col_values(1)[1:]
-                    posted_titles = self.sheet.col_values(5)[1:]
-
-                    if (data['id'], data['title']) in zip(posted_ids, posted_titles):
-                        read_db = False
-
-                    else:
-
-                        read_db = True
-
-                        embed = discord.Embed(
-                            title=f"[{data['category']}] {data['title']}",
-                            url=data['link'],
-                            description=data['description'],
-                            color=discord.Color.teal())
-                        embed.set_image(url=data['image'])
-
-                        # send the message to channel
-                        await self.bot.say_as_embed(channel=channel, embed=embed)
-
-                        # save to drive and print the result title
-                        self.sheet.insert_row([value for value in data.values()], index=2)
-
-                        print(f'Site Fetch: [GMS2] [Fetched {data["title"]}]')
-
-            # print('[GMS2 site] Scan finished.')
-            await asyncio.sleep(delay)
+                # updates the checking data
+                checking_data = self.form_checking_data()
 
 
 class HonkaiImpactSpider(WebSpider):
-    def __init__(self, bot):
-        super().__init__(bot)
-        self.sheet = self.db.worksheet('site_honkai_impact_3rd')
+    def __init__(self, bot, drive_sheet_name):
+        super().__init__(bot, drive_sheet_name)
+        self.channel = None
+        self.url = 'http://www.global.honkaiimpact3.com/index.php/news/'
+
+    def fetch_data(self):
+        content = self.get_content_by_url(self.url)
+
+        if content is None:
+            return None
+
+        now = datetime.now()
+        vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+
+        html = BeautifulSoup(content, 'html.parser')
+        news_items = html.select_one('#news_list')
+
+        datas = []
+        for news in news_items.find_all('li'):
+            post_id = news.select_one('a')['href']
+
+            # getting the image inside the post for better quality
+            post_html_content = self.get_content_by_url(f'{self.url}{post_id}')
+            if not post_html_content:
+                image = news.select_one('img')['src']
+                short_post_text = news.select_one('.summary').get_text()
+            else:
+                html = BeautifulSoup(post_html_content, 'html.parser')
+                image = html.select_one('#title_img_big')['src']
+
+                content = html.select_one('.content')
+                short_post_text = '\n'.join([p.get_text() for p in content.find_all('p')])
+
+            title = news.select_one('h3').get_text()
+
+            data = {
+                'id': post_id,
+                'fetch_date': vn_tz.strftime('%d/%m/%Y'),
+                'fetch_time': vn_tz.strftime('%H:%M:%S'),
+                'title': title,
+                'link': f'{self.url}{post_id}',
+                'description': short_post_text,
+                'image': f'http:{image}'
+            }
+            datas.append(data)
+        return datas
 
     async def parse(self):
 
@@ -578,96 +569,39 @@ class HonkaiImpactSpider(WebSpider):
 
         print('[Honkai Impact Global Site Spider] Ready and running!')
 
-        if config.DEBUG:
-            delay = 10
-        else:
-            delay = 60
-
-        # Dawn's HI3rd #news channel
-        channel = self.bot.get_channel(559210580146126848)
+        self.channel = self.bot.get_channel(559210580146126848)
 
         while not self.bot.is_closed():
 
-            url = 'http://www.global.honkaiimpact3.com/index.php/news/'
-            content = self.get_content_by_url(url)
+            await asyncio.sleep(self.delay)
+            checking_data = self.form_checking_data()
+            site_datas = self.fetch_data()
 
-            if content is not None:
-                html = BeautifulSoup(content, 'html.parser')
+            for data in site_datas:
 
-                now = datetime.now()
-                vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+                if (data['id'], data['title']) in checking_data:
+                    continue
 
-                news_items = html.select_one('#news_list')
+                embed_desc = ''
+                for line in data['description'].split('\n'):
+                    if len(embed_desc) > 500:
+                        break
+                    embed_desc += f'{line}\n'
 
-                read_db = True
-                for news in news_items.find_all('li'):
-                    post_id = news.select_one('a')['href']
+                # sending news message to channel
+                embed = discord.Embed(
+                    title=f"{data['title']}",
+                    url=data['link'],
+                    description=f"{embed_desc}...\n***[Read more]({self.url}{data['id']})***",
+                    color=discord.Color.teal())
+                embed.set_image(url=data['image'])
 
-                    # getting the image inside the post for better quality
-                    post_html_content = self.get_content_by_url(f'{url}{post_id}')
-                    if not post_html_content:
-                        image = news.select_one('img')['src']
-                        short_post_text = news.select_one('.summary').get_text()
-                    else:
-                        html = BeautifulSoup(post_html_content, 'html.parser')
-                        image = html.select_one('#title_img_big')['src']
+                # send the message to channel
+                await self.bot.say_as_embed(channel=self.channel, embed=embed)
 
-                        content = html.select_one('.content')
-                        short_post_text = '\n'.join([p.get_text() for p in content.find_all('p')])
+                # save to drive and print the result title
+                self.sheet.insert_row([value for value in data.values()], index=2)
+                print(f'Site Fetch: [HI3] [Fetched {data["title"]}]')
 
-                    title = news.select_one('h3').get_text()
-
-                    data = {
-                        'id': post_id,
-                        'fetch_date': vn_tz.strftime('%d/%m/%Y'),
-                        'fetch_time': vn_tz.strftime('%H:%M:%S'),
-                        'title': title,
-                        'link': f'{url}{post_id}',
-                        'description': short_post_text,
-                        'image': f'http:{image}'
-                    }
-
-                    # permitted to read the spreadsheet
-                    if read_db is True:
-                        try:
-                            self.sheet = self.db.worksheet('site_honkai_impact_3rd')
-
-                        except APIError:
-                            print('API ERROR')
-                            self.db = googledrive.initialize_db()
-                            break
-
-                    posted_ids = self.sheet.col_values(1)[1:]
-                    posted_titles = self.sheet.col_values(4)[1:]
-
-                    # check if the post has already been posted or not
-                    # if posted then no need to re-read database
-                    if (data['id'], data['title']) in zip(posted_ids, posted_titles):
-                        read_db = False
-                        continue
-
-                    embed_desc = ''
-                    for line in data['description'].split('\n'):
-                        if len(embed_desc) > 500:
-                            break
-                        embed_desc += f'{line}\n'
-
-                    # sending news message to channel
-                    embed = discord.Embed(
-                        title=f"{data['title']}",
-                        url=data['link'],
-                        description=f"{embed_desc}...\n***[Read more]({url}{post_id})***",
-                        color=discord.Color.teal())
-                    embed.set_image(url=data['image'])
-
-                    # send the message to channel
-                    await self.bot.say_as_embed(channel=channel, embed=embed)
-
-                    # save to drive and print the result title
-                    self.sheet.insert_row([value for value in data.values()], index=2)
-                    print(f'Site Fetch: [HI3rd] [Fetched {data["title"]}]')
-
-                    # updates permission to re-read the database after update
-                    read_db = True
-
-            await asyncio.sleep(delay)
+                # updates the checking data
+                checking_data = self.form_checking_data()

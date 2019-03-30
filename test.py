@@ -1,6 +1,7 @@
 import os
 import django
 from django.utils import timezone
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.config.settings')
 django.setup()
 import json
@@ -24,7 +25,6 @@ from random import choices, uniform
 
 
 def get_content_by_url(url):
-
     r = requests.get(url)
 
     if r.status_code == 200:
@@ -51,40 +51,24 @@ ITEM_SUB_TYPES = [
 
 ]
 
+from utils import db as googledrive
+
 
 def test_func():
-    url = 'http://www.global.honkaiimpact3.com/index.php/news/'
-    content = get_content_by_url(url)
+    db = googledrive.initialize_db()
+    sheet = db.worksheet('facebook_gms')
+    posted_ids = sheet.col_values(1)[1:]
+    posted_titles = sheet.col_values(4)[1:]
 
-    if content is not None:
-        html = BeautifulSoup(content, 'html.parser')
+    print(posted_ids, posted_titles)
 
-        # regex for finding the news ID
-        news_id_re = re.compile('/news/article/(\d+)/')
-        now = datetime.now()
-        vn_tz = now.astimezone(tz('Asia/Ho_Chi_Minh'))
+    sheet.insert_row(['1', '2', '3'], index=2)
 
-        news_items = html.select_one('#news_list')
-        # print(news_items)
-        for news in news_items.find_all('li'):
-            link = news.select_one('a')['href']
-            image = news.select_one('img')['src']
-            title = news.select_one('h3').get_text()
-            short_post_text = news.select_one('.summary').get_text()
+    posted_ids = sheet.col_values(1)[1:]
+    posted_titles = sheet.col_values(4)[1:]
 
-            post_id = link
+    print(posted_ids, posted_titles)
 
-            data = {
-                'id': post_id,
-                'fetch_date': vn_tz.strftime('%d/%m/%Y'),
-                'fetch_time': vn_tz.strftime('%H:%M:%S'),
-                'title': title,
-                'link': f'{url}{post_id}',
-                'desc': short_post_text,
-                'img': image
-            }
-
-            print(data)
 
 
 def gacha_roll():

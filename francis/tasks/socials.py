@@ -40,7 +40,6 @@ class Twitter:
         channel = ch.get_channel(bot=self.bot, id=455635507561627648)
 
         while not self.bot.is_closed():
-
             # fetch MapleM twitter stuff
             await self.send_latest_status(self.api, 816396540017152000, channel)
 
@@ -57,7 +56,6 @@ class Twitter:
 
         # keep executing the codes until bot is closed
         while not self.bot.is_closed():
-
             await self.send_latest_status(self.api, 34667202, channel)
 
     async def fetch_maple2_latest_tweet(self):
@@ -73,12 +71,12 @@ class Twitter:
 
         # keep executing the codes until bot is closed
         while not self.bot.is_closed():
-
             await self.send_latest_status(self.api, 851835989702000640, channel)
 
     # send status to given channel
     async def send_latest_status(self, api, user_id, channel, delay=60):
-        """Send the latest status of given user_id, to the channel
+        """
+        Send the latest status of given user_id, to the channel
         """
 
         if config.DEBUG:
@@ -89,13 +87,15 @@ class Twitter:
         # fetch the user_id twitter info
         tweet_count = 5
         latest_tweets = api.user_timeline(user_id, count=tweet_count)
-        read_db = True
-        # print(f'Scanning {tweet_count} tweets from USER_ID: {user_id} ...')
+
+        sheet, posted_ids = self.get_posted_ids(user_id)
+        if not sheet or not posted_ids:
+            return
+
         for tweet in latest_tweets:
 
             # build these things for later use
             u_screen_name = tweet.user.screen_name
-            u_id = tweet.user.id_str
             status_id = tweet.id_str
 
             # not retweet, not reply
@@ -107,49 +107,50 @@ class Twitter:
             else:
                 proceed = False
 
-            if proceed is True:
-                # build the URL and save u_id and status_id for later use
-                status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
+            if proceed is False:
+                continue
+            # build the URL and save u_id and status_id for later use
+            status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
 
-                if read_db is True:
-                    try:
-                        # get twitter_gmsm db
-                        if u_id == '816396540017152000':
-                            db = self.db.worksheet('twitter_gmsm')
-                        # get twitter_gms db
-                        elif u_id == '34667202':
-                            db = self.db.worksheet('twitter_gms')
-                        # get twitter_gms db
-                        elif u_id == '851835989702000640':
-                            db = self.db.worksheet('twitter_gms2')
+            if status_id in posted_ids:
+                continue
 
-                    except APIError:
-                        print('API ERROR')
-                        break
+            now = datetime.now()
+            vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
+            timestamp_date = vn_tz.strftime('%d/%m/%Y')
+            timestamp_time = vn_tz.strftime('%H:%M:%S')
 
-                    posted_ids = db.col_values(1)
-                    # print('Database read')
+            sheet.insert_row([status_id, timestamp_date, timestamp_time], index=2)
 
-                if status_id in posted_ids:
-                    read_db = False
-                    # print(f'Twitter Fetch: [{u_screen_name}] [Already posted]')
+            # send the message to channel
+            await channel.send(status_url)
 
-                else:
-                    read_db = True
-                    now = datetime.now()
-                    vn_tz = now.replace(tzinfo=timezone('Asia/Ho_Chi_Minh'))
-                    timestamp_date = vn_tz.strftime('%d/%m/%Y')
-                    timestamp_time = vn_tz.strftime('%H:%M:%S')
+            print(f'Twitter Fetch: [{u_screen_name}] [Fetched: {status_url}]')
 
-                    db.insert_row([status_id, timestamp_date, timestamp_time], index=2)
+            # updates the sheet and posted_ids
+            sheet, posted_ids = self.get_posted_ids(user_id)
+            if not sheet or not posted_ids:
+                return
 
-                    # send the message to channel
-                    await channel.send(status_url)
-                    print(f'Twitter Fetch: [{u_screen_name}] [Fetched: {status_url}]')
-            # else:
+    def get_posted_ids(self, user_id):
+        try:
+            # get twitter_gmsm db
+            if user_id == 816396540017152000:
+                sheet = self.db.worksheet('twitter_gmsm')
+            # get twitter_gms db
+            elif user_id == 34667202:
+                sheet = self.db.worksheet('twitter_gms')
+            # get twitter_gms db
+            elif user_id == 851835989702000640:
+                sheet = self.db.worksheet('twitter_gms2')
+            else:
+                return None, None
 
-            #     print(f'Twitter Fetch: [{u_screen_name}] [NOT a tweet or self reply]')
-        # print('Tweets scan finished.')
+            return sheet, sheet.col_values(1)
+
+        except APIError:
+            print('API ERROR')
+            return None, None
 
 
 class Facebook:
