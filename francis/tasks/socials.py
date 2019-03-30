@@ -41,7 +41,7 @@ class Twitter:
 
         while not self.bot.is_closed():
             # fetch MapleM twitter stuff
-            await self.send_latest_status(self.api, 816396540017152000, channel)
+            await self.send_latest_status(816396540017152000, channel)
 
     async def fetch_maple_latest_tweet(self):
 
@@ -56,7 +56,7 @@ class Twitter:
 
         # keep executing the codes until bot is closed
         while not self.bot.is_closed():
-            await self.send_latest_status(self.api, 34667202, channel)
+            await self.send_latest_status(34667202, channel)
 
     async def fetch_maple2_latest_tweet(self):
 
@@ -71,10 +71,10 @@ class Twitter:
 
         # keep executing the codes until bot is closed
         while not self.bot.is_closed():
-            await self.send_latest_status(self.api, 851835989702000640, channel)
+            await self.send_latest_status(851835989702000640, channel)
 
     # send status to given channel
-    async def send_latest_status(self, api, user_id, channel, delay=60):
+    async def send_latest_status(self, user_id, channel, delay=60):
         """
         Send the latest status of given user_id, to the channel
         """
@@ -86,7 +86,7 @@ class Twitter:
 
         # fetch the user_id twitter info
         tweet_count = 5
-        latest_tweets = api.user_timeline(user_id, count=tweet_count)
+        latest_tweets = self.api.user_timeline(user_id, count=tweet_count)
 
         sheet, posted_ids = self.get_posted_ids(user_id)
         if not sheet or not posted_ids:
@@ -109,8 +109,6 @@ class Twitter:
 
             if proceed is False:
                 continue
-            # build the URL and save u_id and status_id for later use
-            status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
 
             if status_id in posted_ids:
                 continue
@@ -121,6 +119,9 @@ class Twitter:
             timestamp_time = vn_tz.strftime('%H:%M:%S')
 
             sheet.insert_row([status_id, timestamp_date, timestamp_time], index=2)
+
+            # build the URL and save u_id and status_id for later use
+            status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
 
             # send the message to channel
             await channel.send(status_url)
@@ -133,6 +134,7 @@ class Twitter:
                 return
 
     def get_posted_ids(self, user_id):
+        print('get posted ids')
         try:
             # get twitter_gmsm db
             if user_id == 816396540017152000:
@@ -149,7 +151,7 @@ class Twitter:
             return sheet, sheet.col_values(1)
 
         except APIError:
-            print('API ERROR')
+            print('[socials] API ERROR')
             return None, None
 
 

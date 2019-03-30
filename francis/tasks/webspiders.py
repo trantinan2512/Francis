@@ -32,7 +32,7 @@ class WebSpider:
             return None
 
     def form_checking_data(self):
-
+        print('form checking data')
         try:
             records = self.sheet.get_all_records()
         except APIError:
