@@ -32,12 +32,15 @@ class WebSpider:
             return None
 
     def form_checking_data(self):
-        print('form checking data')
         try:
             records = self.sheet.get_all_records()
         except APIError:
-            traceback.print_exc()
-            return None
+            try:
+                self.db = googledrive.initialize_db()
+                self.sheet = self.db.worksheet(self.sheet_name)
+                records = self.sheet.get_all_records()
+            except APIError:
+                return None
 
         checking_data = [(str(record['id']), record['title']) for record in records]
 

@@ -134,7 +134,6 @@ class Twitter:
                 return
 
     def get_posted_ids(self, user_id):
-        print('get posted ids')
         try:
             # get twitter_gmsm db
             if user_id == 816396540017152000:
@@ -151,8 +150,10 @@ class Twitter:
             return sheet, sheet.col_values(1)
 
         except APIError:
-            print('[socials] API ERROR')
-            return None, None
+            try:
+                self.db = db.initialize_db()
+            except APIError:
+                return None, None
 
 
 class Facebook:
