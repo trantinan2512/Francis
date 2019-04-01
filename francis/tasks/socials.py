@@ -153,7 +153,8 @@ class Twitter:
             try:
                 self.db = db.initialize_db()
             except APIError:
-                return None, None
+                pass
+            return None, None
 
 
 class Facebook:
