@@ -150,10 +150,10 @@ class GMSSiteSpider(WebSpider):
             checking_data = self.form_checking_data()
             site_datas = self.fetch_data()
 
-            for data in site_datas:
+            if not site_datas and checking_data:
+                continue
 
-                if not checking_data:
-                    break
+            for data in site_datas:
 
                 if (data['id'], data['title']) in checking_data:
                     continue
@@ -417,11 +417,9 @@ class GMSMSiteSpider(WebSpider):
             await asyncio.sleep(self.delay)
             checking_data = self.form_checking_data()
             site_datas = self.fetch_data()
-
+            if not site_datas and checking_data:
+                continue
             for data in site_datas:
-
-                if not checking_data:
-                    break
 
                 if (data['id'], data['title']) in checking_data:
                     continue
@@ -503,10 +501,10 @@ class GMS2SiteSpider(WebSpider):
             checking_data = self.form_checking_data()
             site_datas = self.fetch_data()
 
-            for data in site_datas:
+            if not site_datas and checking_data:
+                continue
 
-                if not checking_data:
-                    break
+            for data in site_datas:
 
                 if (data['id'], data['title']) in checking_data:
                     continue
@@ -594,10 +592,10 @@ class HonkaiImpactSpider(WebSpider):
             checking_data = self.form_checking_data()
             site_datas = self.fetch_data()
 
-            for data in site_datas:
+            if not site_datas and checking_data:
+                continue
 
-                if not checking_data:
-                    break
+            for data in site_datas:
 
                 if (data['id'], data['title']) in checking_data:
                     continue
