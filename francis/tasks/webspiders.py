@@ -24,7 +24,10 @@ class WebSpider:
 
     def get_content_by_url(self, url):
 
-        r = requests.get(url)
+        try:
+            r = requests.get(url)
+        except Exception:
+            return None
 
         if r.status_code == 200:
             return r.content
