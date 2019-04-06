@@ -73,6 +73,21 @@ class Twitter:
         while not self.bot.is_closed():
             await self.send_latest_status(851835989702000640, channel)
 
+    async def fetch_hi3_latest_tweets(self):
+
+        print('[HI3 Tweet Fetcher] Waiting for ready state...')
+
+        await self.bot.wait_until_ready()
+
+        print('[HI3 Tweet Fetcher] Ready and running!')
+
+        # use this for development and production
+        channel = ch.get_channel(bot=self.bot, id=563996767302057984)
+
+        # keep executing the codes until bot is closed
+        while not self.bot.is_closed():
+            await self.send_latest_status(940045596575989765, channel)
+
     # send status to given channel
     async def send_latest_status(self, user_id, channel, delay=60):
         """
@@ -141,9 +156,12 @@ class Twitter:
             # get twitter_gms db
             elif user_id == 34667202:
                 sheet = self.db.worksheet('twitter_gms')
-            # get twitter_gms db
+                # get twitter_gms db
             elif user_id == 851835989702000640:
                 sheet = self.db.worksheet('twitter_gms2')
+            # get twitter_gms db
+            elif user_id == 940045596575989765:
+                sheet = self.db.worksheet('twitter_hi3')
             else:
                 return None, None
 
