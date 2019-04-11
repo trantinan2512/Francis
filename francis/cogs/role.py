@@ -354,7 +354,7 @@ class Role(commands.Cog):
 
         dawn_rfr = {}
         for emoji_id, role_id in zip(config.DAWN_REACT_FOR_ROLE_EMOJI_IDS, config.DAWN_REACT_FOR_ROLE_ROLE_IDS):
-            dawn_rfr.update({emoji_id: dawn.get_role(role_id)})
+            dawn_rfr.update({int(emoji_id): dawn.get_role(int(role_id))})
 
         member = dawn.get_member(payload.user_id)
         if not member:
@@ -411,7 +411,7 @@ class Role(commands.Cog):
 
         dawn_rfr = {}
         for emoji_id, role_id in zip(config.DAWN_REACT_FOR_ROLE_EMOJI_IDS, config.DAWN_REACT_FOR_ROLE_ROLE_IDS):
-            dawn_rfr.update({emoji_id: dawn.get_role(role_id)})
+            dawn_rfr.update({int(emoji_id): dawn.get_role(int(role_id))})
 
         member = dawn.get_member(payload.user_id)
         if not member:

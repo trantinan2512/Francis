@@ -215,7 +215,10 @@ class GMSSiteSpider(WebSpider):
             if tz_re.search(strong.get_text()) is not None and all(c not in strong.get_text() for c in ['/', '[']):
 
                 # re split between date and time (duration)
-                date, duration = dt_split.split(strong.get_text())
+                try:
+                    date, duration = dt_split.split(strong.get_text())
+                except ValueError:
+                    break
 
                 # re remove UTC -7 stuff if exists
                 date = utc_re.sub('', date)
