@@ -7,7 +7,7 @@ certifi==2018.11.29
 cffi==1.12.2
 chardet==3.0.4
 dateparser==0.7.1
-git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
+discord.py==1.0.1
 dj-database-url==0.5.0
 Django==2.1.7
 facebook-sdk==3.1.0
