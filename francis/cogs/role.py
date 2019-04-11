@@ -349,14 +349,18 @@ class Role(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
-        dawn_rfr = {
-            # emoji ID : role ID
-            557785973598060545: dawn.get_role(557783193470631981),
-            557785972956200960: dawn.get_role(557783112843657264),
-            557785972939685888: dawn.get_role(557783125137031168)
-        }
-        member = dawn.get_member(payload.user_id)
+        if not dawn:
+            return
 
+        dawn_rfr = {}
+        for emoji_id, role_id in zip(config.DAWN_REACT_FOR_ROLE_EMOJI_IDS, config.DAWN_REACT_FOR_ROLE_ROLE_IDS):
+            dawn_rfr.update({emoji_id: dawn.get_role(role_id)})
+
+        member = dawn.get_member(payload.user_id)
+        if not member:
+            return
+
+        # SAO DED role
         if payload.emoji.name == '\N{REGIONAL INDICATOR SYMBOL LETTER F}':
             if payload.message_id != 553086377562996767:
                 return
@@ -383,7 +387,7 @@ class Role(commands.Cog):
 
         if payload.emoji.id in dawn_rfr:
 
-            if payload.message_id != 557788422379667457:
+            if payload.message_id != config.DAWN_REACT_FOR_ROLE_MESSAGE_ID:
                 return
 
             await member.add_roles(dawn_rfr[payload.emoji.id])
@@ -402,14 +406,18 @@ class Role(commands.Cog):
     async def on_raw_reaction_remove(self, payload):
 
         dawn = self.bot.get_guild(config.DAWN_SERVER_ID)
-        member = dawn.get_member(payload.user_id)
-        dawn_rfr = {
-            # emoji ID : role ID
-            557785973598060545: dawn.get_role(557783193470631981),
-            557785972956200960: dawn.get_role(557783112843657264),
-            557785972939685888: dawn.get_role(557783125137031168)
-        }
+        if not dawn:
+            return
 
+        dawn_rfr = {}
+        for emoji_id, role_id in zip(config.DAWN_REACT_FOR_ROLE_EMOJI_IDS, config.DAWN_REACT_FOR_ROLE_ROLE_IDS):
+            dawn_rfr.update({emoji_id: dawn.get_role(role_id)})
+
+        member = dawn.get_member(payload.user_id)
+        if not member:
+            return
+
+        # SAO DED role
         if payload.emoji.name == '\N{REGIONAL INDICATOR SYMBOL LETTER F}':
             if payload.message_id != 553086377562996767:
                 return
@@ -428,7 +436,7 @@ class Role(commands.Cog):
             user_obj.save()
 
         if payload.emoji.id in dawn_rfr:
-            if payload.message_id != 557788422379667457:
+            if payload.message_id != config.DAWN_REACT_FOR_ROLE_MESSAGE_ID:
                 return
 
             member = dawn.get_member(payload.user_id)
