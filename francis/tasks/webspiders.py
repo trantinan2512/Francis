@@ -151,6 +151,7 @@ class GMSSiteSpider(WebSpider):
             site_datas = self.fetch_data()
 
             if not site_datas or not checking_data:
+                await asyncio.sleep(self.delay)
                 continue
 
             for data in site_datas:
@@ -424,6 +425,7 @@ class GMSMSiteSpider(WebSpider):
             site_datas = self.fetch_data()
 
             if not site_datas or not checking_data:
+                await asyncio.sleep(self.delay)
                 continue
 
             for data in site_datas:
@@ -512,6 +514,7 @@ class GMS2SiteSpider(WebSpider):
             site_datas = self.fetch_data()
 
             if not site_datas or not checking_data:
+                await asyncio.sleep(self.delay)
                 continue
 
             for data in site_datas:
@@ -605,6 +608,7 @@ class HonkaiImpactSpider(WebSpider):
             site_datas = self.fetch_data()
 
             if not site_datas or not checking_data:
+                await asyncio.sleep(self.delay)
                 continue
 
             for data in site_datas:
