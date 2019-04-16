@@ -572,7 +572,8 @@ class HonkaiImpactSpider(WebSpider):
                 short_post_text = news.select_one('.summary').get_text()
             else:
                 html = BeautifulSoup(post_html_content, 'html.parser')
-                image = html.select_one('#title_img_big')['src']
+                image = html.select_one('#title_img_big')
+                image = f"http:{image['src']}" if image is not None else None
 
                 content = html.select_one('.content')
                 short_post_text = '\n'.join([p.get_text() for p in content.find_all('p')])
@@ -586,7 +587,7 @@ class HonkaiImpactSpider(WebSpider):
                 'title': title,
                 'link': f'{self.url}{post_id}',
                 'description': short_post_text,
-                'image': f'http:{image}'
+                'image': image
             }
             datas.append(data)
         return datas
