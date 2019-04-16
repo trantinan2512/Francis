@@ -17,9 +17,6 @@ class LoggerCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
 
-        if not before.content or not after.content:
-            return
-
         if before.content == after.content:
             return
 
@@ -34,13 +31,13 @@ class LoggerCog(commands.Cog):
 
         embed.add_field(
             name='Before',
-            value=str(before.content),
+            value=str(before.content) or 'N/A',
             inline=False
         )
 
         embed.add_field(
             name='After',
-            value=str(after.content),
+            value=str(after.content) or 'N/A',
             inline=False
         )
 
@@ -76,13 +73,16 @@ class LoggerCog(commands.Cog):
                     file = discord.File(fp=f'{settings.BASE_DIR}\\attachments\\{att.filename}')
                     files.append(file)
 
-                msg = await channel.send(files=files)
+                if files:
+                    msg = await channel.send(files=files)
 
-                attachment_txt = ' | '.join([f'[Attachment_{i}]({a.url})' for i, a in enumerate(msg.attachments, start=1)])
-                embed.add_field(
-                    name='Attachments',
-                    value=attachment_txt or 'N/A'
-                )
+                    attachment_txt = f'• Jump URL: [Click here]({msg.jump_url})\n'
+                    attachment_txt += '• URLs: '
+                    attachment_txt += ' | '.join([f'[Attachment_{i}]({a.url})' for i, a in enumerate(msg.attachments, start=1)])
+                    embed.add_field(
+                        name='Attachments',
+                        value=attachment_txt or 'N/A'
+                    )
         else:
             embed.description += f'• Status: *Not a cached message*'
 
