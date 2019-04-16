@@ -173,3 +173,6 @@ fabric.properties
 
 # pm2 process file
 pm2.json
+
+# attachments
+attachments/

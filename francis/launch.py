@@ -10,7 +10,11 @@ else:
     prefix = '!'
 
 
-francis = bot.CustomBot(command_prefix=prefix, description='Francis - Orchid\'s slave')
+francis = bot.CustomBot(
+    command_prefix=prefix,
+    description='Francis - Orchid\'s slave',
+    max_messages=10000,
+)
 # remove the 'help' command
 francis.remove_command('help')
 
@@ -23,6 +27,8 @@ initial_extensions = (
     'francis.cogs.help',
     'francis.cogs.investigate',
     'francis.cogs.link',
+    'francis.cogs.logger',
+    'francis.cogs.owner',
     'francis.cogs.profile',
     'francis.cogs.requirement',
     'francis.cogs.role',
@@ -64,7 +70,7 @@ if not config.DEBUG:
     # francis.loop.create_task(schedules.Scheduler(francis).check_dawn_schedule())
 else:
     # francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
-    francis.loop.create_task(webspiders.GMSSiteSpider(francis, 'site_gms').parse())
+    # francis.loop.create_task(webspiders.GMSSiteSpider(francis, 'site_gms').parse())
     # francis.loop.create_task(webspiders.GMS2SiteSpider(francis, 'site_gms2').parse())
     # francis.loop.create_task(webspiders.GMSMSiteSpider(francis, 'site_gmsm').parse())
     # francis.loop.create_task(socials.Twitter(francis).fetch_maple_latest_tweet())
