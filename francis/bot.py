@@ -5,7 +5,7 @@ import asyncio
 
 
 class CustomContext(commands.Context):
-    async def say_as_embed(self, message=None, title=None, embed=None, color='info'):
+    async def say_as_embed(self, description=None, title=None, embed=None, color='info'):
         """Make the bot say as an Embed.
         Passing an 'embed' will send it instead.
         Shortcut for color kwarg: 'info' (default), 'warning', 'error', 'success'
@@ -23,7 +23,7 @@ class CustomContext(commands.Context):
         if embed is None:
             embed = discord.Embed(
                 title=title,
-                description=message,
+                description=description,
                 colour=color)
             message = await self.send(embed=embed)
         else:

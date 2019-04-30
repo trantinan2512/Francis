@@ -17,6 +17,9 @@ class LoggerCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
 
+        if before.author.bot:
+            return
+
         if before.content == after.content:
             return
 
@@ -46,6 +49,7 @@ class LoggerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
+
         embed = discord.Embed(
             title='Message deleted',
             description=
@@ -58,6 +62,10 @@ class LoggerCog(commands.Cog):
 
         if payload.cached_message:
             message = payload.cached_message
+
+            if message.author.bot:
+                return
+
             embed.description += f'• Author: {message.author.mention}\n'
             embed.add_field(
                 name='Content',

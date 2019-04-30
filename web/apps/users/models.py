@@ -25,7 +25,7 @@ class DiscordUser(models.Model):
         if not hasattr(self, 'gacha_info'):
             GachaInfo.objects.create(discord_user=self)
 
-    async def get_message(self, guild):
+    async def fetch_message(self, guild):
         if self.monument_channel_id and self.monument_message_id:
 
             channel = guild.get_channel(self.monument_channel_id)
@@ -33,7 +33,7 @@ class DiscordUser(models.Model):
                 return None
 
             try:
-                message = await channel.get_message(self.monument_message_id)
+                message = await channel.fetch_message(self.monument_message_id)
                 return message
             except Exception:
                 return None

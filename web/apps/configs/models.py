@@ -23,7 +23,7 @@ class TrophyRoomConfig(models.Model):
         channel = self.get_trophy_room(context)
         if channel and self.trophy_list_message_id:
             try:
-                message = await channel.get_message(self.trophy_list_message_id)
+                message = await channel.fetch_message(self.trophy_list_message_id)
             except Exception:
                 return None
             return message

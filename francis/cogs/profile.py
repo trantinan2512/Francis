@@ -20,7 +20,7 @@ class ProfileCommands(commands.Cog):
         hint_count = len(user.investigation_info.discovered_hints)
         await context.say_as_embed(
             title=f'[{user.discord_name}] Event Profile',
-            message=''
+            description=''
             f'**2018 Year-End Event**\n'
             f'• Discovered Hints Counter: **{hint_count}**'
         )

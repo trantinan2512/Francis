@@ -25,11 +25,11 @@ initial_extensions = (
 
     'francis.cogs.admin',
     'francis.cogs.help',
-    'francis.cogs.investigate',
+    # 'francis.cogs.investigate',
     'francis.cogs.link',
     'francis.cogs.logger',
     'francis.cogs.owner',
-    'francis.cogs.profile',
+    # 'francis.cogs.profile',
     'francis.cogs.requirement',
     'francis.cogs.role',
     'francis.cogs.old.gacha',
