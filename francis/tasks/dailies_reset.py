@@ -127,7 +127,8 @@ class Dailies:
             await msg.edit(embed=embed)
 
             for e in self.emojis:
-                await msg.add_reaction(e)
+                if e not in [reaction.emoji for reaction in msg.reactions]:
+                    await msg.add_reaction(e)
 
         except discord.HTTPException:
             pass
