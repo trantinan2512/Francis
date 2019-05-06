@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'web.apps.chapters',
     'web.apps.configs',
+    'web.apps.dailies',
     'web.apps.gachas',
     'web.apps.jobs',
     'web.apps.users',

@@ -1,7 +1,7 @@
 import discord
 import traceback
 from francis import bot
-from francis.tasks import socials, webspiders, schedules
+from francis.tasks import socials, webspiders, schedules, dailies_reset
 import config
 
 if config.DEBUG is True:
@@ -65,6 +65,7 @@ if not config.DEBUG:
     francis.loop.create_task(socials.Twitter(francis).fetch_maple2_latest_tweet())
     francis.loop.create_task(socials.Twitter(francis).fetch_maplem_latest_tweet())
     francis.loop.create_task(socials.Twitter(francis).fetch_hi3_latest_tweets())
+    francis.loop.create_task(dailies_reset.Dailies(francis).honkai_impact())
     # francis.loop.create_task(schedules.Scheduler(francis).check_gms_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_gmsm_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_dawn_schedule())
@@ -80,6 +81,7 @@ else:
     # francis.loop.create_task(schedules.Scheduler(francis).check_gms_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_gmsm_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_dawn_schedule())
+    francis.loop.create_task(dailies_reset.Dailies(francis).honkai_impact())
     pass
 
 francis.run(config.FRANCIS_TOKEN)
