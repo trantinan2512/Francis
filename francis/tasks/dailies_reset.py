@@ -119,6 +119,11 @@ class Dailies:
             msg = await self.hi_dailies_channel.fetch_message(self.hi_dailies.first().message_id)
             embed = msg.embeds[0]
             embed.description = self.til_next_reset
+            embed.clear_fields()
+            embed.add_field(
+                name='React to mark it as Done',
+                value=self.dailies_txt
+            )
             await msg.edit(embed=embed)
         except discord.HTTPException:
             pass

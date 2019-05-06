@@ -15,5 +15,14 @@ class HonkaiImpactDailyAdmin(admin.ModelAdmin):
         'active',
     )
 
+    actions = (
+        'reset_sent_at',
+    )
+
+    def reset_sent_at(self, request, queryset):
+        queryset.update(sent_at=None)
+
+    reset_sent_at.short_description = 'Reset Sent At'
+
 
 admin.site.register(HonkaiImpactDaily, HonkaiImpactDailyAdmin)
