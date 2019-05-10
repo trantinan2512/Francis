@@ -62,6 +62,7 @@ class DailyManagementCommand(commands.Cog):
             await context.say_as_embed(
                 f'You are about to remove the daily task with the below info:\n'
                 f'• Emoji: {to_remove_emoji}\n'
+                f'• Description: {hi3_daily.description}\n'
                 f'• Message: {f"[Jump]({message.jump_url})" if message else "N/A"}',
                 footer_text='Proceed to deletion? (y/n)'
             )
