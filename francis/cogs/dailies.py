@@ -10,7 +10,11 @@ class DailyManagementCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def is_owner(ctx):
+        return ctx.author.id == 209551520008503297
+
     @commands.command(name='daily')
+    @commands.is_owner()
     async def _update_or_create_dailies(
             self, context,
             game: GameCodeConverter,
@@ -35,6 +39,7 @@ class DailyManagementCommand(commands.Cog):
             await context.say_as_embed(embed=embed)
 
     @commands.command(name='rdaily')
+    @commands.is_owner()
     async def _remove_dailies(
             self, context,
             game: GameCodeConverter,
