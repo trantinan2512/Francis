@@ -116,24 +116,19 @@ class Admin(commands.Cog):
             async for message in channel.history(limit=limit):
                 messages.append(message)
 
-            note = await context.send(f'Tiến hành xóa {len(messages)} tin nhắn :hourglass_flowing_sand:')
+            note = await context.send(f'Deleting {len(messages)} messages... :hourglass_flowing_sand:')
             chunks = [messages[x:x + 100] for x in range(0, len(messages), 100)]
             counter = 0
             for chunk in chunks:
                 await channel.delete_messages(chunk)
                 counter += len(chunk)
-                if chunk != chunks[-1]:
-                    await note.edit(
-                        content=f'Xóa thành công {counter}/{len(messages)} tin nhắn :hourglass_flowing_sand:')
-                else:
-                    await note.edit(
-                        content=''
-                        f'Xóa thành công {counter}/{len(messages)} tin nhắn :white_check_mark:\n'
-                        '*Tự động xóa tin nhắn này sau 10 giây*')
-                    print(f'Deleted {counter}/{len(messages)} messages.')
 
-            await asyncio.sleep(10)
-            await note.delete()
+                await note.edit(
+                    content=f'Deleted {counter}/{len(messages)} messages :hourglass_flowing_sand:',
+                    delete_after=10
+                )
+
+            print(f'Deleted {counter}/{len(messages)} messages.')
 
         else:
 

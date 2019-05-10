@@ -12,8 +12,7 @@ class Dailies:
     def __init__(self, bot):
         self.bot = bot
         self.hi_dailies = HonkaiImpactDaily.objects.filter(active=True)
-
-        self.hi_dailies_channel_id = 574908075933433866
+        self.hi_dailies_channel_id = HonkaiImpactDaily.hi_dailies_channel_id
 
     async def honkai_impact(self):
         print('[HI3rd Dailies Reset] Waiting for ready state...')

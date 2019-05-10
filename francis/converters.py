@@ -21,3 +21,21 @@ class CustomRoleConverter(commands.Converter):
             return role
         except commands.BadArgument:
             raise commands.BadArgument(f'`{parsed_role_name}` role not found.')
+
+
+class GameCodeConverter(commands.Converter):
+    code_to_game = {
+        'hi3': 'Honkai Impact 3rd'
+    }
+
+    async def convert(self, context, argument):
+        _argument = argument.lower()
+        if _argument in self.code_to_game:
+            return self.code_to_game[_argument]
+        else:
+            iter_ = [f"{key:<5} : {value}\n" for key, value in self.code_to_game.items()]
+            raise commands.BadArgument(
+                f'`{argument}` is not a valid game code. Allowed game codes:'
+                f'```\n'
+                f'{"".join(iter_)}'
+                f'```')
