@@ -1,7 +1,7 @@
 import asyncio
 import discord
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.time import process_elapsed_time_text
 
 from web.apps.dailies.models import HonkaiImpactDaily
@@ -109,7 +109,7 @@ class Dailies:
     @property
     def next_reset(self):
         if self.sent_at:
-            return datetime(self.sent_at.year, self.sent_at.month, self.sent_at.day + 1, 9, tzinfo=self.sent_at.tzinfo)
+            return datetime(self.sent_at.year, self.sent_at.month, self.sent_at.day, 9, tzinfo=self.sent_at.tzinfo) + timedelta(days=1)
         else:
             return None
 
