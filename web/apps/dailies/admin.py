@@ -6,11 +6,13 @@ class HonkaiImpactDailyAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'emoji',
+        'ordering',
         'description',
         'active',
     )
     list_editable = (
         'emoji',
+        'ordering',
         'description',
         'active',
     )
