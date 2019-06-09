@@ -18,11 +18,12 @@ class DailyManagementCommand(commands.Cog):
     async def _update_or_create_dailies(
             self, context,
             game: GameCodeConverter,
-            emoji: str, *, description: str):
+            emoji: str, ordering: int, *, description: str):
         if game == 'Honkai Impact 3rd':
             hi3_daily, created = HonkaiImpactDaily.objects.update_or_create(
                 emoji=emoji,
                 defaults={
+                    'ordering': ordering,
                     'description': description
                 }
             )
@@ -31,6 +32,7 @@ class DailyManagementCommand(commands.Cog):
                 title='',
                 description=
                 f'• Emoji: {hi3_daily.parse_emoji(context.bot)}\n'
+                f'• Ordering: {ordering}\n'
                 f'• Description: {description}',
                 color=discord.Color.dark_magenta()
             )
@@ -111,6 +113,7 @@ class DailyManagementCommand(commands.Cog):
                     f'Creates a new or Updates an existing Daily task.\n'
                     '• `game` is one of the following: `hi3`\n'
                     '• `emoji` should be text, and I can see it, no colons please.\n'
+                    '• `ordering` must be a number, the smaller the higher position in the list.\n'
                     '• `description` - the description of the daily task.'
                 )
             elif context.invoked_with == 'rdaily':

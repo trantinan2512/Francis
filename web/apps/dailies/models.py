@@ -1,6 +1,7 @@
 from django.db import models
 import discord
 
+
 class HonkaiImpactDaily(models.Model):
     hi_dailies_channel_id = 574908075933433866
 
@@ -13,6 +14,8 @@ class HonkaiImpactDaily(models.Model):
     active = models.BooleanField(default=True)
     sent_at = models.DateTimeField(null=True, blank=True)
     message_id = models.BigIntegerField(null=True, blank=True)
+
+    ordering = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f'{self.description[:30]}...'

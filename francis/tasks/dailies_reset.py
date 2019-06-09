@@ -30,7 +30,7 @@ class Dailies:
                 print(f'Channel with ID [ {self.hi_dailies_channel_id} ] does not exist.')
                 return
 
-            self.hi_dailies = HonkaiImpactDaily.objects.filter(active=True).order_by('emoji')
+            self.hi_dailies = HonkaiImpactDaily.objects.filter(active=True).order_by('ordering')
 
             if not self.hi_dailies.exists():
                 continue
