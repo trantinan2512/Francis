@@ -35,8 +35,8 @@ class Role(commands.Cog):
             role_exists_msg = f'{context.author.mention} có role này rồi nhé.'
         elif context.guild.id == config.DAWN_SERVER_ID:
             add_role_done_msg = (
-                f'{context.author.mention}, your '
-                '{added_role_mention} role has been removed.'
+                f'{context.author.mention}, '
+                '{added_role_mention} role has been added.'
             )
             role_exists_msg = f'{context.author.mention}, you already have this role.'
 

@@ -8,6 +8,7 @@ class OwnerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.path = 'francis.cogs.'
+        self.path2 = 'francis.tasks.'
 
     async def is_owner(ctx):
         return ctx.author.id == 209551520008503297
@@ -62,9 +63,12 @@ class OwnerCommands(commands.Cog):
     @commands.check(is_owner)
     async def _reload(self, ctx, *, module):
         """Reloads a module."""
-
-        self.bot.unload_extension(f'{self.path}{module}')
-        self.bot.load_extension(f'{self.path}{module}')
+        try:
+            self.bot.unload_extension(f'{self.path}{module}')
+            self.bot.load_extension(f'{self.path}{module}')
+        except Exception:
+            self.bot.unload_extension(f'{self.path2}{module}')
+            self.bot.load_extension(f'{self.path2}{module}')
         await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(name='test', hidden=True)

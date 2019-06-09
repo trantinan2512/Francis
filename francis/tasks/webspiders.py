@@ -52,6 +52,12 @@ class WebSpider:
     def fetch_data(self):
         pass
 
+    @property
+    def fetch_dt(self):
+        now = datetime.now()
+        vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+        return vn_tz
+
 
 class GMSSiteSpider(WebSpider):
     def __init__(self, bot, drive_sheet_name):

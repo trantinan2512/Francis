@@ -35,6 +35,8 @@ initial_extensions = (
     'francis.cogs.role',
     'francis.cogs.old.gacha',
     'francis.cogs.old.stat_check',
+
+    'francis.tasks.honkai',
 )
 for extension in initial_extensions:
     try:
@@ -82,7 +84,7 @@ else:
     # francis.loop.create_task(schedules.Scheduler(francis).check_gms_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_gmsm_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_dawn_schedule())
-    francis.loop.create_task(dailies_reset.Dailies(francis).honkai_impact())
+    # francis.loop.create_task(dailies_reset.Dailies(francis).honkai_impact())
     pass
 
 francis.run(config.FRANCIS_TOKEN)
