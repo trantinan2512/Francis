@@ -47,6 +47,7 @@ AUTOASIGN_COLOR_ROLES = [
     'Fire',
     'Forest',
     'Green',
+    'Neon Green',
     'Lilac',
     'Maroon',
     'Mint',
