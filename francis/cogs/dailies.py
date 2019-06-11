@@ -27,11 +27,18 @@ class DailyManagementCommand(commands.Cog):
                     'description': description
                 }
             )
+            emoji_ = hi3_daily.parse_emoji(context.bot)
+            if not emoji_:
+                hi3_daily.delete()
+                await context.say_as_embed(
+                    f'`{emoji}` not found. Instance deleted.', color='error'
+                )
+                return
 
             embed = discord.Embed(
                 title='',
                 description=
-                f'• Emoji: {hi3_daily.parse_emoji(context.bot)}\n'
+                f'• Emoji: {emoji_}\n'
                 f'• Ordering: {ordering}\n'
                 f'• Description: {description}',
                 color=discord.Color.dark_magenta()
