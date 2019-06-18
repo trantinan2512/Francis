@@ -321,7 +321,7 @@ class Role(commands.Cog):
             )
 
             wrong_role_name_provided_msg = (
-                f'{author.mention}, this role does not exist, or not removeable. '
+                f'{author.mention}, this role does not exist, or is a special role. '
                 f'Type `{prefix}list` to see a full list of available roles.'
             )
 
