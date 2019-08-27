@@ -196,16 +196,17 @@ class GMSSiteSpider(WebSpider):
         html = BeautifulSoup(sc_post_content, 'html.parser')
 
         # all these below is to get the server check duration
-        spans = html.select('.article-content p span')
+        ps = html.select('.article-content p')
 
         duration_re = re.compile('approx\w*\s*(\d+\.?\d*).*hour', re.IGNORECASE)
+
+        # serving the sc_duration
         sc_duration = None
-        for span in spans:
-            duration_search = duration_re.search(span.get_text())
+        for p in ps:
+            duration_search = duration_re.search(p.get_text())
             if duration_search is not None:
                 sc_duration = float(duration_search.group(1))
 
-        strongs = html.select('.article-content p span strong')
         # regex to get the string that contains UTC -7 related stuff
         utc_re = re.compile('\s*\(UTC\s*-*–*\s*(7|8)\)\s*', re.IGNORECASE)
         # regex to get the string that contains either pst or pdt
@@ -213,137 +214,76 @@ class GMSSiteSpider(WebSpider):
         # regex to get the TBD string in 'finish' duration
         tbd_re = re.compile('tbd', re.IGNORECASE)
         # regex to get the string that contains ':' with space(s)
-        dt_split = re.compile('\:\s+')
+        dt_split = re.compile(':\s+')
         # regex to get the server name in maintenance post title
-        server_re = re.compile('(luna|grazed|mybckn|khroa|windia|scania|bera|reboot)', re.IGNORECASE)
+        server_re = re.compile('(luna|elysium|aurora|scania|bera|reboot)', re.IGNORECASE)
         # regex to get the words inside brackets "()"
         bracket_re = re.compile('\s*\(.+\)\s*', re.IGNORECASE)
 
-        for strong in strongs:
+        for p in ps:
+            p_text = p.get_text('\n')
             # ignore in case the time display splitted by '/'
-            if tz_re.search(strong.get_text()) is not None and all(c not in strong.get_text() for c in ['/', '[']):
+            if tz_re.search(p_text) is None or any(c in p_text for c in ['/', '[']):
+                continue
 
-                # re split between date and time (duration)
-                try:
-                    date, duration = dt_split.split(strong.get_text())
-                except ValueError:
-                    break
+            # new way to split date and duration
+            try:
+                # get the first 2 lines of the p text
+                date, duration = p_text.split('\n')[:2]
+                # split between the first colon to get the timezone and duration
+                _timezone, duration = duration.split(':', 1)
+                # clean duration to just get the finish_time
+                duration = duration.split('(')[0]
+                # clean the timezone to get the correct timezone name
+                _timezone = _timezone.split(' ', 1)[0]
+            except (ValueError, IndexError):
+                break
 
-                # re remove UTC -7 stuff if exists
-                date = utc_re.sub('', date)
+            # split duration to get start and finish
+            start, finish = re.split('\s*-|–\s*', duration)
+            start = bracket_re.sub('', start)
+            finish = bracket_re.sub('', finish)
 
-                if len(date) <= 5:
-                    for strong in strongs:
-                        if all(c not in strong.get_text() for c in ['/', '[']) and parse(strong.get_text()) is not None:
-                            date = f'{strong.get_text()} {date}'
-                            break
+            # just parse the datetime_from as it present no matter what
+            datetime_from = parse(
+                f'{date} {_timezone} {start}',
+                settings={
+                    'TIMEZONE': 'America/Los_Angeles',
+                    'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
+                })
 
-                # split duration to get start and finish
-                start, finish = re.split('\s*-|–\s*', duration)
-                start = bracket_re.sub('', start)
-                finish = bracket_re.sub('', finish)
+            # is TBD
+            if tbd_re.search(finish):
+                datetime_to = None
+            # datetime_to can only be found when sc_duration is found AKA not TBD
+            else:
+                datetime_to = (datetime_from + timedelta(hours=sc_duration)) if sc_duration else None
 
-                # search the server name
-                server_search = server_re.search(args[0])
+            # search the server name
+            server_search = server_re.search(args[0])
+            # server name present
+            server_name = server_search.group(1) if server_search else None
 
-                # just parse the datetime_from as it present no matter what
-                datetime_from = parse(
-                    f'{date} {start}',
-                    settings={
-                        'TIMEZONE': 'America/Los_Angeles',
-                        'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
-                    })
+            # return if datetime_from not found
+            if not datetime_from:
+                return None
 
-                # if finish NOT present:
-                if tbd_re.search(finish):
-                    datetime_to = None
+            # string serving
+            day = f'{datetime_from:%d/%m/%Y}'
+            frm = f'{datetime_from:%I:%M %p %d/%m/%Y}'
+            to = f'{datetime_to:%I:%M %p %d/%m/%Y}' if datetime_to else '-Chưa xác định-'
 
-                # finish time NOT present
-                else:
-                    datetime_to = parse(
-                        f'{date} {finish}',
-                        settings={
-                            'TIMEZONE': 'America/Los_Angeles',
-                            'TO_TIMEZONE': 'Asia/Ho_Chi_Minh'
-                        })
+            if server_name:
+                title = f'Bảo trì World {server_name} ngày {day}'
+            else:
+                title = f'Bảo trì ngày {day}'
 
-                # server name present
-                if server_search:
-                    server_name = server_search.group(1)
+            if sc_duration:
+                description = f'```Thời gian: {sc_duration} tiếng.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
+            else:
+                description = f'```Thời gian hoàn tất: không xác định.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
 
-                # server name NOT present
-                else:
-                    server_name = None
-
-                # get the string readable of datetime_to as it's present
-                if datetime_to is not None:
-                    # manage duration as NX staff fucks it up
-                    # returns None if no duration specified
-                    if sc_duration is not None:
-                        sc_duration_s = sc_duration * 60 * 60  # in seconds
-                        duration = (datetime_to - datetime_from).total_seconds()
-                        if sc_duration_s == duration:
-                            # just pass, nothing to do here
-                            print('SAME DURATION')
-                        else:
-                            # trust datetime_from, and go with sc_duration_s
-                            datetime_to = datetime_from + timedelta(seconds=sc_duration_s)
-                            print('DURATION NOT THE SAME. NX STAFF FUCKED UP.')
-
-                        # eliminate the remainder of the duration if it's equal to 0
-                        sc_duration_int = int(sc_duration)
-                        if (sc_duration - sc_duration_int) != 0:
-                            sc_duration_str = str(sc_duration)
-                        else:
-                            sc_duration_str = str(sc_duration_int)
-                    else:
-                        sc_duration_str = None
-
-                    to = datetime_to.strftime('%I:%M %p %d/%m/%Y')
-
-                # oh of course these things exist all the time
-                if datetime_from:
-                    frm = datetime_from.strftime('%I:%M %p %d/%m/%Y')
-                    day = datetime_from.strftime('%d/%m/%Y')
-                else:
-                    return None
-
-                # gather things up and return title and message to the main function
-                if datetime_to:
-                    if sc_duration_str:
-                        if server_name:
-                            return (
-                                f'Bảo trì World {server_name} ngày {day}',
-                                f'```Thời gian: {sc_duration_str} tiếng.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
-                            )
-                        else:
-                            return (
-                                f'Bảo trì ngày {day}',
-                                f'```Thời gian: {sc_duration_str} tiếng.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
-                            )
-                    else:
-                        if server_name:
-                            return (
-                                f'Bảo trì World {server_name} ngày {day}',
-                                f'```Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
-                            )
-                        else:
-                            return (
-                                f'Bảo trì ngày {day}',
-                                f'```Giờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
-                            )
-
-                else:
-                    if server_name:
-                        return (
-                            f'Bảo trì World {server_name} ngày {day}',
-                            f'```Thời gian hoàn tất: không xác định.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: không xác định```'
-                        )
-                    else:
-                        return (
-                            f'Bảo trì ngày {day}',
-                            f'```Thời gian hoàn tất: không xác định.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: không xác định```'
-                        )
+            return title, description
 
 
 class GMSMSiteSpider(WebSpider):
