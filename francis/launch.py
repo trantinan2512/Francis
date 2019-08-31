@@ -29,6 +29,7 @@ initial_extensions = (
     # 'francis.cogs.investigate',
     'francis.cogs.link',
     'francis.cogs.logger',
+    'francis.cogs.mudae',
     'francis.cogs.owner',
     # 'francis.cogs.profile',
     'francis.cogs.requirement',
