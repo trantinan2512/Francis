@@ -18,15 +18,17 @@ class Mudae(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-
         if payload.guild_id != config.DAWN_SERVER_ID:
             return
 
         if payload.channel_id != self.mudae_channel_id:
             return
 
-        # if payload.user_id == self.mudae_user_id:
-        #     return
+        if payload.emoji.is_custom_emoji():
+            return
+
+        if str(payload.emoji) == '✅':
+            return
 
         channel = self.bot.get_channel(self.mudae_channel_id)
         if not channel:
@@ -49,9 +51,10 @@ class Mudae(commands.Cog):
 
         msg = await check_channel.send(embed=embed)
         embed.description = (
-            f'[The message](https://discordapp.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id}) '
-            f'has been reacted by <@{payload.user_id}> likely to claim a waifu in **{msg.created_at - message.created_at}** secs.\n'
-            f'Emoji reacted: {payload.emoji}'
+            f'• Message URL: [click here](https://discordapp.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id})\n'
+            f'• Reacted by: <@{payload.user_id}>\n'
+            f'• Time delta: **{msg.created_at - message.created_at} secs**.\n'
+            f'• Emoji reacted: {payload.emoji}'
         )
         await msg.edit(embed=embed)
 
