@@ -511,8 +511,9 @@ class HonkaiImpactSpider(WebSpider):
 
         datas = []
         for news in news_items.find_all('a'):
-            post_url = f'{self.base_url}{news["href"]}'
+            post_url = news["href"]
             post_id = self.post_id_regex.search(post_url).group(1)
+            post_url = f'{self.url}/{post_id}'
             # getting the image inside the post for better quality
             post_html_content = self.get_content_by_url(f'{post_url}')
             if not post_html_content:
