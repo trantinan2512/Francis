@@ -493,7 +493,9 @@ class HonkaiImpactSpider(WebSpider):
     def __init__(self, bot, drive_sheet_name):
         super().__init__(bot, drive_sheet_name)
         self.channel = None
-        self.url = 'http://www.global.honkaiimpact3.com/index.php/news/'
+        self.post_id_regex = re.compile('news/(\d+)\?')
+        self.base_url = 'https://honkaiimpact3.mihoyo.com'
+        self.url = f'{self.base_url}/global/en-us/news'
 
     def fetch_data(self):
         content = self.get_content_by_url(self.url)
@@ -505,34 +507,32 @@ class HonkaiImpactSpider(WebSpider):
         vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
 
         html = BeautifulSoup(content, 'html.parser')
-        news_items = html.select_one('#news_list')
+        news_items = html.select_one('.news-wrap')
 
         datas = []
-        for news in news_items.find_all('li'):
-            post_id = news.select_one('a')['href']
-
+        for news in news_items.find_all('a'):
+            post_url = f'{self.base_url}{news["href"]}'
+            post_id = self.post_id_regex.search(post_url).group(1)
             # getting the image inside the post for better quality
-            post_html_content = self.get_content_by_url(f'{self.url}{post_id}')
+            post_html_content = self.get_content_by_url(f'{post_url}')
             if not post_html_content:
                 image = news.select_one('img')['src']
-                short_post_text = news.select_one('.summary').get_text()
+                short_post_text = news.select_one('.news-intro').get_text()
             else:
                 html = BeautifulSoup(post_html_content, 'html.parser')
-                image = html.select_one('#title_img_big')
-                image = f"http:{image['src']}" if image is not None else None
+                image = html.select_one('.news-detail__banner img')['src']
 
-                content = html.select_one('.content')
-                short_post_text = '\n'.join([p.get_text() for p in content.find_all('p')])
+                content = html.select_one('.news-detail__article').get_text()
 
-            title = news.select_one('h3').get_text()
+            title = news.select_one('.title').get_text().strip()
 
             data = {
                 'id': post_id,
                 'fetch_date': vn_tz.strftime('%d/%m/%Y'),
                 'fetch_time': vn_tz.strftime('%H:%M:%S'),
                 'title': title,
-                'link': f'{self.url}{post_id}',
-                'description': short_post_text,
+                'link': post_url,
+                'description': content,
                 'image': image
             }
             datas.append(data)
@@ -573,7 +573,7 @@ class HonkaiImpactSpider(WebSpider):
                 embed = discord.Embed(
                     title=f"{data['title']}",
                     url=data['link'],
-                    description=f"{embed_desc}...\n***[Read more]({self.url}{data['id']})***",
+                    description=f"{embed_desc}...\n***[Read more]({data['link']})***",
                     color=discord.Color.teal())
                 embed.set_image(url=data['image'])
 

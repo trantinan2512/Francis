@@ -74,7 +74,7 @@ if not config.DEBUG:
     # francis.loop.create_task(schedules.Scheduler(francis).check_gmsm_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_dawn_schedule())
 else:
-    # francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
+    francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
     # francis.loop.create_task(webspiders.GMSSiteSpider(francis, 'site_gms').parse())
     # francis.loop.create_task(webspiders.GMS2SiteSpider(francis, 'site_gms2').parse())
     # francis.loop.create_task(webspiders.GMSMSiteSpider(francis, 'site_gmsm').parse())
