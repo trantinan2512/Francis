@@ -565,7 +565,8 @@ class HonkaiImpactSpider(WebSpider):
 
                 embed_desc = ''
                 for line in data['description'].split('\n'):
-                    if len(embed_desc) > 500:
+                    if len(embed_desc + f'{line}\n') > 1900:
+                        embed_desc += f'...\n***[Read more]({data["link"]})***'
                         break
                     embed_desc += f'{line}\n'
 
@@ -573,7 +574,7 @@ class HonkaiImpactSpider(WebSpider):
                 embed = discord.Embed(
                     title=f"{data['title']}",
                     url=data['link'],
-                    description=f"{embed_desc}...\n***[Read more]({data['link']})***",
+                    description=embed_desc,
                     color=discord.Color.teal())
                 embed.set_image(url=data['image'])
 
