@@ -191,6 +191,10 @@ class GMSSiteSpider(WebSpider):
 
     def maintenance_post(self, url, *args):
 
+        # return if maintenance/patch words not in the url
+        if all([maint_word not in url for maint_word in ['maintenance', 'patch']]):
+            return
+
         sc_post_content = self.get_content_by_url(url)
 
         html = BeautifulSoup(sc_post_content, 'html.parser')
@@ -516,14 +520,15 @@ class HonkaiImpactSpider(WebSpider):
             post_url = f'{self.url}/{post_id}'
             # getting the image inside the post for better quality
             post_html_content = self.get_content_by_url(f'{post_url}')
-            if not post_html_content:
-                image = news.select_one('img')['src']
-                short_post_text = news.select_one('.news-intro').get_text()
-            else:
+            image = news.select_one('img')['src']
+            if post_html_content:
                 html = BeautifulSoup(post_html_content, 'html.parser')
-                image = html.select_one('.news-detail__banner img')['src']
-
+                _image = html.select_one('.news-detail__banner img')
+                if _image:
+                    image = _image['src']
                 content = html.select_one('.news-detail__article').get_text()
+            else:
+                content = ''
 
             title = news.select_one('.title').get_text().strip()
 

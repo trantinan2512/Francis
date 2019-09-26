@@ -9,7 +9,6 @@ if config.DEBUG is True:
 else:
     prefix = '!'
 
-
 francis = bot.CustomBot(
     command_prefix=prefix,
     description='Francis - Orchid\'s slave',
@@ -21,7 +20,7 @@ francis.remove_command('help')
 # initialize francis's utility functions
 # util = Utility(francis)
 
-initial_extensions = (
+initial_extensions = [
 
     'francis.cogs.admin',
     'francis.cogs.dailies',
@@ -37,8 +36,17 @@ initial_extensions = (
     'francis.cogs.old.gacha',
     'francis.cogs.old.stat_check',
 
-    'francis.tasks.honkai',
-)
+]
+
+if not config.DEBUG:
+    initial_extensions += [
+        'francis.tasks.honkai',
+    ]
+else:
+    initial_extensions += [
+
+    ]
+
 for extension in initial_extensions:
     try:
         francis.load_extension(extension)
@@ -69,13 +77,13 @@ if not config.DEBUG:
     francis.loop.create_task(socials.Twitter(francis).fetch_maple2_latest_tweet())
     francis.loop.create_task(socials.Twitter(francis).fetch_maplem_latest_tweet())
     francis.loop.create_task(socials.Twitter(francis).fetch_hi3_latest_tweets())
-    francis.loop.create_task(dailies_reset.Dailies(francis).honkai_impact())
+    # francis.loop.create_task(dailies_reset.Dailies(francis).honkai_impact())
     # francis.loop.create_task(schedules.Scheduler(francis).check_gms_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_gmsm_schedule())
     # francis.loop.create_task(schedules.Scheduler(francis).check_dawn_schedule())
 else:
-    francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
-    # francis.loop.create_task(webspiders.GMSSiteSpider(francis, 'site_gms').parse())
+    # francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
+    francis.loop.create_task(webspiders.GMSSiteSpider(francis, 'site_gms').parse())
     # francis.loop.create_task(webspiders.GMS2SiteSpider(francis, 'site_gms2').parse())
     # francis.loop.create_task(webspiders.GMSMSiteSpider(francis, 'site_gmsm').parse())
     # francis.loop.create_task(socials.Twitter(francis).fetch_maple_latest_tweet())
