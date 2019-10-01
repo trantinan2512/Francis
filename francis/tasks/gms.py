@@ -140,7 +140,6 @@ class GlobalMapleStoryTasks(commands.Cog):
 
             # parse maintenance time before posting
             sc_data = self.maintenance_post(data['link'], data['title'])
-            print('scdata', sc_data)
 
             if sc_data is not None:
                 embed.title = f'{data["updated_type"]}{data["sc_type"]} - {sc_data[0]}'
@@ -192,8 +191,6 @@ class GlobalMapleStoryTasks(commands.Cog):
         # regex to get the words inside brackets "()"
         bracket_re = re.compile('\s*\(.+\)\s*', re.IGNORECASE)
 
-        print(sc_duration)
-
         for p in ps:
             p_text = p.get_text('\n')
             # ignore in case the time display splitted by '/'
@@ -217,8 +214,6 @@ class GlobalMapleStoryTasks(commands.Cog):
             start, finish = re.split('\s*-|–\s*', duration)
             start = bracket_re.sub('', start)
             finish = bracket_re.sub('', finish)
-
-            print(start, finish)
 
             # just parse the datetime_from as it present no matter what
             datetime_from = parse(
