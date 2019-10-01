@@ -41,10 +41,11 @@ initial_extensions = [
 if not config.DEBUG:
     initial_extensions += [
         'francis.tasks.honkai',
+        'francis.tasks.gms',
     ]
 else:
     initial_extensions += [
-
+        'francis.tasks.gms',
     ]
 
 for extension in initial_extensions:
@@ -69,7 +70,6 @@ async def on_ready():
 
 
 if not config.DEBUG:
-    francis.loop.create_task(webspiders.GMSSiteSpider(francis, 'site_gms').parse())
     francis.loop.create_task(webspiders.GMS2SiteSpider(francis, 'site_gms2').parse())
     francis.loop.create_task(webspiders.GMSMSiteSpider(francis, 'site_gmsm').parse())
     francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
@@ -83,7 +83,6 @@ if not config.DEBUG:
     # francis.loop.create_task(schedules.Scheduler(francis).check_dawn_schedule())
 else:
     # francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
-    francis.loop.create_task(webspiders.GMSSiteSpider(francis, 'site_gms').parse())
     # francis.loop.create_task(webspiders.GMS2SiteSpider(francis, 'site_gms2').parse())
     # francis.loop.create_task(webspiders.GMSMSiteSpider(francis, 'site_gmsm').parse())
     # francis.loop.create_task(socials.Twitter(francis).fetch_maple_latest_tweet())
