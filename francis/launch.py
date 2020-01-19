@@ -71,7 +71,7 @@ async def on_ready():
 
 if not config.DEBUG:
     francis.loop.create_task(webspiders.GMS2SiteSpider(francis, 'site_gms2').parse())
-    francis.loop.create_task(webspiders.GMSMSiteSpider(francis, 'site_gmsm').parse())
+    # francis.loop.create_task(webspiders.GMSMSiteSpider(francis, 'site_gmsm').parse())
     francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
     francis.loop.create_task(socials.Twitter(francis).fetch_maple_latest_tweet())
     francis.loop.create_task(socials.Twitter(francis).fetch_maple2_latest_tweet())
