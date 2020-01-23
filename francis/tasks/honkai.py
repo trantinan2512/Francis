@@ -25,11 +25,8 @@ class HonkaiTasks(commands.Cog):
         self.parse_supplies_data.start()
         self.parse_events_data.start()
 
-        self.supplies_channel = None
-        self.supplies_channel_id = 587165325464829953
-
-        self.events_channel = None
-        self.events_channel_id = 559210580146126848
+        # self.supplies_channel_id = 587165325464829953
+        # self.events_channel_id = 559210580146126848
 
     def cog_unload(self):
         self.parse_supplies_data.cancel()
@@ -40,7 +37,7 @@ class HonkaiTasks(commands.Cog):
         await self.parse_data(
             spider=self.supplies_spider,
             fetcher=self.fetch_supplies_data,
-            posting_channel=self.supplies_channel
+            posting_channel=self.bot.get_channel(id=587165325464829953)
         )
 
     @tasks.loop(seconds=60.0)
@@ -48,7 +45,7 @@ class HonkaiTasks(commands.Cog):
         await self.parse_data(
             spider=self.events_spider,
             fetcher=self.fetch_events_data,
-            posting_channel=self.events_channel
+            posting_channel=self.bot.get_channel(id=559210580146126848)
         )
 
     async def parse_data(self, spider, fetcher, posting_channel):
@@ -180,18 +177,6 @@ class HonkaiTasks(commands.Cog):
         print('[HI3rd Gamepedia Site Spider] Waiting for ready state...')
 
         await self.bot.wait_until_ready()
-
-        self.supplies_channel = self.bot.get_channel(id=self.supplies_channel_id)
-        if not self.supplies_channel:
-            print(f'Channel with ID [ {self.supplies_channel_id} ] not found.')
-            self.parse_supplies_data.cancel()
-            return
-
-        self.events_channel = self.bot.get_channel(id=self.events_channel_id)
-        if not self.events_channel:
-            print(f'Channel with ID [ {self.events_channel_id} ] not found.')
-            self.parse_events_data.cancel()
-            return
 
         print('[Hi3rd Gamepedia Site Spider] Ready and running!')
 
