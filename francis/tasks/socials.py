@@ -101,7 +101,10 @@ class Twitter:
 
         # fetch the user_id twitter info
         tweet_count = 5
-        latest_tweets = self.api.user_timeline(user_id, count=tweet_count)
+        try:
+            latest_tweets = self.api.user_timeline(user_id, count=tweet_count)
+        except tweepy.TweepError:
+            return
 
         sheet, posted_ids = self.get_posted_ids(user_id)
         if not sheet or not posted_ids:
