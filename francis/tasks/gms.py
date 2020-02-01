@@ -1,13 +1,14 @@
 import re
+from datetime import datetime
 from datetime import timedelta
-from pytz import timezone
-from dateparser import parse
-import config
 
 import discord
 from bs4 import BeautifulSoup
-from datetime import datetime
+from dateparser import parse
 from discord.ext import tasks, commands
+from pytz import timezone
+
+import config
 from .webspiders import WebSpider
 
 
@@ -139,11 +140,13 @@ class GlobalMapleStoryTasks(commands.Cog):
                 color=discord.Color.teal())
 
             # parse maintenance time before posting
-            sc_data = self.maintenance_post(data['link'], data['title'])
-
-            if sc_data is not None:
-                embed.title = f'{data["updated_type"]}{data["sc_type"]} - {sc_data[0]}'
-                embed.description = sc_data[1]
+            try:
+                sc_data = self.maintenance_post(data['link'], data['title'])
+                if sc_data is not None:
+                    embed.title = f'{data["updated_type"]}{data["sc_type"]} - {sc_data[0]}'
+                    embed.description = sc_data[1]
+            except Exception:
+                pass
 
             embed.set_image(url=data['img'])
             # send the message to channel
@@ -161,7 +164,10 @@ class GlobalMapleStoryTasks(commands.Cog):
         if all([maint_word not in url for maint_word in ['maintenance', 'patch', 'scheduled']]):
             return
 
-        sc_post_content = self.spider.get_content_by_url(url)
+        # stringify and remove weird strong tags!
+        sc_post_content = str(self.spider.get_content_by_url(url))
+        sc_post_content = sc_post_content.replace('<strong>', '')
+        sc_post_content = sc_post_content.replace('</strong>', '')
 
         html = BeautifulSoup(sc_post_content, 'html.parser')
 
@@ -194,7 +200,9 @@ class GlobalMapleStoryTasks(commands.Cog):
         for p in ps:
             p_text = p.get_text('\n')
             # ignore in case the time display splitted by '/'
-            if tz_re.search(p_text) is None or any(c in p_text for c in ['/', '[']):
+            if tz_re.search(p_text) is None \
+                    or utc_re.search(p_text) is None \
+                    or any(c in p_text for c in ['/', '[']):
                 continue
 
             # new way to split date and duration
@@ -211,10 +219,13 @@ class GlobalMapleStoryTasks(commands.Cog):
                 break
 
             # split duration to get start and finish
-            start, finish = re.split('\s*-|–\s*', duration)
+            try:
+                start, finish = re.split('\s*-|–\s*', duration)
+            except Exception:
+                continue
+
             start = bracket_re.sub('', start)
             finish = bracket_re.sub('', finish)
-
             # just parse the datetime_from as it present no matter what
             datetime_from = parse(
                 f'{date} {_timezone} {start}',
