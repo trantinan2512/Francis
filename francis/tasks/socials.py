@@ -170,10 +170,10 @@ class Twitter:
 
             return sheet, sheet.col_values(1)
 
-        except APIError:
+        except Exception:
             try:
                 self.db = db.initialize_db()
-            except APIError:
+            except Exception:
                 pass
             return None, None
 
