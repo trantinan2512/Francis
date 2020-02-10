@@ -22,7 +22,8 @@ class WebSpider:
         self.sheet = self.db.worksheet(self.sheet_name)
         self.delay = config.SPIDER_DELAY
 
-    def get_content_by_url(self, url):
+    @classmethod
+    def get_content_by_url(cls, url):
 
         try:
             r = requests.get(url)

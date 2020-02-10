@@ -1,6 +1,7 @@
 # import discord
+import sys
+
 from discord.ext import commands
-from django.conf import settings
 
 
 class OwnerCommands(commands.Cog):
@@ -9,9 +10,6 @@ class OwnerCommands(commands.Cog):
         self.bot = bot
         self.path = 'francis.cogs.'
         self.path2 = 'francis.tasks.'
-
-    async def is_owner(ctx):
-        return ctx.author.id == 209551520008503297
 
     @commands.command(aliases=['prunenorole', 'prunenr'])
     @commands.is_owner()
@@ -46,21 +44,21 @@ class OwnerCommands(commands.Cog):
         await context.say_as_embed('Successfully updated.')
 
     @commands.command(hidden=True)
-    @commands.check(is_owner)
+    @commands.is_owner()
     async def load(self, ctx, *, module):
         """Loads a module."""
         self.bot.load_extension(f'{self.path}{module}')
         await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(hidden=True)
-    @commands.check(is_owner)
+    @commands.is_owner()
     async def unload(self, ctx, *, module):
         """Unloads a module."""
         self.bot.unload_extension(f'{self.path}{module}')
         await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(name='reload', hidden=True)
-    @commands.check(is_owner)
+    @commands.is_owner()
     async def _reload(self, ctx, *, module):
         """Reloads a module."""
         try:
@@ -72,7 +70,7 @@ class OwnerCommands(commands.Cog):
         await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(name='test', hidden=True)
-    @commands.check(is_owner)
+    @commands.is_owner()
     async def _test_command(self, ctx):
         """Test command"""
 
@@ -82,6 +80,15 @@ class OwnerCommands(commands.Cog):
         emojis += '```'
 
         await ctx.send(emojis)
+
+    @commands.command(hidden=True, aliases=['q'])
+    @commands.is_owner()
+    async def restart(self, ctx):
+        """Restarts the bot and exit the system"""
+        await ctx.send('Restarting in 10 seconds...')
+        await self.bot.logout()
+        sys.exit(6)
+
 
 def setup(bot):
     bot.add_cog(OwnerCommands(bot))

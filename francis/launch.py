@@ -33,8 +33,8 @@ initial_extensions = [
     # 'francis.cogs.profile',
     'francis.cogs.requirement',
     'francis.cogs.role',
-    'francis.cogs.old.gacha',
-    'francis.cogs.old.stat_check',
+    # 'francis.cogs.old.gacha',
+    # 'francis.cogs.old.stat_check',
 
 ]
 
@@ -42,10 +42,11 @@ if not config.DEBUG:
     initial_extensions += [
         'francis.tasks.honkai',
         'francis.tasks.gms',
+        'francis.tasks.tiki',
     ]
 else:
     initial_extensions += [
-        'francis.tasks.gms',
+        'francis.tasks.tiki',
     ]
 
 for extension in initial_extensions:
