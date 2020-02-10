@@ -99,7 +99,10 @@ class HonkaiTasks(commands.Cog):
             best_price = best_product['price']
             product_name = data['name']
 
+            product_obj.out_of_stock = False
+
             if product_obj.current_lowest_price == best_price:
+                product_obj.save()
                 continue
 
             embed.description = (
