@@ -69,6 +69,8 @@ class HonkaiTasks(commands.Cog):
                 color=discord.Color.blue(),
                 timestamp=datetime.utcnow()
             )
+            if image_url:
+                embed.set_thumbnail(url=image_url)
 
             if not data:
                 continue
@@ -78,8 +80,6 @@ class HonkaiTasks(commands.Cog):
                         f'• Trạng thái: **Hết hàng**\n'
                     )
 
-                    if image_url:
-                        embed.set_thumbnail(url=image_url)
                     await channel.send(embed=embed)
 
                     product_obj.out_of_stock = True
@@ -108,8 +108,6 @@ class HonkaiTasks(commands.Cog):
                 f'• Giá mới: {best_price:>13,}\n'
                 f'```'
             )
-            if image_url:
-                embed.set_thumbnail(url=image_url)
             await channel.send(embed=embed)
 
             product_obj.current_lowest_price = best_price
