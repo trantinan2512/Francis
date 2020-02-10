@@ -20,7 +20,7 @@ class HonkaiTasks(commands.Cog):
         self.supplies_url = f'{self.site}/Supply/Supplies'
         self.events_url = f'{self.site}/Events'
 
-        self.supplies_ignored_tabs = ['2018', '2019']
+        self.supplies_ignored_tabs = ['2018', '2019', '2020']
 
         self.parse_supplies_data.start()
         self.parse_events_data.start()
