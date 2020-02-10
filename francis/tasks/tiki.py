@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 import discord
+import requests
 from bs4 import BeautifulSoup
 from discord.ext import tasks, commands
 
@@ -16,6 +17,7 @@ class HonkaiTasks(commands.Cog):
         self.reg = re.compile('\s*var\s*defaultProduct\s*=\s*({.*})')
         self.fetch_tiki_products_price.start()
         self.site = 'https://tiki.vn'
+        self.promo_endpoint = 'https://tiki.vn/api/promon/v1/products/sale-attrs'
         # self.tiki_channel_id = 676382684699820063
 
     @commands.command(name='tikiadd', hidden=True)
@@ -49,8 +51,11 @@ class HonkaiTasks(commands.Cog):
 
         tiki_product_objs = TikiProduct.objects.all()
         for product_obj in tiki_product_objs:
-            url = f'{self.site}/{product_obj.page_id}.html'
+            # that extra '-' is for discord quick link to tiki app to work
+            url = f'{self.site}/-{product_obj.page_id}.html'
             html = WebSpider.get_content_by_url(url)
+            if not html:
+                continue
 
             bs = BeautifulSoup(html, 'html.parser')
 
@@ -65,10 +70,11 @@ class HonkaiTasks(commands.Cog):
 
             embed = discord.Embed(
                 title=product_name,
-                url=url,
+                url=f'{url}',
                 color=discord.Color.blue(),
                 timestamp=datetime.utcnow()
             )
+            embed.set_footer(text='tiki.vn', icon_url='https://tiki.vn/favicon-32x32.png')
             if image_url:
                 embed.set_thumbnail(url=image_url)
 
@@ -79,7 +85,6 @@ class HonkaiTasks(commands.Cog):
                     embed.description = (
                         f'• Trạng thái: **Hết hàng**\n'
                     )
-
                     await channel.send(embed=embed)
 
                     product_obj.out_of_stock = True
@@ -91,13 +96,30 @@ class HonkaiTasks(commands.Cog):
                 all_sellers += data['other_sellers']
 
             # sorted by price ascending
-            new_list = sorted(all_sellers, key=lambda abc: abc['price'])
-            if not new_list:
+            for seller in all_sellers:
+                product_id = seller.get('product_id', None)
+                product_price = seller.get('price', None)
+                if not product_id or not product_price:
+                    continue
+                promo_payload = f'[{{"id":"{product_id}","price":{product_price}}}]'
+                promo_response = requests.post(self.promo_endpoint, data=promo_payload)
+                if promo_response.status_code != 200:
+                    continue
+                promo_code_list = promo_response.json()['data'][product_id]
+                price_list = [code['price'] for code in promo_code_list]
+                if not price_list:
+                    continue
+                lowest_price = min(price_list)
+                seller['price'] = lowest_price
+
+            seller_sorted = sorted(all_sellers, key=lambda abc: abc['price'])
+
+            if not seller_sorted:
                 continue
 
-            best_product = new_list[0]
-            best_price = best_product['price']
-            product_name = data['name']
+            best_seller = seller_sorted[0]
+            best_price = best_seller['price']
+            seller_name = best_seller['name']
 
             product_obj.out_of_stock = False
 
@@ -105,10 +127,17 @@ class HonkaiTasks(commands.Cog):
                 product_obj.save()
                 continue
 
+            lowest_price = best_price if best_price < product_obj.lowest_price else product_obj.lowest_price
+
             embed.description = (
                 f'```bash\n'
-                f'• Giá cũ : {product_obj.current_lowest_price:>13,}\n'
-                f'• Giá mới: {best_price:>13,}\n'
+                f'GIÁ\n'
+                f'• Cũ        : {product_obj.current_lowest_price:>13,}\n'
+                f'• Mới       : {best_price:>13,}\n'
+                f'• Thấp nhất : {lowest_price:>13,}\n'
+                f'---\n'
+                f'NHÀ BÁN HÀNG\n'
+                f'• Tên : {seller_name}\n'
                 f'```'
             )
             await channel.send(embed=embed)
