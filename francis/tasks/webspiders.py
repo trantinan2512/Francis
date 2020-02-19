@@ -158,11 +158,13 @@ class GMSMSiteSpider(WebSpider):
                     url=data['link'],
                     description=f"Cập nhật vào: {data['time']} {data['date']}",
                     color=discord.Color.teal())
-
-                # send the message to channel
-                await self.bot.say_as_embed(channel=self.channel, embed=embed)
-                # save to drive and print the result title
-                self.sheet.insert_row(list(data.values()), index=2)
+                try:
+                    # send the message to channel
+                    await self.bot.say_as_embed(channel=self.channel, embed=embed)
+                    # save to drive and print the result title
+                    self.sheet.insert_row(list(data.values()), index=2)
+                except Exception:
+                    return
 
                 print(f'Site Fetch: [GMSM] [Fetched {data["title"]}]')
                 # updates the checking data
@@ -249,11 +251,14 @@ class GMS2SiteSpider(WebSpider):
                     color=discord.Color.teal())
                 embed.set_image(url=data['image'])
 
-                # send the message to channel
-                await self.bot.say_as_embed(channel=self.channel, embed=embed)
+                try:
+                    # send the message to channel
+                    await self.bot.say_as_embed(channel=self.channel, embed=embed)
 
-                # save to drive and print the result title
-                self.sheet.insert_row([value for value in data.values()], index=2)
+                    # save to drive and print the result title
+                    self.sheet.insert_row([value for value in data.values()], index=2)
+                except Exception:
+                    continue
 
                 print(f'Site Fetch: [GMS2] [Fetched {data["title"]}]')
 
@@ -354,13 +359,16 @@ class HonkaiImpactSpider(WebSpider):
                     color=discord.Color.teal())
                 embed.set_image(url=data['image'])
 
-                # send the message to channel
-                await self.bot.say_as_embed(channel=self.channel, embed=embed)
+                try:
+                    # send the message to channel
+                    await self.bot.say_as_embed(channel=self.channel, embed=embed)
 
-                # save to drive and print the result title
-                self.sheet.insert_row([value for value in data.values()], index=2)
+                    # save to drive and print the result title
+                    self.sheet.insert_row([value for value in data.values()], index=2)
+                except Exception:
+                    continue
+
                 print(f'Site Fetch: [HI3] [Fetched {data["title"]}]')
-
                 # updates the checking data
                 checking_data = self.form_checking_data()
 

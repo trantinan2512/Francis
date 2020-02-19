@@ -145,15 +145,15 @@ class GlobalMapleStoryTasks(commands.Cog):
                 if sc_data is not None:
                     embed.title = f'{data["updated_type"]}{data["sc_type"]} - {sc_data[0]}'
                     embed.description = sc_data[1]
-            except Exception:
-                pass
 
-            embed.set_image(url=data['img'])
-            # send the message to channel
-            await self.bot.say_as_embed(channel=self.news_channel, embed=embed)
-            # save to drive and print the result title
-            if not config.DEBUG:
-                self.spider.sheet.insert_row([value for value in data.values()], index=2)
+                embed.set_image(url=data['img'])
+                # send the message to channel
+                await self.bot.say_as_embed(channel=self.news_channel, embed=embed)
+                # save to drive and print the result title
+                if not config.DEBUG:
+                    self.spider.sheet.insert_row([value for value in data.values()], index=2)
+            except Exception:
+                return
 
             print(f'Site Fetch: [GMS] [Fetched {data["title"]}]')
             checking_data = self.spider.form_checking_data()
