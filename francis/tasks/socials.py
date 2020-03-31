@@ -1,26 +1,24 @@
-import asyncio
-import json
-# import os
-# import requests
-from gspread.exceptions import APIError
-import facebook
-import tweepy
-import discord
-# from discord.ext import commands
-
 from datetime import datetime
+
+import tweepy
+from discord.ext import tasks, commands
 from pytz import timezone
 
-from utils import db, channel as ch
-# from pprint import pprint
 import config
+from utils import db, channel as ch
+
+TWITTER_USERS = {
+    816396540017152000: {'sheet': 'twitter_gmsm', 'channel_id': 455635507561627648, 'name': 'GMSM'},
+    34667202: {'sheet': 'twitter_gms', 'channel_id': 455634325086404608, 'name': 'GMS'},
+    940045596575989765: {'sheet': 'twitter_hi3', 'channel_id': 563996767302057984, 'name': 'HI3rd'},
+    1072404907230060544: {'sheet': 'twitter_genshin', 'channel_id': 694444914372509756, 'name': 'Genshin'},
+}
 
 
-class Twitter:
-    """A cog for Twitter related tasks"""
-
+class TweetFetcher(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
         auth = tweepy.OAuthHandler(config.TWITTER_CONSUMER_KEY, config.TWITTER_CONSUMER_SECRET)
         auth.set_access_token(config.TWITTER_ACCESS_TOKEN, config.TWITTER_ACCESS_TOKEN_SECRET)
 
@@ -28,76 +26,33 @@ class Twitter:
 
         self.db = db.initialize_db()
 
-    async def fetch_maplem_latest_tweet(self):
+        self._listener.start()
 
-        print('[GMSM Tweet Fetcher] Waiting for ready state...')
+    def cog_unload(self):
+        self._listener.cancel()
 
-        await self.bot.wait_until_ready()
+    @tasks.loop(seconds=60.0)
+    async def _listener(self):
 
-        print('[GMSM Tweet Fetcher] Ready and running!')
+        for twitter_id, info in TWITTER_USERS.items():
+            channel = ch.get_channel(bot=self.bot, id=info['channel_id'])
+            if not channel:
+                continue
+            await self.send_latest_status(twitter_id, channel)
 
-        # use this for development and production
-        channel = ch.get_channel(bot=self.bot, id=455635507561627648)
-
-        while not self.bot.is_closed():
-            # fetch MapleM twitter stuff
-            await self.send_latest_status(816396540017152000, channel)
-
-    async def fetch_maple_latest_tweet(self):
-
-        print('[GMS Tweet Fetcher] Waiting for ready state...')
-
-        await self.bot.wait_until_ready()
-
-        print('[GMS Tweet Fetcher] Ready and running!')
-
-        # use this for development and production
-        channel = ch.get_channel(bot=self.bot, id=455634325086404608)
-
-        # keep executing the codes until bot is closed
-        while not self.bot.is_closed():
-            await self.send_latest_status(34667202, channel)
-
-    async def fetch_maple2_latest_tweet(self):
-
-        print('[GMS2 Tweet Fetcher] Waiting for ready state...')
+    @_listener.before_loop
+    async def _before_listening(self):
+        print('[Tweet Fetchers] Waiting for ready state...')
 
         await self.bot.wait_until_ready()
 
-        print('[GMS2 Tweet Fetcher] Ready and running!')
-
-        # use this for development and production
-        channel = ch.get_channel(bot=self.bot, id=505584446074781697)
-
-        # keep executing the codes until bot is closed
-        while not self.bot.is_closed():
-            await self.send_latest_status(851835989702000640, channel)
-
-    async def fetch_hi3_latest_tweets(self):
-
-        print('[HI3 Tweet Fetcher] Waiting for ready state...')
-
-        await self.bot.wait_until_ready()
-
-        print('[HI3 Tweet Fetcher] Ready and running!')
-
-        # use this for development and production
-        channel = ch.get_channel(bot=self.bot, id=563996767302057984)
-
-        # keep executing the codes until bot is closed
-        while not self.bot.is_closed():
-            await self.send_latest_status(940045596575989765, channel)
+        print('[Tweet Fetchers] Ready and running!')
 
     # send status to given channel
-    async def send_latest_status(self, user_id, channel, delay=60):
+    async def send_latest_status(self, user_id, channel):
         """
         Send the latest status of given user_id, to the channel
         """
-
-        if config.DEBUG:
-            delay = 10
-
-        await asyncio.sleep(delay)
 
         # fetch the user_id twitter info
         tweet_count = 5
@@ -153,23 +108,8 @@ class Twitter:
 
     def get_posted_ids(self, user_id):
         try:
-            # get twitter_gmsm db
-            if user_id == 816396540017152000:
-                sheet = self.db.worksheet('twitter_gmsm')
-            # get twitter_gms db
-            elif user_id == 34667202:
-                sheet = self.db.worksheet('twitter_gms')
-                # get twitter_gms db
-            elif user_id == 851835989702000640:
-                sheet = self.db.worksheet('twitter_gms2')
-            # get twitter_gms db
-            elif user_id == 940045596575989765:
-                sheet = self.db.worksheet('twitter_hi3')
-            else:
-                return None, None
-
+            sheet = self.db.worksheet(TWITTER_USERS[user_id]['sheet'])
             return sheet, sheet.col_values(1)
-
         except Exception:
             try:
                 self.db = db.initialize_db()
@@ -178,79 +118,5 @@ class Twitter:
             return None, None
 
 
-class Facebook:
-    """A cog for Facebook related tasks"""
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    async def fb(self):
-
-        await self.bot.wait_until_ready()
-
-        if config.DEBUG is True:
-            # bot-test channel
-            channel = discord.Object(id=454890599410302977)
-        else:
-            # twitter-facebook-gms channel
-            channel = discord.Object(id=455634325086404608)
-
-        access_token = config.FACEBOOK_ACCESS_TOKEN
-        # Francis Discordpy
-        user = 1195053647303141
-
-        graph = facebook.GraphAPI(access_token)
-        profile = graph.get_object(user)
-
-        while not self.bot.is_closed:
-
-            posts = graph.get_connections(profile['id'], 'posts')
-
-            latest_post = posts['data'][0]
-
-            embed = discord.Embed(
-                title=profile['name'],
-                description=latest_post['message'],
-                color=discord.Color.teal())
-
-            FACEBOOK_CACHE_DIR = config.BASE_DIR + '/cache/facebook_cache.json'
-
-            with open(FACEBOOK_CACHE_DIR, 'r') as infile:
-
-                fb_cache = json.load(infile)
-                maple = fb_cache.get('Maple')
-
-                if maple is not None and maple.get('ids'):
-                    cached_maple_ids = maple['ids']
-
-                    if latest_post['id'] in cached_maple_ids:
-                        print('*** FACEBOOK FETCH: NO NEW POSTS ***')
-
-                    else:
-                        with open(FACEBOOK_CACHE_DIR, 'w') as outfile:
-                            fb_cache['Maple']['ids'].prepend(latest_post['id'])
-                            json.dump(fb_cache, outfile)
-
-                        # try to retrieve the picture url and add it as image embed if there is
-                        post_pic = graph.get_object(id=latest_post['id'], fields='full_picture')
-                        pic_url = post_pic.get('full_picture')
-                        if pic_url is not None:
-                            embed.set_image(url=post_pic['full_picture'])
-
-                        await self.bot.say_as_embed(channel, embed=embed)
-
-                else:
-                    data = {'Maple': {'ids': [latest_post['id'], ]}}
-                    fb_cache.update(data)
-                    with open(FACEBOOK_CACHE_DIR, 'w') as outfile:
-                        json.dump(fb_cache, outfile)
-
-                    # Uhh... repeated to avoid an extra call to the API every 10 sec...
-                    post_pic = graph.get_object(id=latest_post['id'], fields='full_picture')
-                    pic_url = post_pic.get('full_picture')
-                    if pic_url is not None:
-                        embed.set_image(url=post_pic['full_picture'])
-
-                    await self.bot.say_as_embed(channel, embed=embed)
-
-            await asyncio.sleep(40)
+def setup(bot):
+    bot.add_cog(TweetFetcher(bot))
