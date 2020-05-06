@@ -69,7 +69,7 @@ class CustomBot(commands.Bot):
         message = (
                 f'Chào mừng **{member.mention}** đã đến với **{member.guild.name}**!\n\n' +
                 f'Dưới đây là hướng dẫn tương tác với group nhé!\n' +
-                f'» Đọc {rules_channel.mention} ở đây.\n' +
+                f'» Đọc {rules_channel.mention} ở đây (có hướng dẫn game).\n' +
                 f'» {intro_channel.mention} giới thiệu bản thân.\n' +
                 f'» Qua kênh {role_channel.mention} để nhận danh hiệu ứng với game mình đang chơi!\n\n' +
                 f'Nhập lệnh `{self.command_prefix}help` ở kênh {francis_channel.mention} để được hỗ trợ thêm nhé.')
