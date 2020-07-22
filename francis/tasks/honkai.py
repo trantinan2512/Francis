@@ -118,7 +118,7 @@ class HonkaiTasks(commands.Cog):
             for a in tab.select('a'):
                 url = f"{self.site}{a['href']}"
                 title = a['title']
-                image = a.img['src']
+
                 start, end = a.find_next('b').next_sibling.split('~', 1)
                 fetch_dt = self.supplies_spider.fetch_dt
                 data = {
@@ -130,8 +130,10 @@ class HonkaiTasks(commands.Cog):
                     'url': url,
                     'start': start,
                     'end': end,
-                    'image': image,
                 }
+                if 'src' in a.img:
+                    image = a.img['src']
+                    data.update({'image': image})
                 datas.append(data)
 
         return datas
