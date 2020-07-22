@@ -131,7 +131,7 @@ class HonkaiTasks(commands.Cog):
                     'start': start,
                     'end': end,
                 }
-                if 'src' in a.img:
+                if a.img and 'src' in a.img:
                     image = a.img['src']
                     data.update({'image': image})
                 datas.append(data)
@@ -167,7 +167,7 @@ class HonkaiTasks(commands.Cog):
                     'start': start,
                     'end': end,
                 }
-                if 'src' in a.img:
+                if a.img and 'src' in a.img:
                     image = a.img['src']
                     data.update({'image': image})
 
