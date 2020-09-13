@@ -8,10 +8,10 @@ import config
 from utils import db, channel as ch
 
 TWITTER_USERS = {
-    816396540017152000: {'sheet': 'twitter_gmsm', 'channel_id': 455635507561627648, 'name': 'GMSM'},
-    34667202: {'sheet': 'twitter_gms', 'channel_id': 455634325086404608, 'name': 'GMS'},
-    940045596575989765: {'sheet': 'twitter_hi3', 'channel_id': 563996767302057984, 'name': 'HI3rd'},
-    1072404907230060544: {'sheet': 'twitter_genshin', 'channel_id': 694444914372509756, 'name': 'Genshin'},
+    816396540017152000: {'sheet': 'twitter_gmsm', 'channel_ids': [455635507561627648, ], 'name': 'GMSM'},
+    34667202: {'sheet': 'twitter_gms', 'channel_ids': [455634325086404608, ], 'name': 'GMS'},
+    940045596575989765: {'sheet': 'twitter_hi3', 'channel_ids': [563996767302057984, ], 'name': 'HI3rd'},
+    1072404907230060544: {'sheet': 'twitter_genshin', 'channel_ids': [694444914372509756, 754672596821344298], 'name': 'Genshin'},
 }
 
 
@@ -35,10 +35,8 @@ class TweetFetcher(commands.Cog):
     async def _listener(self):
 
         for twitter_id, info in TWITTER_USERS.items():
-            channel = ch.get_channel(bot=self.bot, id=info['channel_id'])
-            if not channel:
-                continue
-            await self.send_latest_status(twitter_id, channel)
+            channel_ids = info['channel_ids']
+            await self.send_latest_status(twitter_id, channel_ids)
 
     @_listener.before_loop
     async def _before_listening(self):
@@ -49,7 +47,7 @@ class TweetFetcher(commands.Cog):
         print('[Tweet Fetchers] Ready and running!')
 
     # send status to given channel
-    async def send_latest_status(self, user_id, channel):
+    async def send_latest_status(self, user_id, channel_ids: list):
         """
         Send the latest status of given user_id, to the channel
         """
@@ -97,7 +95,11 @@ class TweetFetcher(commands.Cog):
             status_url = f'https://twitter.com/{u_screen_name}/status/{status_id}'
 
             # send the message to channel
-            await channel.send(status_url)
+            for channel_id in channel_ids:
+                channel = ch.get_channel(bot=self.bot, id=channel_id)
+                if not channel:
+                    continue
+                await channel.send(status_url)
 
             print(f'Twitter Fetch: [{u_screen_name}] [Fetched: {status_url}]')
 

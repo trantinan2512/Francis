@@ -42,13 +42,15 @@ if not config.DEBUG:
     initial_extensions += [
         'francis.tasks.honkai',
         'francis.tasks.gms',
-        'francis.tasks.tiki',
+        # 'francis.tasks.tiki',
+        'francis.tasks.genshin',
         'francis.tasks.socials',
     ]
 else:
     initial_extensions += [
         # 'francis.tasks.tiki',
         'francis.tasks.socials',
+        # 'francis.tasks.genshin',
     ]
 
 for extension in initial_extensions:
