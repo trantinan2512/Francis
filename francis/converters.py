@@ -18,10 +18,10 @@ class CustomRoleConverter(commands.Converter):
         parsed_role_name = ' '.join(parsed_role_words)
         try:
             role = await role_converter.convert(context, parsed_role_name)
-            if role.name not in config.AUTOASIGN_ROLES:
+            if role.name not in config.AUTOASIGN_ROLES and role.id not in config.AUTOASIGN_ROLES:
                 raise commands.BadArgument(
-                    f'{role.mention} is not auto-assignable. '
-                    f'Please use `!list` to see a full list of assignable roles.')
+                    f'{role.mention} is not assignable. '
+                    f'Please use `{context.prefix}roles` to see a full list of assignable roles.')
             return role
         except commands.BadArgument:
             raise commands.BadArgument(f'`{parsed_role_name}` role not found.')

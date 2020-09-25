@@ -3,10 +3,17 @@ import traceback
 import config
 from francis import bot
 
-if config.DEBUG is True:
-    prefix = '.'
-else:
-    prefix = '!'
+
+def get_default_prefix():
+    if config.DEBUG:
+        return '.'
+    else:
+        return config.BOT_PREFIX
+
+
+def prefix(bot, message):
+    return get_default_prefix()
+
 
 francis = bot.CustomBot(
     command_prefix=prefix,
@@ -23,6 +30,7 @@ initial_extensions = [
 
     'francis.cogs.admin',
     'francis.cogs.dailies',
+    'francis.cogs.girole',
     'francis.cogs.help',
     # 'francis.cogs.investigate',
     'francis.cogs.link',
@@ -37,11 +45,11 @@ initial_extensions = [
 
 ]
 
-if not config.DEBUG:
+if config.DEBUG:
     initial_extensions += [
         # 'francis.tasks.tiki',
-        'francis.tasks.socials',
-        'francis.tasks.crawlers'
+        # 'francis.tasks.socials',
+        # 'francis.tasks.crawlers'
     ]
 else:
     initial_extensions += [

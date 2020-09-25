@@ -1,10 +1,11 @@
+from datetime import datetime
+
 import discord
 from discord.ext import commands
-from francis.utils.role import process_role
+
+import config
 from francis.converters import CustomRoleConverter
 from utils.user import get_user_obj
-import config
-from datetime import datetime
 
 
 def good_for_role_assign(context):
@@ -13,7 +14,7 @@ def good_for_role_assign(context):
         author_role_ids = [role.id for role in context.author.roles]
         return any(role_id in config.DAWN_COLOR_CHANGE_ROLE_IDS for role_id in author_role_ids)
     else:
-        return True
+        return context.guild.id in [config.PON_SERVER_ID, config.MSVN_SERVER_ID]
 
 
 class Role(commands.Cog):
@@ -21,19 +22,20 @@ class Role(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.en_guilds = [config.DAWN_SERVER_ID, config.PON_SERVER_ID]
+        self.vi_guilds = [config.MSVN_SERVER_ID, ]
 
     @commands.command(name='role', aliases=['iam', ])
     @commands.check(good_for_role_assign)
     async def _role(self, context, *, role: commands.Greedy[CustomRoleConverter]):
         """Set Role theo yêu cầu"""
-
-        if context.guild.id == config.MSVN_SERVER_ID:
+        if context.guild.id in self.vi_guilds:
             add_role_done_msg = (
                 f'{context.author.mention} đã nhận được role '
                 '{added_role_mention}.'
             )
             role_exists_msg = f'{context.author.mention} có role này rồi nhé.'
-        elif context.guild.id == config.DAWN_SERVER_ID:
+        elif context.guild.id in self.en_guilds:
             add_role_done_msg = (
                 f'{context.author.mention}, '
                 '{added_role_mention} role has been added.'
@@ -43,24 +45,49 @@ class Role(commands.Cog):
         else:
             return
 
+        # role already added
         if role in context.author.roles:
             await context.say_as_embed(
                 description=role_exists_msg,
                 color='error')
+            return
 
-        else:
-            await context.author.add_roles(role)
-            await context.say_as_embed(
-                description=add_role_done_msg.format(added_role_mention=role.mention),
-                color='success')
+        # remove existing color role if already has one
+        if role.name in config.AUTOASIGN_COLOR_ROLES:
+            # form a list of color roles other than the specified one
+            color_roles = config.AUTOASIGN_COLOR_ROLES.copy()
+            color_roles.remove(role.name)
+            # removes the existing color role
+            for user_role in context.author.roles:
+                if user_role.name in color_roles:
+                    await context.author.remove_roles(user_role)
+                    break
+
+        # add a limit of 4 character roles in PonPon guild
+        if context.guild.id == config.PON_SERVER_ID and role.name not in config.AUTOASIGN_COLOR_ROLES:
+            character_role_count = 0
+            for user_role in context.author.roles:
+                if user_role.id in config.PONPON_ROLE_REACT_ROLE_IDS:
+                    character_role_count += 1
+                    if character_role_count >= 4:
+                        await context.say_as_embed(
+                            description='You can only have up to 4 character roles.\n'
+                                        f'Use `{context.prefix}rrole` to remove one then try again.')
+                        return
+        # add the role
+        await context.author.add_roles(role)
+        await context.say_as_embed(
+            description=add_role_done_msg.format(added_role_mention=role.mention),
+            color='success')
 
     @commands.command(name='rrole', aliases=['iamn', ])
     @commands.check(good_for_role_assign)
     async def _rrole(self, context, *, role: commands.Greedy[CustomRoleConverter]):
-        """Xóa Role theo yêu cầu
+        """
+        Xóa Role theo yêu cầu
         """
 
-        if context.guild.id == config.MSVN_SERVER_ID:
+        if context.guild.id in self.vi_guilds:
             remove_role_done_msg = (
                 f'{context.author.mention}, role '
                 '{removed_role_mentions} đã được xóa thành công.'
@@ -69,40 +96,42 @@ class Role(commands.Cog):
                 f'{context.author.mention} không có role này.\n'
                 'Click (PC) hoặc Nhấn giữ (Mobile) vào **tên của bạn** để xem những Role bạn đang có.'
             )
-        elif context.guild.id == config.DAWN_SERVER_ID:
+        elif context.guild.id in self.en_guilds:
             remove_role_done_msg = (
                 f'{context.author.mention}, your '
-                '{removed_role_mentions} role(s) have been removed.'
+                '{removed_role_mentions} role has been removed.'
             )
-            no_role_found_msg = f'{context.author.mention}, you don\'t have the specified role(s).'
+            no_role_found_msg = f'{context.author.mention}, you don\'t have the specified role.'
 
         else:
             return
 
+        # role not exists
         if role not in context.author.roles:
             await context.say_as_embed(
                 description=no_role_found_msg,
                 color='error')
+            return
 
-        else:
-            await context.author.remove_roles(role)
-            await context.say_as_embed(
-                description=remove_role_done_msg.format(removed_role_mentions=role.mention),
-                color='success')
+        # remove the role
+        await context.author.remove_roles(role)
+        await context.say_as_embed(
+            description=remove_role_done_msg.format(removed_role_mentions=role.mention),
+            color='success')
 
-    @commands.command()
-    async def list(self, context):
+    @commands.command(name='roles', aliases=['list'])
+    async def _list_roles(self, context):
         """Xem danh sách Role có thể tự thêm/xóa"""
         message = context.message
         server = message.guild
-        prefix = self.bot.command_prefix
+        prefix = context.prefix
 
-        if server.id == config.MSVN_SERVER_ID:
+        if server.id in self.vi_guilds:
 
             embed = discord.Embed(
                 title='Danh sách Role có thể tự thêm/xóa',
                 description=f'Dùng lệnh `{prefix}role tên_role` để thêm role.\n'
-                f'Dùng lệnh `{prefix}rrole tên_role` để xóa role.',
+                            f'Dùng lệnh `{prefix}rrole tên_role` để xóa role.',
                 colour=discord.Color.teal())
 
             ch_roles = []
@@ -142,8 +171,8 @@ class Role(commands.Cog):
 
             embed = discord.Embed(
                 title='Auto-asign color roles',
-                description=f'Use `{prefix}role role_name` to add yourself a Role.\n'
-                f'Use `{prefix}rrole role_name` to remove a Role you have.',
+                description=f'Set a role: `{prefix}role role_name`\n'
+                            f'Remove a role: `{prefix}rrole role_name`',
                 colour=discord.Color.teal())
 
             embed.add_field(
@@ -173,6 +202,24 @@ class Role(commands.Cog):
             embed.add_field(name='Event Roles', value='\n'.join(ev_roles))
             embed.add_field(name='Notification Roles', value='\n'.join(no_roles))
 
+        elif server.id == config.PON_SERVER_ID:
+            embed = discord.Embed(
+                title='Auto-asign color roles',
+                description=f'Set a role: `{prefix}role role_name`\n'
+                            f'Remove a role: `{prefix}rrole role_name`',
+                colour=discord.Color.teal())
+
+            co_roles = []
+            for role_name in config.AUTOASIGN_COLOR_ROLES:
+                r = discord.utils.get(server.roles, name=role_name)
+                if r is not None:
+                    co_roles.append(r.mention)
+            embed.add_field(name='Color Roles', value='\n'.join(co_roles))
+
+            char_roles = []
+            for role_id in config.PONPON_ROLE_REACT_ROLE_IDS:
+                char_roles.append(f'<@&{role_id}>')
+            embed.add_field(name='Character Roles', value='\n'.join(char_roles))
         else:
             return
 
@@ -289,7 +336,7 @@ class Role(commands.Cog):
         message = context.message
         author = message.author
         server = message.guild
-        prefix = self.bot.command_prefix
+        prefix = context.prefix
 
         if server.id == config.MSVN_SERVER_ID:
 
@@ -305,20 +352,22 @@ class Role(commands.Cog):
                 f'{author.mention}, role này không tồn tại hoặc không tự xử được nha. '
                 f'Gõ `{prefix}list` để xem các Role.'
             )
-        elif server.id == config.DAWN_SERVER_ID:
-            dawn_role_mentions = [server.get_role(role_id).mention for role_id in config.DAWN_COLOR_CHANGE_ROLE_IDS]
+        elif server.id in self.en_guilds:
 
             add_role_help_title = f'Format: `{prefix}role role_name`'
             add_role_help_desc = (
                 f'Use this command to assign a Role. Type `{prefix}list` to see a full list of available roles.\n\n'
-                f'**This command is available for {", ".join(dawn_role_mentions)} only**.'
             )
 
             remove_role_help_title = f'`{prefix}rrole role_name`'
             remove_role_help_desc = (
                 f'Use this command to remove a Role. Type `{prefix}list` to see a full list of available roles.\n\n'
-                f'**This command is available for {", ".join(dawn_role_mentions)} only**.'
             )
+            if server.id == config.DAWN_SERVER_ID:
+                dawn_role_mentions = [server.get_role(role_id).mention for role_id in config.DAWN_COLOR_CHANGE_ROLE_IDS]
+                dawn_only = f'**This command is available for {", ".join(dawn_role_mentions)} only**.'
+                add_role_help_desc += dawn_only
+                remove_role_help_desc += dawn_only
 
             wrong_role_name_provided_msg = (
                 f'{author.mention}, this role does not exist, or is a special role. '
@@ -334,8 +383,8 @@ class Role(commands.Cog):
             if context.invoked_with in ['role', 'rrole', 'iam', 'iamn']:
                 await context.say_as_embed(
                     description=f'Sorry, only {", ".join(dawn_role_mentions)} '
-                    'can use this command. Join us for these awesome colors! '
-                    'Or get special roles by participating in events!')
+                                'can use this command. Join us for these awesome colors! '
+                                'Or get special roles by participating in events!')
 
         elif isinstance(error, commands.MissingRequiredArgument):
             if context.invoked_with in ['role', 'iam']:

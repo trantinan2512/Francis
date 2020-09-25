@@ -3,17 +3,15 @@
 import asyncio
 import operator
 import random
+
 import discord
-from discord.ext import commands
-
-from utils.db import initialize_db
-import config
-
 from dateparser import parse
+from discord.ext import commands
 from django.db.models import F
 
+import config
 from francis.utils.role import is_image_url, is_hex_code, is_normal_message_type
-
+from utils.db import initialize_db
 from web.apps.users.models import DiscordUser
 
 
@@ -378,8 +376,8 @@ class Admin(commands.Cog):
                 embed = discord.Embed(
                     title='To be announced events:',
                     description='```'
-                    f'Command: {prefix}sc list\n'
-                    f'Format : HH:MM:SS PP dd/mm/yyyy (Timezone)```',
+                                f'Command: {prefix}sc list\n'
+                                f'Format : HH:MM:SS PP dd/mm/yyyy (Timezone)```',
                     color=discord.Color.blue())
 
                 for record in records:
@@ -431,28 +429,19 @@ class Admin(commands.Cog):
     async def get_roles_color_code(self, context):
 
         await context.message.delete()
-        ms_server = self.bot.get_server(453555802670759947)
-        dawn_server = self.bot.get_server(364323564737789953)
+        from_ = self.bot.get_guild(config.DAWN_SERVER_ID)
+        to_ = self.bot.get_guild(config.PON_SERVER_ID)
 
-        for ms_role in ms_server.roles:
-            if ms_role.name in config.AUTOASIGN_COLOR_ROLES:
-                role_names = []
-                for dn_role in dawn_server.roles:
-                    role_names.append(dn_role.name)
-                if ms_role.name in role_names:
-                    pass
-                else:
-                    new_role = await self.bot.create_role(
-                        server=dawn_server, name=ms_role.name, color=ms_role.color, hoist=False, mentionable=False)
-                    print(f'Created role: {new_role.name} in server: {dawn_server.name}')
-
-    # @clear_messages.error
-    # @count_users_messages.error
-    # @change_bot_presence.error
-    # @event_scheduler.error
-    # async def clear_messages_error(self, error, context):
-    #     print(error)
-    #     return  # fail silently
+        for frm_role in from_.roles:
+            if frm_role.name not in config.AUTOASIGN_COLOR_ROLES:
+                continue
+            if any(frm_role.name == to_role.name for to_role in to_.roles):
+                continue
+            new_role = await to_.create_role(
+                name=frm_role.name,
+                color=frm_role.color,
+            )
+            print(f'Created role: {new_role.name} in server: {to_.name}')
 
     @commands.command(name='slap')
     @commands.check(is_me)

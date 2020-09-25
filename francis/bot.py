@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 
 import discord
 from discord.ext import commands
@@ -230,3 +231,65 @@ class CustomBot(commands.Bot):
             message = await channel.send(embed=embed)
 
         return message
+
+    async def on_command_error(self, context, error):
+
+        ignored = (
+            commands.CommandNotFound,
+            commands.PrivateMessageOnly
+        )
+        if isinstance(error, ignored):
+            return
+
+        if isinstance(error, commands.MissingRole):
+            await context.say_as_embed(
+                f'{context.author.mention}, you must have '
+                f'**<@&{error.missing_role}>** role to use this command!',
+                color='error', delete_after=5)
+            await context.message.delete()
+            return
+
+        if isinstance(error, commands.MissingAnyRole):
+            missing_roles_mention = ", or ".join([f"**<@&{role}>**" for role in error.missing_roles])
+            await context.say_as_embed(
+                f'{context.author.mention}, you must have '
+                f'{missing_roles_mention} roles to use this command!',
+                color='error', delete_after=5)
+            await context.message.delete()
+            return
+
+        # missing required argument and is not a help command
+        # if isinstance(error, commands.MissingRequiredArgument) and context.command.qualified_name != 'help':
+        #     prefix = context.prefix
+        #     command_name = context.invoked_with
+        #     embed = discord.Embed(
+        #         title=f'How to use the `{command_name}` command',
+        #         description=
+        #         context.command.help.format(prefix=prefix, command_name=command_name),
+        #         color=config.EMBED_DEFAULT_COLOR
+        #     )
+        #     await context.send(embed=embed)
+        #     return
+
+        if isinstance(error, commands.BadArgument):
+            await context.say_as_embed(str(error), color='error')
+            return
+
+        if isinstance(error, commands.CommandInvokeError):
+            # shoutout if it's not silent
+            if not getattr(error.original, 'silent', False):
+                await context.say_as_embed(str(error.original), color='error')
+                return
+
+        if settings.DEBUG:
+            error = getattr(error, 'original', error)
+            # shoutout if it's not silent
+            if not getattr(error, 'silent', False):
+                tb_obj = getattr(error, '__traceback__')
+                tb = '\n'.join(traceback.format_tb(tb_obj))
+                traceback.print_tb(tb_obj)
+                print(error)
+                if context.invoked_with != 'help':
+                    await context.send(f'```bash\n{tb}\n{error}```')
+
+        await super().on_command_error(context, error)
