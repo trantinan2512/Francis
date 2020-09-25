@@ -61,7 +61,7 @@ class CustomBot(commands.Bot):
         print('------')
         if not settings.DEBUG:
             # change this for the 'Playing xxx' status
-            presence = f'Prefix: {self.command_prefix}'
+            presence = f'Prefix: {config.BOT_PREFIX}'
         else:
             presence = f'sensei anone'
         await self.change_presence(activity=discord.Game(name=presence))
