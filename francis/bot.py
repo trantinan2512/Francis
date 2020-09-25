@@ -1,7 +1,10 @@
+import asyncio
+
 import discord
 from discord.ext import commands
+from django.conf import settings
+
 import config
-import asyncio
 
 
 class CustomContext(commands.Context):
@@ -50,6 +53,17 @@ class CustomContext(commands.Context):
 
 
 class CustomBot(commands.Bot):
+
+    async def on_ready(self):
+        print('------')
+        print(f'Logged in as: {self.user.name} (ID: {self.user.id})')
+        print('------')
+        if not settings.DEBUG:
+            # change this for the 'Playing xxx' status
+            presence = f'Prefix: {self.command_prefix}'
+        else:
+            presence = f'sensei anone'
+        await self.change_presence(activity=discord.Game(name=presence))
 
     async def on_message(self, message):
         ctx = await self.get_context(message, cls=CustomContext)

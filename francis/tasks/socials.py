@@ -11,8 +11,10 @@ TWITTER_USERS = {
     816396540017152000: {'sheet': 'twitter_gmsm', 'channel_ids': [455635507561627648, ], 'name': 'GMSM'},
     34667202: {'sheet': 'twitter_gms', 'channel_ids': [455634325086404608, ], 'name': 'GMS'},
     940045596575989765: {'sheet': 'twitter_hi3', 'channel_ids': [563996767302057984, ], 'name': 'HI3rd'},
+    # global genshin twitter
     1072404907230060544: {'sheet': 'twitter_genshin', 'channel_ids': [694444914372509756, 754672596821344298], 'name': 'Genshin'},
-    1070960596357509121: {'sheet': 'twitter_genshin', 'channel_ids': [694444914372509756, 754672596821344298], 'name': 'Genshin'},
+    # japanese genshin twitter
+    1070960596357509121: {'sheet': 'twitter_genshin', 'channel_ids': [694444914372509756, 758899411517833236], 'name': 'Genshin'},
 }
 
 

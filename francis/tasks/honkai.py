@@ -1,13 +1,14 @@
+import re
 from datetime import datetime
 
 import discord
 from bs4 import BeautifulSoup
-from discord.ext import tasks, commands
+from pytz import timezone
 
 from .webspiders import WebSpider
 
 
-class HonkaiTasks(commands.Cog):
+class HonkaiWikiCrawler():
     def __init__(self, bot):
         self.bot = bot
 
@@ -21,26 +22,15 @@ class HonkaiTasks(commands.Cog):
 
         self.supplies_ignored_tabs = ['2018', '2019', '2020']
 
-        self.parse_supplies_data.start()
-        self.parse_events_data.start()
+    async def do_crawl(self):
 
-        # self.supplies_channel_id = 587165325464829953
-        # self.events_channel_id = 559210580146126848
-
-    def cog_unload(self):
-        self.parse_supplies_data.cancel()
-        self.parse_events_data.cancel()
-
-    @tasks.loop(seconds=60.0)
-    async def parse_supplies_data(self):
+        # supplies crawler
         await self.parse_data(
             spider=self.supplies_spider,
             fetcher=self.fetch_supplies_data,
             posting_channel=self.bot.get_channel(id=587165325464829953)
         )
-
-    @tasks.loop(seconds=60.0)
-    async def parse_events_data(self):
+        # events crawler
         await self.parse_data(
             spider=self.events_spider,
             fetcher=self.fetch_events_data,
@@ -172,14 +162,106 @@ class HonkaiTasks(commands.Cog):
 
         return datas
 
-    @parse_supplies_data.before_loop
-    async def before_parse(self):
-        print('[HI3rd Gamepedia Site Spider] Waiting for ready state...')
 
-        await self.bot.wait_until_ready()
+class HonkaiWebCrawler():
+    def __init__(self, bot):
+        self.bot = bot
+        self.web_spider = WebSpider(self.bot, 'site_hi3')
+        self.channel = None
+        self.post_id_regex = re.compile('news/(\d+)\?')
+        self.newline_re = re.compile('\n{2,}')
 
-        print('[Hi3rd Gamepedia Site Spider] Ready and running!')
+        self.base_url = 'https://honkaiimpact3.mihoyo.com'
+        self.url = f'{self.base_url}/global/en-us/news'
 
+    async def do_crawl(self):
+        await self.parse_data()
 
-def setup(bot):
-    bot.add_cog(HonkaiTasks(bot))
+    def fetch_data(self):
+        content = self.web_spider.get_content_by_url(self.url)
+
+        if content is None:
+            return None
+
+        now = datetime.now()
+        vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
+
+        html = BeautifulSoup(content, 'html.parser')
+        news_items = html.select_one('.news-wrap')
+
+        datas = []
+        for news in news_items.find_all('a'):
+            post_url = news["href"]
+            post_id = self.post_id_regex.search(post_url).group(1)
+            post_url = f'{self.url}/{post_id}'
+            # getting the image inside the post for better quality
+            post_html_content = self.web_spider.get_content_by_url(f'{post_url}')
+            image = news.select_one('img')['src']
+            if post_html_content:
+                html = BeautifulSoup(post_html_content, 'html.parser')
+                _image = html.select_one('.news-detail__banner img')
+                if _image:
+                    image = _image['src']
+                content = html.select_one('.news-detail__article').get_text()
+            else:
+                content = ''
+
+            title = news.select_one('.title').get_text().strip()
+
+            data = {
+                'id': post_id,
+                'fetch_date': vn_tz.strftime('%d/%m/%Y'),
+                'fetch_time': vn_tz.strftime('%H:%M:%S'),
+                'title': title,
+                'link': post_url,
+                'description': content,
+                'image': image
+            }
+            datas.append(data)
+        return datas
+
+    async def parse_data(self):
+
+        self.channel = self.bot.get_channel(559210580146126848)
+
+        checking_data = self.web_spider.form_checking_data()
+        site_datas = self.fetch_data()
+
+        if not site_datas or not checking_data:
+            return
+
+        for data in site_datas:
+
+            if (data['id'], data['title']) in checking_data:
+                continue
+
+            content_text = data['description']
+            content_text = content_text.replace(u'\xa0', '')
+            content_text = self.newline_re.sub('\n\n', content_text)
+            embed_desc = ''
+            for line in content_text.split('\n'):
+                if len(embed_desc + f'{line}\n') > 1900:
+                    embed_desc += f'...\n***[Read more]({data["link"]})***'
+                    break
+                embed_desc += f'{line}\n'
+
+            # sending news message to channel
+            embed = discord.Embed(
+                title=f"{data['title']}",
+                url=data['link'],
+                description=embed_desc,
+                color=discord.Color.teal())
+            embed.set_image(url=data['image'])
+
+            try:
+                # send the message to channel
+                await self.bot.say_as_embed(channel=self.channel, embed=embed)
+
+                # save to drive and print the result title
+                self.web_spider.sheet.insert_row([value for value in data.values()], index=2)
+            except Exception:
+                continue
+
+            print(f'Site Fetch: [HI3] [Fetched {data["title"]}]')
+            # updates the checking data
+            checking_data = self.web_spider.form_checking_data()

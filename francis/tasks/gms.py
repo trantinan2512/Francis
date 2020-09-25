@@ -5,14 +5,13 @@ from datetime import timedelta
 import discord
 from bs4 import BeautifulSoup
 from dateparser import parse
-from discord.ext import tasks, commands
 from pytz import timezone
 
 import config
 from .webspiders import WebSpider
 
 
-class GlobalMapleStoryTasks(commands.Cog):
+class GMSCrawler():
     def __init__(self, bot):
         self.bot = bot
 
@@ -20,31 +19,11 @@ class GlobalMapleStoryTasks(commands.Cog):
 
         self.url = 'http://maplestory.nexon.net/news/'
 
-        self.parse_news_datas.start()
-
         self.news_channel = None
         self.news_channel_id = 453565620915535872 if not config.DEBUG else 454890599410302977
 
-    def cog_unload(self):
-        self.parse_news_datas.cancel()
-
-    @tasks.loop(seconds=config.SPIDER_DELAY)
-    async def parse_news_datas(self):
+    async def do_crawl(self):
         await self.parse()
-
-    @parse_news_datas.before_loop
-    async def before_parse(self):
-        print('[GMS Site Spider] Waiting for ready state...')
-
-        await self.bot.wait_until_ready()
-
-        self.news_channel = self.bot.get_channel(id=self.news_channel_id)
-        if not self.news_channel:
-            print(f'Channel with ID [ {self.news_channel_id} ] not found.')
-            self.parse_news_datas.cancel()
-            return
-
-        print('[GMS Site Spider] Ready and running!')
 
     def fetch_data(self):
         content = self.spider.get_content_by_url(self.url)
@@ -148,6 +127,7 @@ class GlobalMapleStoryTasks(commands.Cog):
 
                 embed.set_image(url=data['img'])
                 # send the message to channel
+                self.news_channel = self.bot.get_channel(id=self.news_channel_id)
                 await self.bot.say_as_embed(channel=self.news_channel, embed=embed)
                 # save to drive and print the result title
                 if not config.DEBUG:
@@ -185,9 +165,9 @@ class GlobalMapleStoryTasks(commands.Cog):
                 sc_duration = float(duration_search.group(1))
 
         # regex to get the string that contains UTC -7 related stuff
-        utc_re = re.compile('\s*\(UTC\s*-*–*\s*(7|8)\)\s*', re.IGNORECASE)
+        utc_re = re.compile('\s*\(UTC\s*-*–*\s*([78])\)\s*', re.IGNORECASE)
         # regex to get the string that contains either pst or pdt
-        tz_re = re.compile('p(d|s)t', re.IGNORECASE)
+        tz_re = re.compile('p([ds])t', re.IGNORECASE)
         # regex to get the TBD string in 'finish' duration
         tbd_re = re.compile('tbd', re.IGNORECASE)
         # regex to get the string that contains ':' with space(s)
@@ -266,7 +246,3 @@ class GlobalMapleStoryTasks(commands.Cog):
                 description = f'```Thời gian hoàn tất: không xác định.\n\nGiờ VN:\n- Từ:  {frm}\n- Đến: {to}```'
 
             return title, description
-
-
-def setup(bot):
-    bot.add_cog(GlobalMapleStoryTasks(bot))

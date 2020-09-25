@@ -4,13 +4,12 @@ from datetime import datetime
 
 import bs4
 import discord
-from discord.ext import tasks, commands
 from pytz import timezone
 
 from .webspiders import WebSpider
 
 
-class GenshinTasks(commands.Cog):
+class GenshinCrawler():
     def __init__(self, bot):
         self.bot = bot
 
@@ -20,18 +19,11 @@ class GenshinTasks(commands.Cog):
         self.content_url = 'https://genshin.mihoyo.com/content/yuanshen/getContent?contentId='
         self.webpage_url = 'https://genshin.mihoyo.com/en/news/detail/'
         self.newline_re = re.compile('\n{2,}')
-        self.parse_news_data.start()
 
-    def cog_unload(self):
-        self.parse_news_data.cancel()
+    async def do_crawl(self):
+        await self.parse_data()
 
-    @tasks.loop(seconds=60.0)
-    async def parse_news_data(self):
-        await self.parse_data(
-            posting_channel=self.bot.get_channel(id=754706712358944799)
-        )
-
-    async def parse_data(self, posting_channel):
+    async def parse_data(self):
         checking_data = self.news_spider.form_checking_data()
         site_datas = self.fetch_news_data()
 
@@ -62,18 +54,17 @@ class GenshinTasks(commands.Cog):
                     image_url = ext['value'][0]['url']
 
             channel_ids = data['channelId']
+            _type = ''
+            _color = discord.Color.dark_teal()
             if '11' in channel_ids:
-                type = 'Info'
-                color = discord.Color.dark_blue()
+                _type = 'Info'
+                _color = discord.Color.dark_blue()
             elif '12' in channel_ids:
-                type = 'Update'
-                color = discord.Color.dark_magenta()
+                _type = 'Update'
+                _color = discord.Color.dark_magenta()
             elif '13' in channel_ids:
-                type = 'Event'
-                color = discord.Color.dark_purple()
-            else:
-                type = ''
-                color = discord.Color.dark_teal()
+                _type = 'Event'
+                _color = discord.Color.dark_purple()
 
             intro = f'*{intro}*\n-----\n' if intro else ''
 
@@ -95,15 +86,16 @@ class GenshinTasks(commands.Cog):
                 description=embed_desc,
                 timestamp=datetime.utcnow(),
                 url=post_url,
-                color=color,
+                color=_color,
             )
 
-            if type:
-                embed.set_footer(text=type)
+            if _type:
+                embed.set_footer(text=_type)
 
             if image_url:
                 embed.set_image(url=image_url)
 
+            posting_channel = self.bot.get_channel(id=754706712358944799)
             await posting_channel.send(embed=embed)
 
             now = datetime.now()
@@ -140,15 +132,3 @@ class GenshinTasks(commands.Cog):
             return data['data']
         except json.JSONDecodeError:
             return
-
-    @parse_news_data.before_loop
-    async def before_parse(self):
-        print('[Genshin Website Spider] Waiting for ready state...')
-
-        await self.bot.wait_until_ready()
-
-        print('[Genshin Website Spider] Ready and running!')
-
-
-def setup(bot):
-    bot.add_cog(GenshinTasks(bot))

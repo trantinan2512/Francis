@@ -1,8 +1,7 @@
-import discord
 import traceback
-from francis import bot
-from francis.tasks import socials, webspiders, schedules, dailies_reset
+
 import config
+from francis import bot
 
 if config.DEBUG is True:
     prefix = '.'
@@ -40,17 +39,14 @@ initial_extensions = [
 
 if not config.DEBUG:
     initial_extensions += [
-        'francis.tasks.honkai',
-        'francis.tasks.gms',
         # 'francis.tasks.tiki',
-        'francis.tasks.genshin',
         'francis.tasks.socials',
+        'francis.tasks.crawlers'
     ]
 else:
     initial_extensions += [
-        # 'francis.tasks.tiki',
         'francis.tasks.socials',
-        # 'francis.tasks.genshin',
+        'francis.tasks.crawlers'
     ]
 
 for extension in initial_extensions:
@@ -58,25 +54,5 @@ for extension in initial_extensions:
         francis.load_extension(extension)
     except Exception as e:
         traceback.print_exc()
-
-
-# EVENTS
-
-@francis.event
-async def on_ready():
-    print('------')
-    print(f'Logged in as: {francis.user.name} (ID: {francis.user.id})')
-    print('------')
-
-    if not config.DEBUG:
-        await francis.change_presence(activity=discord.Game(name=f'{francis.command_prefix}help'))
-    else:
-        await francis.change_presence(activity=discord.Game(name=f'{francis.command_prefix}help'))
-
-
-if not config.DEBUG:
-    francis.loop.create_task(webspiders.HonkaiImpactSpider(francis, 'site_hi3').parse())
-else:
-    pass
 
 francis.run(config.FRANCIS_TOKEN)

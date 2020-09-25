@@ -1,17 +1,16 @@
 import asyncio
-import traceback
 # import json
 import re
+from datetime import datetime
+
+import discord
 import requests
 from bs4 import BeautifulSoup
-
 from gspread.exceptions import APIError
-from datetime import datetime, timedelta
 from pytz import timezone
-from dateparser import parse
-import discord
-from utils import db as googledrive, channel as ch
+
 import config
+from utils import db as googledrive, channel as ch
 
 
 class WebSpider:
@@ -262,113 +261,6 @@ class GMS2SiteSpider(WebSpider):
 
                 print(f'Site Fetch: [GMS2] [Fetched {data["title"]}]')
 
-                # updates the checking data
-                checking_data = self.form_checking_data()
-
-            await asyncio.sleep(self.delay)
-
-
-class HonkaiImpactSpider(WebSpider):
-    def __init__(self, bot, drive_sheet_name):
-        super().__init__(bot, drive_sheet_name)
-        self.channel = None
-        self.post_id_regex = re.compile('news/(\d+)\?')
-        self.base_url = 'https://honkaiimpact3.mihoyo.com'
-        self.url = f'{self.base_url}/global/en-us/news'
-
-    def fetch_data(self):
-        content = self.get_content_by_url(self.url)
-
-        if content is None:
-            return None
-
-        now = datetime.now()
-        vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))
-
-        html = BeautifulSoup(content, 'html.parser')
-        news_items = html.select_one('.news-wrap')
-
-        datas = []
-        for news in news_items.find_all('a'):
-            post_url = news["href"]
-            post_id = self.post_id_regex.search(post_url).group(1)
-            post_url = f'{self.url}/{post_id}'
-            # getting the image inside the post for better quality
-            post_html_content = self.get_content_by_url(f'{post_url}')
-            image = news.select_one('img')['src']
-            if post_html_content:
-                html = BeautifulSoup(post_html_content, 'html.parser')
-                _image = html.select_one('.news-detail__banner img')
-                if _image:
-                    image = _image['src']
-                content = html.select_one('.news-detail__article').get_text()
-            else:
-                content = ''
-
-            title = news.select_one('.title').get_text().strip()
-
-            data = {
-                'id': post_id,
-                'fetch_date': vn_tz.strftime('%d/%m/%Y'),
-                'fetch_time': vn_tz.strftime('%H:%M:%S'),
-                'title': title,
-                'link': post_url,
-                'description': content,
-                'image': image
-            }
-            datas.append(data)
-        return datas
-
-    async def parse(self):
-
-        print('[Honkai Impact Global Site Spider] Waiting for ready state...')
-
-        await self.bot.wait_until_ready()
-
-        print('[Honkai Impact Global Site Spider] Ready and running!')
-
-        self.channel = self.bot.get_channel(559210580146126848)
-
-        while not self.bot.is_closed():
-
-            # await asyncio.sleep(self.delay)
-            checking_data = self.form_checking_data()
-            site_datas = self.fetch_data()
-
-            if not site_datas or not checking_data:
-                await asyncio.sleep(self.delay)
-                continue
-
-            for data in site_datas:
-
-                if (data['id'], data['title']) in checking_data:
-                    continue
-
-                embed_desc = ''
-                for line in data['description'].split('\n'):
-                    if len(embed_desc + f'{line}\n') > 1900:
-                        embed_desc += f'...\n***[Read more]({data["link"]})***'
-                        break
-                    embed_desc += f'{line}\n'
-
-                # sending news message to channel
-                embed = discord.Embed(
-                    title=f"{data['title']}",
-                    url=data['link'],
-                    description=embed_desc,
-                    color=discord.Color.teal())
-                embed.set_image(url=data['image'])
-
-                try:
-                    # send the message to channel
-                    await self.bot.say_as_embed(channel=self.channel, embed=embed)
-
-                    # save to drive and print the result title
-                    self.sheet.insert_row([value for value in data.values()], index=2)
-                except Exception:
-                    continue
-
-                print(f'Site Fetch: [HI3] [Fetched {data["title"]}]')
                 # updates the checking data
                 checking_data = self.form_checking_data()
 
