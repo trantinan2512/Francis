@@ -65,7 +65,7 @@ class CustomBot(commands.Bot):
         else:
             presence = f'sensei anone'
         await self.change_presence(activity=discord.Game(name=presence))
-        self.load_tasks()
+        # self.load_tasks()
 
     def load_tasks(self):
         tasks = []
