@@ -45,18 +45,6 @@ initial_extensions = [
 
 ]
 
-if config.DEBUG:
-    initial_extensions += [
-        # 'francis.tasks.tiki',
-        # 'francis.tasks.socials',
-        # 'francis.tasks.crawlers'
-    ]
-else:
-    initial_extensions += [
-        'francis.tasks.socials',
-        'francis.tasks.crawlers'
-    ]
-
 for extension in initial_extensions:
     try:
         francis.load_extension(extension)

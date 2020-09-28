@@ -65,6 +65,26 @@ class CustomBot(commands.Bot):
         else:
             presence = f'sensei anone'
         await self.change_presence(activity=discord.Game(name=presence))
+        self.load_tasks()
+
+    def load_tasks(self):
+        tasks = []
+        if config.DEBUG:
+            tasks += [
+                # 'francis.tasks.tiki',
+                'francis.tasks.socials',
+                'francis.tasks.crawlers'
+            ]
+        else:
+            tasks += [
+                'francis.tasks.socials',
+                'francis.tasks.crawlers'
+            ]
+        for task in tasks:
+            try:
+                self.load_extension(task)
+            except Exception as e:
+                traceback.print_exc()
 
     async def on_message(self, message):
         ctx = await self.get_context(message, cls=CustomContext)
