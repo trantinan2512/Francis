@@ -99,7 +99,7 @@ class GenshinCrawler():
             message = await posting_channel.send(embed=embed)
             # try to auto-publish the message
             try:
-                message.publish()
+                await message.publish()
             except discord.Forbidden:
                 pass
 
