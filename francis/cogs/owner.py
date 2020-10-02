@@ -1,10 +1,8 @@
 # import discord
 import sys
 
+import discord
 from discord.ext import commands
-from discord.ext.commands import Greedy, MessageConverter
-
-import config
 
 
 class OwnerCommands(commands.Cog):
@@ -74,25 +72,15 @@ class OwnerCommands(commands.Cog):
 
     @commands.command(name='test', hidden=True)
     @commands.is_owner()
-    async def _test_command(self, context, messages: Greedy[MessageConverter] = None):
+    async def _test_command(self, context, *, content):
         """
         Test command
         """
-        # print(messages)
-        # for message in messages:
-        #     emoji_ids = config.PONPON_ROLE_REACT_EMOJI_IDS
-        #     for emoji_id in emoji_ids:
-        #         print(emoji_id)
-        #         emoji = context.bot.get_emoji(id=emoji_id)
-        #         await message.add_reaction(emoji)
-        #         break
-        # sends chunked emojis and reacts to that message with these emojis
-        emoji_ids = config.PONPON_ROLE_REACT_EMOJI_IDS
-        for chunk in chunks(emoji_ids, 10):
-            message = await context.send(' '.join(f'<:something:{emoji_id}>' for emoji_id in chunk))
-            for emoji_id in chunk:
-                emoji = context.bot.get_emoji(id=emoji_id)
-                await message.add_reaction(emoji)
+        message = await context.send(content)
+        try:
+            await message.publish()
+        except discord.Forbidden:
+            pass
 
     @commands.command(hidden=True, aliases=['q'])
     @commands.is_owner()
@@ -101,12 +89,6 @@ class OwnerCommands(commands.Cog):
         await ctx.send('Restarting in 10 seconds...')
         await self.bot.logout()
         sys.exit(6)
-
-
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
 
 
 def setup(bot):

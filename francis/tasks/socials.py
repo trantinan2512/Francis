@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import discord
 import tweepy
 from discord.ext import tasks, commands
 from pytz import timezone
@@ -12,9 +13,9 @@ TWITTER_USERS = {
     34667202: {'sheet': 'twitter_gms', 'channel_ids': [455634325086404608, ], 'name': 'GMS'},
     940045596575989765: {'sheet': 'twitter_hi3', 'channel_ids': [563996767302057984, ], 'name': 'HI3rd'},
     # global genshin twitter
-    1072404907230060544: {'sheet': 'twitter_genshin', 'channel_ids': [694444914372509756, 754672596821344298], 'name': 'Genshin'},
+    1072404907230060544: {'sheet': 'twitter_genshin', 'channel_ids': [754672596821344298, ], 'name': 'Genshin'},
     # japanese genshin twitter
-    1070960596357509121: {'sheet': 'twitter_genshin', 'channel_ids': [694444914372509756, 758899411517833236], 'name': 'Genshin'},
+    1070960596357509121: {'sheet': 'twitter_genshin', 'channel_ids': [758899411517833236, ], 'name': 'Genshin'},
 }
 
 
@@ -102,7 +103,12 @@ class TweetFetcher(commands.Cog):
                 channel = ch.get_channel(bot=self.bot, id=channel_id)
                 if not channel:
                     continue
-                await channel.send(status_url)
+                message = await channel.send(status_url)
+                # try to auto-publish the message
+                try:
+                    await message.publish()
+                except discord.Forbidden:
+                    pass
 
             print(f'Twitter Fetch: [{u_screen_name}] [Fetched: {status_url}]')
 

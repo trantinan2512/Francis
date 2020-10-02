@@ -4,6 +4,8 @@
 import discord
 from discord.ext import commands
 
+import config
+
 
 class GenshinAdmin(commands.Cog):
     """A cog for GenshinAdmin-only commands"""
@@ -247,6 +249,22 @@ class GenshinAdmin(commands.Cog):
         emojis_data.sort(key=lambda x: x['name'])
 
         await context.send(','.join(str(emoji['id']) for emoji in emojis_data))
+
+    @commands.command(name='genshinsendemojis', hidden=True)
+    @commands.is_owner()
+    async def _send_chunk_emojis_and_react(self, context):
+        emoji_ids = config.PONPON_ROLE_REACT_EMOJI_IDS
+        for chunk in chunks(emoji_ids, 10):
+            message = await context.send(' '.join(f'<:something:{emoji_id}>' for emoji_id in chunk))
+            for emoji_id in chunk:
+                emoji = context.bot.get_emoji(id=emoji_id)
+                await message.add_reaction(emoji)
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 def setup(bot):

@@ -96,7 +96,12 @@ class GenshinCrawler():
                 embed.set_image(url=image_url)
 
             posting_channel = self.bot.get_channel(id=754706712358944799)
-            await posting_channel.send(embed=embed)
+            message = await posting_channel.send(embed=embed)
+            # try to auto-publish the message
+            try:
+                message.publish()
+            except discord.Forbidden:
+                pass
 
             now = datetime.now()
             vn_tz = now.astimezone(timezone('Asia/Ho_Chi_Minh'))

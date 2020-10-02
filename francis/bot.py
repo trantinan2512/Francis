@@ -72,8 +72,8 @@ class CustomBot(commands.Bot):
         if config.DEBUG:
             tasks += [
                 # 'francis.tasks.tiki',
-                'francis.tasks.socials',
-                'francis.tasks.crawlers'
+                # 'francis.tasks.socials',
+                # 'francis.tasks.crawlers'
             ]
         else:
             tasks += [
