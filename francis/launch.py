@@ -19,6 +19,7 @@ francis = bot.CustomBot(
     command_prefix=prefix,
     description='Francis - Orchid\'s slave',
     max_messages=10000,
+    intents=bot.intents
 )
 # remove the 'help' command
 francis.remove_command('help')

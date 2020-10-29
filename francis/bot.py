@@ -7,6 +7,9 @@ from django.conf import settings
 
 import config
 
+# intents update
+intents = discord.Intents.default()
+intents.members = True
 
 class CustomContext(commands.Context):
     async def say_as_embed(
