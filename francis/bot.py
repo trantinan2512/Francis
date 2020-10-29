@@ -86,8 +86,8 @@ class CustomBot(commands.Bot):
         for task in tasks:
             try:
                 self.load_extension(task)
-            except Exception as e:
-                traceback.print_exc()
+            except discord.ext.commands.errors.ExtensionAlreadyLoaded:
+                pass
 
     async def on_message(self, message):
         ctx = await self.get_context(message, cls=CustomContext)
