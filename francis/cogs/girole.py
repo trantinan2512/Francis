@@ -8,22 +8,24 @@ class GenshinRole(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.role_channel_id = 759034043810578433
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+
         ponpon_guild = self.bot.get_guild(config.PON_SERVER_ID)
         if not ponpon_guild:
             return
 
-        dawn_rfr = {}
+        pon_rfr = {}
         for emoji_id, role_id in zip(config.PONPON_ROLE_REACT_EMOJI_IDS, config.PONPON_ROLE_REACT_ROLE_IDS):
-            dawn_rfr.update({int(emoji_id): ponpon_guild.get_role(int(role_id))})
+            pon_rfr.update({int(emoji_id): ponpon_guild.get_role(int(role_id))})
 
         member = ponpon_guild.get_member(payload.user_id)
         if not member:
             return
 
-        if payload.emoji.id in dawn_rfr:
+        if payload.emoji.id in pon_rfr:
 
             if payload.channel_id != 759034043810578433:
                 return
@@ -39,21 +41,24 @@ class GenshinRole(commands.Cog):
                             title='',
                             description=
                             f'{member.mention}, you can only have up to 4 character roles.\n'
-                            f'Remove other reactions first, then try again.',
+                            f'Try again after unassigning a role by:\n'
+                            f'+ removing the respective reaction, or\n'
+                            f'+ using command `{self.bot.command_prefix}rrole role_name`',
                             color=discord.Color.dark_red()),
-                            delete_after=5
+                            delete_after=10
                         )
                         message = await channel.fetch_message(payload.message_id)
                         await message.remove_reaction(payload.emoji, member)
                         return
 
-            await member.add_roles(dawn_rfr[payload.emoji.id])
+
+            await member.add_roles(pon_rfr[payload.emoji.id])
 
             embed = discord.Embed(
                 title='',
                 description=
                 f'{member.mention} obtained '
-                f'{dawn_rfr[payload.emoji.id].mention} role.',
+                f'{pon_rfr[payload.emoji.id].mention} role.',
                 color=discord.Color.blurple()
             )
             await channel.send(embed=embed, delete_after=5)

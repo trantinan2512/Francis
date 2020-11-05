@@ -18,163 +18,165 @@ class GenshinAdmin(commands.Cog):
     async def _get_or_create_genshin_character_roles(self, context):
         characters = [
             {
-                "id": 1,
                 "name": "Amber",
                 "element": "p",
                 "rank": 4,
                 "weapon_type": "bo"
             },
             {
-                "id": 2,
                 "name": "Barbara",
                 "element": "h",
                 "rank": 4,
                 "weapon_type": "ca"
             },
             {
-                "id": 3,
                 "name": "Beidou",
                 "element": "e",
                 "rank": 4,
                 "weapon_type": "cl"
             },
             {
-                "id": 4,
                 "name": "Bennett",
                 "element": "p",
                 "rank": 4,
                 "weapon_type": "sw"
             },
             {
-                "id": 5,
                 "name": "Chongyun",
                 "element": "c",
                 "rank": 4,
                 "weapon_type": "cl"
             },
             {
-                "id": 6,
                 "name": "Diluc",
                 "element": "p",
                 "rank": 5,
                 "weapon_type": "cl"
             },
             {
-                "id": 7,
                 "name": "Fischl",
                 "element": "e",
                 "rank": 4,
                 "weapon_type": "bo"
             },
             {
-                "id": 8,
                 "name": "Jean",
                 "element": "a",
                 "rank": 5,
                 "weapon_type": "sw"
             },
             {
-                "id": 9,
                 "name": "Kaeya",
                 "element": "c",
                 "rank": 4,
                 "weapon_type": "sw"
             },
             {
-                "id": 10,
                 "name": "Keqing",
                 "element": "e",
                 "rank": 5,
                 "weapon_type": "sw"
             },
             {
-                "id": 11,
                 "name": "Klee",
                 "element": "p",
                 "rank": 5,
                 "weapon_type": "ca"
             },
             {
-                "id": 12,
                 "name": "Lisa",
                 "element": "e",
                 "rank": 4,
                 "weapon_type": "ca"
             },
             {
-                "id": 13,
                 "name": "Mona",
                 "element": "h",
                 "rank": 5,
                 "weapon_type": "ca"
             },
             {
-                "id": 14,
                 "name": "Ningguang",
                 "element": "g",
                 "rank": 4,
                 "weapon_type": "ca"
             },
             {
-                "id": 15,
                 "name": "Noelle",
                 "element": "g",
                 "rank": 4,
                 "weapon_type": "cl"
             },
             {
-                "id": 16,
                 "name": "Qiqi",
                 "element": "c",
                 "rank": 5,
                 "weapon_type": "sw"
             },
             {
-                "id": 17,
                 "name": "Razor",
                 "element": "e",
                 "rank": 4,
                 "weapon_type": "cl"
             },
             {
-                "id": 18,
                 "name": "Sucrose",
                 "element": "a",
                 "rank": 4,
                 "weapon_type": "ca"
             },
             {
-                "id": 19,
                 "name": "Traveler",
                 "element": "a",
                 "rank": 5,
                 "weapon_type": "sw"
             },
             {
-                "id": 20,
                 "name": "Venti",
                 "element": "a",
                 "rank": 5,
                 "weapon_type": "bo"
             },
             {
-                "id": 21,
                 "name": "Xiangling",
                 "element": "p",
                 "rank": 4,
                 "weapon_type": "po"
             },
             {
-                "id": 22,
                 "name": "Xiao",
                 "element": "a",
                 "rank": 5,
                 "weapon_type": "po"
             },
             {
-                "id": 23,
                 "name": "Xingqiu",
                 "element": "h",
+                "rank": 4,
+                "weapon_type": "sw"
+            },
+            # 1.1
+            {
+                "name": "Tartaglia",
+                "element": "h",
+                "rank": 4,
+                "weapon_type": "sw"
+            },
+            {
+                "name": "Zhongli",
+                "element": "g",
+                "rank": 4,
+                "weapon_type": "sw"
+            },
+            {
+                "name": "Diona",
+                "element": "c",
+                "rank": 4,
+                "weapon_type": "sw"
+            },
+            {
+                "name": "Xinyan",
+                "element": "p",
                 "rank": 4,
                 "weapon_type": "sw"
             }
@@ -189,6 +191,9 @@ class GenshinAdmin(commands.Cog):
             'h': 0x228EBA
         }
         for character in characters:
+            # ignore traveler
+            if character['name'] == 'Traveler':
+                continue
             # ignore created
             if any(character['name'] == role.name for role in context.guild.roles):
                 continue
@@ -227,13 +232,20 @@ class GenshinAdmin(commands.Cog):
                  'Venti',
                  'Xiangling',
                  'Xiao',
-                 'Xingqiu']
+                 'Xingqiu',
+                 # 1.1
+                 'Tartaglia',
+                 'Zhongli',
+                 'Diona',
+                 'Xinyan',
+                 ]
+        names.sort()
         roles = []
-        for role in context.guild.roles:
-            if role.name not in names:
+        for name in names:
+            role = discord.utils.get(context.guild.roles, name=name)
+            if not role:
                 continue
             roles.append(role.id)
-        roles.reverse()
         await context.send(','.join(str(role_id) for role_id in roles))
         await context.say_as_embed('\n'.join(f'<@&{role_id}>' for role_id in roles))
 
@@ -247,7 +259,6 @@ class GenshinAdmin(commands.Cog):
         emojis += '```'
 
         emojis_data.sort(key=lambda x: x['name'])
-
         await context.send(','.join(str(emoji['id']) for emoji in emojis_data))
 
     @commands.command(name='genshinsendemojis', hidden=True)

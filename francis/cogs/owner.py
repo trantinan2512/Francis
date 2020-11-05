@@ -1,7 +1,6 @@
 # import discord
 import sys
 
-import discord
 from discord.ext import commands
 
 
@@ -72,15 +71,13 @@ class OwnerCommands(commands.Cog):
 
     @commands.command(name='test', hidden=True)
     @commands.is_owner()
-    async def _test_command(self, context, *, content):
+    async def _test_command(self, context, *, content=None):
         """
         Test command
         """
-        message = await context.send(content)
-        try:
-            await message.publish()
-        except discord.Forbidden:
-            pass
+        channel = self.bot.get_channel(759034043810578433)
+        message = await channel.fetch_message(759035621557141544)
+        await message.edit(content=content)
 
     @commands.command(hidden=True, aliases=['q'])
     @commands.is_owner()

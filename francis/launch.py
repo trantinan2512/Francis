@@ -11,8 +11,10 @@ def get_default_prefix():
         return config.BOT_PREFIX
 
 
-def prefix(bot, message):
-    return get_default_prefix()
+prefix = get_default_prefix()
+
+# def prefix(bot, message):
+#     return get_default_prefix()
 
 
 francis = bot.CustomBot(
