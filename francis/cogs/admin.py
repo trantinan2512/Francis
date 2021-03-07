@@ -106,11 +106,13 @@ class Admin(commands.Cog):
     @commands.command(name='react', hidden=True)
     @commands.check(is_me)
     async def _react_to_message(self, context, message: MessageConverter, emoji: EmojiConverter):
+        await context.message.delete()
         await message.add_reaction(emoji)
 
     @commands.command(name='creact', hidden=True)
     @commands.check(is_me)
     async def _remove_reaction_from_message(self, context, message: MessageConverter, emoji: EmojiConverter):
+        await context.message.delete()
         await message.remove_reaction(emoji, context.bot.user)
 
     @commands.command(name='clear')
