@@ -7,6 +7,7 @@ import random
 import discord
 from dateparser import parse
 from discord.ext import commands
+from discord.ext.commands import MessageConverter, EmojiConverter
 from django.db.models import F
 
 import config
@@ -101,6 +102,16 @@ class Admin(commands.Cog):
             await msg.delete()
             return
         await context.send(emoji)
+
+    @commands.command(name='react', hidden=True)
+    @commands.check(is_me)
+    async def _react_to_message(self, context, message: MessageConverter, emoji: EmojiConverter):
+        await message.add_reaction(emoji)
+
+    @commands.command(name='creact', hidden=True)
+    @commands.check(is_me)
+    async def _remove_reaction_from_message(self, context, message: MessageConverter, emoji: EmojiConverter):
+        await message.remove_reaction(emoji, context.bot.user)
 
     @commands.command(name='clear')
     @commands.check(is_me)

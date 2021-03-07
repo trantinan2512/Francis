@@ -207,17 +207,14 @@ class GenshinAdmin(commands.Cog):
     @commands.is_owner()
     async def _generate_genshin_character_role_ids(self, context):
         names = ['Amber',
-                 'Ayaka',
                  'Aether - Anemo',
                  'Aether - Geo',
-                 'Albedo',
                  'Barbara',
                  'Beidou',
                  'Bennett',
                  'Chongyun',
                  'Diluc',
                  'Fischl',
-                 'Ganyu',
                  'Jean',
                  'Kaeya',
                  'Keqing',
@@ -240,6 +237,12 @@ class GenshinAdmin(commands.Cog):
                  'Zhongli',
                  'Diona',
                  'Xinyan',
+                 # 1.2
+                 'Ayaka',
+                 'Albedo',
+                 'Ganyu',
+                 # 1.3
+                 'Hu Tao',
                  ]
         names.sort()
         roles = []
