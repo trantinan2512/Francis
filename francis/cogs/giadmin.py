@@ -243,6 +243,11 @@ class GenshinAdmin(commands.Cog):
                  'Ganyu',
                  # 1.3
                  'Hu Tao',
+                 # 1.4
+                 'Rosaria',
+                 # 1.5
+                 'Yanfei',
+                 'Eula',
                  ]
         names.sort()
         roles = []
